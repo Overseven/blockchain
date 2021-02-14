@@ -18,7 +18,7 @@ type Transaction struct {
 	Sign      []byte
 }
 
-func GetHash(tr *Transaction) []byte {
+func (tr *Transaction)GetHash() []byte {
 	temp := append(tr.Pubkey, tr.Receiver...)
 	temp = append(temp, tr.Message...)
 	temp = append(temp, fmt.Sprintf("%.4f", tr.Pay)...)
@@ -27,11 +27,16 @@ func GetHash(tr *Transaction) []byte {
 	return cr.Keccak256(temp)
 }
 
-func Verify(tr *Transaction) bool {
-	hash := GetHash(tr)
+func (tr *Transaction)Verify() bool {
+	hash := tr.GetHash()
 	valid := cr.VerifySignature(tr.Pubkey, hash, tr.Sign[0:64])
-	// need to insert additional check
+	// TODO: need to insert additional check
 	return valid
+}
+
+func (tr *Transaction)IsEqual(tr2 *Transaction) bool {
+	//TODO: finish!
+	return false
 }
 
 func FromJSON(js []byte) Transaction {

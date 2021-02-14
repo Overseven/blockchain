@@ -10,7 +10,7 @@ import (
 func main() {
 	flagNode := flag.Bool("node", false, "start as node")
 	flagClient := flag.Bool("client", false, "start as client")
-
+	paramCfgFile := flag.String("config", "", "config filename")
 	flag.Parse()
 
 	if *flagNode {
@@ -19,7 +19,12 @@ func main() {
 
 	}else if *flagClient {
 		fmt.Println("Client choosen!")
-		client.Run()
+		if len(*paramCfgFile) != 0{
+			client.Run(*paramCfgFile)
+		} else {
+			panic("aaa config file?")
+			return
+		}
 
 	} else{
 		fmt.Println("Choose mode. Use \"-h\" param.")
