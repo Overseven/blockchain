@@ -15,7 +15,7 @@ type Block struct{
 	Id uint64
 	Transactions []transaction.Transaction
 	PrevHash     []byte
-	WalletsStats []WalletStats
+	WalletsStats map[string]WalletStats
 
 	Difficulty uint64
 	Miner []byte
@@ -64,9 +64,9 @@ func (block *Block) GetHash() (hash []byte){
 func (block *Block) IsValid(blockchain *Blockchain) (bool, error) {
 	// TODO: finish him!!
 	if uint64(len(blockchain.Blocks)) + 1 != block.Id {
-		return false, errors.New("Incorrect block ID")
+		return false, errors.New("incorrect block ID")
 	}
-
+	//block.WalletsStats
 	return true, nil
 }
 
@@ -104,6 +104,6 @@ func (block *Block)HasTransaction(tr *transaction.Transaction) (index int, has b
 }
 
 func (block *Block)AddTransaction(tr *transaction.Transaction) error{
-
+	// TODO: Finish him!!
 	return nil
 }

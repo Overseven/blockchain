@@ -20,10 +20,10 @@ func LoadFromFile(file string) (address, privkey []byte){
 	}
 	lines := strings.Split(string(data), "\r\n")
 
-	fmt.Println("Data in config file:")
+	//fmt.Println("Data in config file:")
 	for _, val := range lines{
 		pair := strings.Split(val, ":")
-		fmt.Println(pair)
+		//fmt.Println(pair)
 		if len(pair) == 2{
 			if pair[0] == fieldPubKey{
 				address, err = base64.StdEncoding.DecodeString(pair[1])
@@ -38,6 +38,6 @@ func LoadFromFile(file string) (address, privkey []byte){
 			}
 		}
 	}
-	fmt.Println("End data in config file.\n")
+	//fmt.Println("End data in config file.")
 	return
 }

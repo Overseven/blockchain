@@ -1,12 +1,16 @@
 package transaction
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/overseven/blockchain/blockchain"
 	"time"
 
 	cr "github.com/ethereum/go-ethereum/crypto"
 )
+
+// TODO: calc pubkey len and set const size for all
 
 type Transaction struct {
 	Pubkey    []byte
@@ -27,16 +31,50 @@ func (tr *Transaction)GetHash() []byte {
 	return cr.Keccak256(temp)
 }
 
+/*
+	Use it only if the sender has no more than one transaction in the block
+ */
 func (tr *Transaction)Verify() bool {
 	hash := tr.GetHash()
-	valid := cr.VerifySignature(tr.Pubkey, hash, tr.Sign[0:64])
-	// TODO: need to insert additional check
-	return valid
+	if !cr.VerifySignature(tr.Pubkey, hash, tr.Sign[0:64]){
+		return false
+	}
+
+	wallet, err := blockchain.WalletInfo(tr.Pubkey)
+	if err != nil {
+		return false
+	}
+	if wallet.CurrentBalance < (tr.Pay + tr.Fee) {
+		return false
+	}
+
+	return true
 }
 
 func (tr *Transaction)IsEqual(tr2 *Transaction) bool {
-	//TODO: finish!
-	return false
+	if !bytes.Equal(tr.Pubkey, tr2.Pubkey){
+		return false
+	}
+	if !bytes.Equal(tr.Receiver, tr2.Receiver){
+		return false
+	}
+	if !bytes.Equal(tr.Sign, tr2.Sign){
+		return false
+	}
+	if tr.Message != tr2.Message{
+		return false
+	}
+	if tr.Timestamp != tr2.Timestamp{
+		return false
+	}
+	if tr.Pay != tr2.Pay{
+		return false
+	}
+	if tr.Fee != tr2.Fee{
+		return false
+	}
+
+	return true
 }
 
 func FromJSON(js []byte) Transaction {
