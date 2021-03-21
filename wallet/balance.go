@@ -1,4 +1,4 @@
-package blockchain
+package wallet
 
 import "errors"
 
@@ -8,7 +8,7 @@ type WalletBalance struct {
     CurrentBalance float64
 }
 
-var usersBalances map[string] WalletBalance
+var usersBalances map[string]WalletBalance
 
 func WalletIsBeing(pubkey []byte) bool{
     _, ok := usersBalances[string(pubkey)]

@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/overseven/blockchain/blockchain"
+	"github.com/overseven/blockchain/wallet"
 	"time"
 
 	cr "github.com/ethereum/go-ethereum/crypto"
@@ -40,7 +40,7 @@ func (tr *Transaction)Verify() bool {
 		return false
 	}
 
-	wallet, err := blockchain.WalletInfo(tr.Pubkey)
+	wallet, err := wallet.WalletInfo(tr.Pubkey)
 	if err != nil {
 		return false
 	}
