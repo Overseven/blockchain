@@ -40,7 +40,7 @@ func (tr *Transaction)Verify() bool {
 		return false
 	}
 
-	wallet, err := wallet.WalletInfo(tr.Pubkey)
+	wallet, err := wallet.Info(tr.Pubkey)
 	if err != nil {
 		return false
 	}

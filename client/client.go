@@ -15,7 +15,7 @@ import (
 )
 
 func Run(configFile string) {
-
+	wallet.Init()
 	test2(configFile)
 
 }
@@ -120,6 +120,8 @@ func testTransaction(privkey *ecdsa.PrivateKey) bool {
 
 	pubkey := cr.CompressPubkey(&privkey.PublicKey)
 	pubkey2 := cr.CompressPubkey(&privkey2.PublicKey)
+
+	wallet.Update(pubkey, 0, 2345.7)
 
 	transaction := tr.Transaction{}
 	transaction.Pubkey = pubkey
