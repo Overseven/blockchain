@@ -4,33 +4,34 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	cr "github.com/ethereum/go-ethereum/crypto"
-	"github.com/overseven/blockchain/transaction"
-	"github.com/overseven/blockchain/utility"
 	"math"
 	"strconv"
+
+	tr "github.com/Overseven/blockchain/transaction"
+	cr "github.com/ethereum/go-ethereum/crypto"
+	blUtility "github.com/overseven/blockchain/utility"
 )
 
-type Block struct{
-	Id uint64
-	Transactions []transaction.Transaction
+type Block struct {
+	Id           uint64
+	Transactions []tr.Transaction
 	PrevHash     []byte
 	WalletsStats map[string]WalletStats
 
 	Difficulty uint64
-	Miner []byte
-	Hash  []byte
-	Nonce []byte
+	Miner      []byte
+	Hash       []byte
+	Nonce      []byte
 }
 
-type WalletStats struct{
-	Address []byte
-	BalanceBefore float64
-	BalanceAfter float64
+type WalletStats struct {
+	Address          []byte
+	BalanceBefore    float64
+	BalanceAfter     float64
 	PrevTransBlockId uint64
 }
 
-func (block *Block) GetBatchHash() (hash []byte){
+func (block *Block) GetBatchHash() (hash []byte) {
 	var toHashBytes []byte
 	for _, tran := range block.Transactions {
 		toHashBytes = append(toHashBytes, tran.GetHash()...)
@@ -39,7 +40,7 @@ func (block *Block) GetBatchHash() (hash []byte){
 	return
 }
 
-func (block *Block) GetWalletStatsHash() (hash []byte){
+func (block *Block) GetWalletStatsHash() (hash []byte) {
 	var toHashBytes []byte
 	for _, stats := range block.WalletsStats {
 		toHashBytes = append(toHashBytes, stats.Address...)
@@ -51,7 +52,7 @@ func (block *Block) GetWalletStatsHash() (hash []byte){
 	return
 }
 
-func (block *Block) GetHash() (hash []byte){
+func (block *Block) GetHash() (hash []byte) {
 	hash = blUtility.UInt64Bytes(block.Id)
 	hash = append(hash, block.GetBatchHash()...)
 	hash = append(hash, block.PrevHash...)
@@ -63,7 +64,7 @@ func (block *Block) GetHash() (hash []byte){
 
 func (block *Block) IsValid(blockchain *Blockchain) (bool, error) {
 	// TODO: finish him!!
-	if uint64(len(blockchain.Blocks)) + 1 != block.Id {
+	if uint64(len(blockchain.Blocks))+1 != block.Id {
 		return false, errors.New("incorrect block ID")
 	}
 	//block.WalletsStats
@@ -72,8 +73,8 @@ func (block *Block) IsValid(blockchain *Blockchain) (bool, error) {
 
 func (block *Block) Mining(stop chan bool) []byte {
 	mask := make([]byte, block.Difficulty)
-	for  i := uint64(0); i< math.MaxUint64; i++ {
-		select{
+	for i := uint64(0); i < math.MaxUint64; i++ {
+		select {
 		case <-stop:
 			fmt.Println("Interrupt of mining.")
 			return []byte{}
@@ -84,7 +85,7 @@ func (block *Block) Mining(stop chan bool) []byte {
 		tryData := append(block.Hash, nonce...)
 		hash := cr.Keccak256(tryData)
 
-		if bytes.HasPrefix(hash, mask){
+		if bytes.HasPrefix(hash, mask) {
 			// YEA!! Finish work
 			return nonce
 		}
@@ -94,16 +95,16 @@ func (block *Block) Mining(stop chan bool) []byte {
 	return []byte{}
 }
 
-func (block *Block)HasTransaction(tr *transaction.Transaction) (index int, has bool){
-	for i, tran := range block.Transactions{
-		if tran.IsEqual(tr){
+func (block *Block) HasTransaction(tr *tr.Transaction) (index int, has bool) {
+	for i, tran := range block.Transactions {
+		if tran.IsEqual(tr) {
 			return i, true
 		}
 	}
-	return 0,false
+	return 0, false
 }
 
-func (block *Block)AddTransaction(tr *transaction.Transaction) error{
+func (block *Block) AddTransaction(tr *tr.Transaction) error {
 	// TODO: Finish him!!
 	return nil
 }

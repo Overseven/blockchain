@@ -4,8 +4,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/overseven/blockchain/wallet"
 	"time"
+
+	"github.com/Overseven/blockchain/wallet"
 
 	cr "github.com/ethereum/go-ethereum/crypto"
 )
@@ -22,7 +23,7 @@ type Transaction struct {
 	Sign      []byte
 }
 
-func (tr *Transaction)GetHash() []byte {
+func (tr *Transaction) GetHash() []byte {
 	temp := append(tr.Pubkey, tr.Receiver...)
 	temp = append(temp, tr.Message...)
 	temp = append(temp, fmt.Sprintf("%.4f", tr.Pay)...)
@@ -33,10 +34,10 @@ func (tr *Transaction)GetHash() []byte {
 
 /*
 	Use it only if the sender has no more than one transaction in the block
- */
-func (tr *Transaction)Verify() bool {
+*/
+func (tr *Transaction) Verify() bool {
 	hash := tr.GetHash()
-	if !cr.VerifySignature(tr.Pubkey, hash, tr.Sign[0:64]){
+	if !cr.VerifySignature(tr.Pubkey, hash, tr.Sign[0:64]) {
 		return false
 	}
 
@@ -51,26 +52,26 @@ func (tr *Transaction)Verify() bool {
 	return true
 }
 
-func (tr *Transaction)IsEqual(tr2 *Transaction) bool {
-	if !bytes.Equal(tr.Pubkey, tr2.Pubkey){
+func (tr *Transaction) IsEqual(tr2 *Transaction) bool {
+	if !bytes.Equal(tr.Pubkey, tr2.Pubkey) {
 		return false
 	}
-	if !bytes.Equal(tr.Receiver, tr2.Receiver){
+	if !bytes.Equal(tr.Receiver, tr2.Receiver) {
 		return false
 	}
-	if !bytes.Equal(tr.Sign, tr2.Sign){
+	if !bytes.Equal(tr.Sign, tr2.Sign) {
 		return false
 	}
-	if tr.Message != tr2.Message{
+	if tr.Message != tr2.Message {
 		return false
 	}
-	if tr.Timestamp != tr2.Timestamp{
+	if tr.Timestamp != tr2.Timestamp {
 		return false
 	}
-	if tr.Pay != tr2.Pay{
+	if tr.Pay != tr2.Pay {
 		return false
 	}
-	if tr.Fee != tr2.Fee{
+	if tr.Fee != tr2.Fee {
 		return false
 	}
 

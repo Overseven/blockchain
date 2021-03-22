@@ -1,17 +1,18 @@
 package client
 
 import (
+	"bytes"
 	"crypto/ecdsa"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"time"
+
+	cr "github.com/ethereum/go-ethereum/crypto"
 	tr "github.com/overseven/blockchain/transaction"
 	wallet "github.com/overseven/blockchain/wallet"
-	"encoding/base64"
-	"bytes"
-	"io/ioutil"
-	cr "github.com/ethereum/go-ethereum/crypto"
 )
 
 func Run(configFile string) {
@@ -20,7 +21,7 @@ func Run(configFile string) {
 
 }
 
-func test2(configFile string)  {
+func test2(configFile string) {
 	_, privkeyBytes := wallet.LoadFromFile(configFile)
 	//fmt.Println("Len privKey:", len(privkeyBytes))
 	privkey, err := cr.ToECDSA(privkeyBytes[:32])
@@ -35,13 +36,13 @@ func test2(configFile string)  {
 	valid := testTransaction(privkey)
 	if valid {
 		fmt.Println("Valid!")
-	} else{
+	} else {
 		fmt.Println("Invalid!")
 	}
 
 }
 
-func test(configFile string){
+func test(configFile string) {
 	transaction := tr.Transaction{}
 	privkey, err := cr.GenerateKey()
 	if err != nil {
@@ -90,7 +91,7 @@ func test(configFile string){
 
 	reverseTr := tr.FromJSON(jsonTr)
 	valid := reverseTr.Verify
-	fmt.Println("Valid:", valid)
+	fmt.Println("Valid: ", valid)
 	url := "http://127.0.0.1:8090/test"
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonTr))
 	if err != nil {
@@ -150,7 +151,13 @@ func testTransaction(privkey *ecdsa.PrivateKey) bool {
 		panic(err)
 	}
 
-	fmt.Println(string(jsonTr))
+	var out2 bytes.Buffer
+
+	err = json.Indent(&out2, jsonTr, "", "\t")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(string(out2.Bytes()))
 
 	reverseTr := tr.FromJSON(jsonTr)
 	valid := reverseTr.Verify()
