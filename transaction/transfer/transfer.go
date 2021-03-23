@@ -1,29 +1,40 @@
 package transfer
 
 import (
+	"crypto/ecdsa"
 	"errors"
+	"time"
 
-	"github.com/Overseven/blockchain/blockchain"
 	tr "github.com/Overseven/blockchain/transaction"
+	"github.com/Overseven/blockchain/utility"
 	"github.com/Overseven/blockchain/wallet"
 	cr "github.com/ethereum/go-ethereum/crypto"
 )
 
 type Transfer struct {
-	data tr.Data
+	tr.Transaction
+	Data tr.Data
+}
+
+func (t *Transfer) GetData() *tr.Data {
+	return &t.Data
+}
+
+func (t *Transfer) SetData(d *tr.Data) {
+	t.Data = *d
 }
 
 func (t *Transfer) Verify() bool {
-	hash := tr.GetHash(&t.data)
-	if !cr.VerifySignature(t.data.Pubkey, hash, t.data.Sign[0:64]) {
+	hash := tr.GetHash(t.GetData())
+	if !cr.VerifySignature(t.Data.Pubkey, hash, t.Data.Sign[0:64]) {
 		return false
 	}
 
-	senderWallet, err := wallet.Info(t.data.Pubkey)
+	senderWallet, err := wallet.Info(t.Data.Pubkey)
 	if err != nil {
 		return false
 	}
-	if senderWallet.CurrentBalance < (t.data.Pay + t.data.Fee) {
+	if senderWallet.CurrentBalance < (t.Data.Pay + t.Data.Fee) {
 		return false
 	}
 
@@ -31,17 +42,37 @@ func (t *Transfer) Verify() bool {
 }
 
 // TODO: finish
-func New(receiver, adminPrivKey []byte) (*Transfer, error) {
-	if len(blockchain.B17.Blocks) > 0 {
-		return nil, errors.New("airdrop for not first block is not alowed")
+func New(sndrPrivKey *ecdsa.PrivateKey, rcvrPubKey []byte, value, fee float64, message string) (*Transfer, error) {
+	sndrPubKey := utility.PrivToPubKey(sndrPrivKey)
+	wall, err := wallet.Info(sndrPubKey)
+	if err != nil {
+		return nil, err
 	}
-	a := new(Transfer)
+	if wall.CurrentBalance < (value + fee) {
+		return nil, errors.New("not enough tokens")
+	}
 
-	a.data.Type = tr.Transfer
+	data := tr.Data{}
 
-	return a, nil
-}
+	data.Type = tr.Transfer
+	data.Pubkey = sndrPubKey
+	data.Receiver = rcvrPubKey
+	data.Pay = value
+	data.Fee = fee
+	data.Message = message // TODO: add fix size message
 
-func (t *Transfer) SetData(d *tr.Data) {
-	t.data = *d
+	{
+		t := time.Now()
+		data.Timestamp = time.Date(t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), t.Second(), t.Nanosecond(), time.UTC)
+	}
+	hashed := tr.GetHash(&data)
+
+	sign, err := cr.Sign(hashed, sndrPrivKey)
+	if err != nil {
+		panic(err)
+	}
+
+	data.Sign = sign
+
+	return &Transfer{Data: data}, nil
 }

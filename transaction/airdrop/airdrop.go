@@ -2,9 +2,8 @@ package airdrop
 
 import (
 	"bytes"
-	"errors"
 
-	"github.com/Overseven/blockchain/blockchain"
+	"github.com/Overseven/blockchain/chain"
 	tr "github.com/Overseven/blockchain/transaction"
 	cr "github.com/ethereum/go-ethereum/crypto"
 )
@@ -14,7 +13,11 @@ var (
 )
 
 type Airdrop struct {
-	data tr.Data
+	Data tr.Data
+}
+
+func (a *Airdrop) GetData() *tr.Data {
+	return &a.Data
 }
 
 /*
@@ -26,12 +29,12 @@ func (a *Airdrop) Verify() bool {
 		return false
 	}
 
-	hash := tr.GetHash(&a.data)
-	if !cr.VerifySignature(a.data.Pubkey, hash, a.data.Sign[0:64]) {
+	hash := tr.GetHash(a.GetData())
+	if !cr.VerifySignature(a.Data.Pubkey, hash, a.Data.Sign[0:64]) {
 		return false
 	}
 
-	if bytes.Compare(a.data.Pubkey, AirDropModeratorPubKey) != 0 {
+	if bytes.Compare(a.Data.Pubkey, AirDropModeratorPubKey) != 0 {
 		return false
 	}
 
@@ -39,17 +42,19 @@ func (a *Airdrop) Verify() bool {
 }
 
 // Airdrop is sending value from unlimited admin wallet to user wallet
-func New(receiver, adminPrivKey []byte) (*Airdrop, error) {
-	if len(blockchain.B17.Blocks) > 0 {
-		return nil, errors.New("airdrop for not first block is not alowed")
-	}
+func New(receiver, adminPrivKey []byte, chain chain.Chain) (*Airdrop, error) {
+	// TODO: add check below
+
+	// if len(blockchain.B17.Blocks) > 0 {
+	// 	return nil, errors.New("airdrop for not first block is not alowed")
+	// }
 	a := new(Airdrop)
 
-	a.data.Type = tr.Airdrop
+	a.Data.Type = tr.Airdrop
 
 	return a, nil
 }
 
 func (a *Airdrop) SetData(d *tr.Data) {
-	a.data = *d
+	a.Data = *d
 }

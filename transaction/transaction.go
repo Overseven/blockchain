@@ -18,12 +18,9 @@ const (
 )
 
 type Transaction interface {
-	Verify() bool
 	SetData(*Data)
-	// GetHash() []byte
-
-	// IsEqual(tr2 *Transaction) bool
-
+	GetData() *Data
+	Verify() bool
 }
 
 type Data struct {
