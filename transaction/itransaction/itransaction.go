@@ -1,4 +1,4 @@
-package transaction
+package itransaction
 
 import (
 	"bytes"
@@ -17,7 +17,7 @@ const (
 	Airdrop
 )
 
-type Transaction interface {
+type ITransaction interface {
 	SetData(*Data)
 	GetData() *Data
 	Verify() error

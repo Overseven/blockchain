@@ -3,33 +3,33 @@ package node
 import (
 	"encoding/json"
 	"fmt"
+	chain2 "github.com/overseven/blockchain/chain"
+	"github.com/overseven/blockchain/transaction/itransaction"
 	"net/http"
 
-	"github.com/Overseven/blockchain/chain"
-	"github.com/Overseven/blockchain/chain/block"
-	chainimpl "github.com/Overseven/blockchain/chain/chain"
-	tr "github.com/overseven/blockchain/transaction"
+	"github.com/overseven/blockchain/chain"
+
 	//"github.com/davecgh/go-spew/spew"
 )
 
 var (
-	localBlockchain chainimpl.Chain
+	localBlockchain chain.Chain
 )
 
 func Run() {
 	fmt.Println("Launching node.")
 	http.HandleFunc("/transaction/new", receiveNewTransaction)
 	http.ListenAndServe(":8090", nil)
-	bl := block.Block{
+	bl := chain2.Block{
 		Id: 0,
 	}
-	blBase := chain.Block(bl)
-	localBlockchain.Blocks = append(localBlockchain.Blocks, blBase)
+	//blBase := chain.Block(bl)
+	localBlockchain.Blocks = append(localBlockchain.Blocks, &bl)
 	fmt.Println(localBlockchain)
 }
 
 func receiveNewTransaction(w http.ResponseWriter, req *http.Request) {
-	var t tr.Transaction
+	var t itransaction.ITransaction
 	err := json.NewDecoder(req.Body).Decode(&t)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)

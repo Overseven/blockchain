@@ -2,6 +2,10 @@ package wallet
 
 import (
 	"errors"
+	"github.com/overseven/blockchain/chain"
+	"github.com/overseven/blockchain/chain/ichain"
+	"github.com/overseven/blockchain/transaction/itransaction"
+	"strconv"
 	"sync"
 )
 
@@ -53,6 +57,43 @@ func Update(pubkey []byte, lastTransBlock uint64, sum float64) (isNew bool) {
 	return true
 }
 
-func FullRecalc() {
+func Clear(){
+	usersBalances = make(map[string]Balance)
+}
+
+func FullCalc() error{
 	// TODO : finish
+	blockchain := chain.GetBlockchain()
+	Clear()
+
+	for _, block := range blockchain.GetBlocks(){
+		//b := block.(chain.Block)
+		//c := ichain.IChain(*chain)
+		if _, err := block.IsValid(blockchain); err != nil {
+			Clear()
+			return errors.New("incorrect block with number: " + strconv.FormatUint(block.GetId(), 10))
+		}
+		for _, trans := range block.GetTransaction(){
+			data := trans.GetData()
+			// sender
+			sndrBalance := usersBalances[string(data.Pubkey)]
+			sndrBalance.LastTransBlock = block.GetId()
+			sndrBalance.CurrentBalance -= data.Pay + data.Fee
+
+			// receiver
+			rcvrBalance := usersBalances[string(data.Pubkey)]
+			rcvrBalance.LastTransBlock = block.GetId()
+			rcvrBalance.CurrentBalance += data.Pay
+
+			// miner fee
+			if data.Type != itransaction.Airdrop {
+				sndrData := trans.GetData()
+				balance := usersBalances[string(sndrData.Pubkey)]
+				balance.LastTransBlock = block.GetId()
+				balance.CurrentBalance += sndrData.Fee
+			}
+		}
+	}
+
+	return nil
 }

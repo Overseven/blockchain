@@ -6,15 +6,14 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	transaction2 "github.com/overseven/blockchain/transaction"
+	"github.com/overseven/blockchain/transaction/itransaction"
 	"io/ioutil"
 	"net/http"
 	"time"
 
-	tr "github.com/Overseven/blockchain/transaction"
-	"github.com/Overseven/blockchain/transaction/parser"
-	"github.com/Overseven/blockchain/transaction/transfer"
-	cr "github.com/ethereum/go-ethereum/crypto"
 	wallet "github.com/Overseven/blockchain/wallet"
+	cr "github.com/ethereum/go-ethereum/crypto"
 )
 
 func Run(configFile string) {
@@ -44,7 +43,7 @@ func test2(configFile string) {
 }
 
 func test(configFile string) {
-	transaction := transfer.Transfer{}
+	transaction := transaction2.Transfer{}
 	privkey, err := cr.GenerateKey()
 	if err != nil {
 		panic(err)
@@ -72,7 +71,7 @@ func test(configFile string) {
 		t := time.Now()
 		data.Timestamp = time.Date(t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), t.Second(), t.Nanosecond(), time.UTC)
 	}
-	hashed := tr.GetHash(data)
+	hashed := itransaction.GetHash(data)
 
 	//fmt.Println("Public key:", pubkey)
 
@@ -92,12 +91,12 @@ func test(configFile string) {
 	fmt.Println(string(jsonTr))
 
 	
-	reverseTr, err := parser.FromJSON(jsonTr)
+	reverseTr, err := transaction2.FromJSON(jsonTr)
 	if err != nil {
 		panic(err)
 	}
 
-	transf1 := transfer.Transfer{Data: *reverseTr}
+	transf1 := transaction2.Transfer{Data: *reverseTr}
 	valid := transf1.Verify()
 	fmt.Println("Valid: ", valid)
 	url := "http://127.0.0.1:8090/test"
@@ -132,7 +131,7 @@ func testTransaction(privkey *ecdsa.PrivateKey) bool {
 
 	wallet.Update(pubkey, 0, 2345.7)
 
-	transaction, err := transfer.New(privkey, pubkey2, 14, 0.123, "memsage")
+	transaction, err := transaction2.NewTransfer(privkey, pubkey2, 14, 0.123, "memsage")
 	if err != nil {
 		panic(err)
 	}
@@ -150,11 +149,11 @@ func testTransaction(privkey *ecdsa.PrivateKey) bool {
 	}
 	fmt.Println(string(out2.Bytes()))
 
-	reverseTr, err := parser.FromJSON(jsonTr)
+	reverseTr, err := transaction2.FromJSON(jsonTr)
 	if err != nil {
 		panic(err)
 	}
-	transf := transfer.Transfer{Data: *reverseTr}
+	transf := transaction2.Transfer{Data: *reverseTr}
 	err = transf.Verify()
 	if err != nil {
 		return false

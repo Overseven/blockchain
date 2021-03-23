@@ -1,15 +1,13 @@
-package block
+package chain
 
 import (
 	"crypto/ecdsa"
-	"testing"
-	"time"
-
-	tr "github.com/Overseven/blockchain/transaction"
-	"github.com/Overseven/blockchain/transaction/transfer"
 	"github.com/Overseven/blockchain/utility"
 	"github.com/Overseven/blockchain/wallet"
 	cr "github.com/ethereum/go-ethereum/crypto"
+	"github.com/overseven/blockchain/transaction"
+	. "github.com/overseven/blockchain/transaction/itransaction"
+	"testing"
 )
 
 func generateWallet(value float64) (privKey *ecdsa.PrivateKey, pubKey []byte, err error) {
@@ -24,31 +22,7 @@ func generateWallet(value float64) (privKey *ecdsa.PrivateKey, pubKey []byte, er
 	return
 }
 
-func generateTransaction(sndrPrivKey *ecdsa.PrivateKey, rcvrPubKey []byte, value, fee float64, message string) tr.Transaction {
-	//transaction := transfer.Transfer{}
-	data := tr.Data{}
-	data.Pubkey = cr.CompressPubkey(&sndrPrivKey.PublicKey)
-	data.Pay = value
-	data.Fee = fee
-	data.Receiver = rcvrPubKey
-	data.Message = message
-	{
-		t := time.Now()
-		data.Timestamp = time.Date(t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), t.Second(), t.Nanosecond(), time.UTC)
-	}
-	hashed := tr.GetHash(&data)
 
-	//fmt.Println("Public key:", pubkey)
-
-	sign, err := cr.Sign(hashed, sndrPrivKey)
-	if err != nil {
-		panic(err)
-	}
-
-	data.Sign = sign
-
-	return &transfer.Transfer{Data: data}
-}
 
 func TestBlockIsValid(t *testing.T) {
 	// TODO: finish test
@@ -63,14 +37,21 @@ func TestBlockIsValid(t *testing.T) {
 	}
 
 	//trans := generateTransaction(sndrPrivKey, rcvrPubKey, 14, 0.5, "trans1")
-	trans, err := transfer.New(sndrPrivKey, rcvrPubKey, 14, 0.5, "trans1")
+	trans, err := transaction.NewTransfer(sndrPrivKey, rcvrPubKey, 14, 0.5, "trans1")
 	if err != nil {
 		t.Error(err)
 	}
-	bl := Block{}
-	transBase := tr.Transaction(trans)
+	err = wallet.FullCalc()
+	if err != nil {
+		t.Error(err)
+	}
+	var bl Block
+	transBase := ITransaction(trans)
 
-	bl.AddTransaction(&transBase)
+	err = bl.AddTransaction(&transBase)
+	if err != nil {
+		t.Error(err)
+	}
 
 	sndrWal, err := wallet.Info(sndrPubKey)
 	if err != nil {

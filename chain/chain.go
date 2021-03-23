@@ -1,21 +1,29 @@
 package chain
 
 import (
-	tr "github.com/Overseven/blockchain/transaction"
+	"github.com/overseven/blockchain/chain/ichain"
 )
 
-type Chain interface {
-	IsValid(startIndx, endIndx uint64)
-	GetBlocks() []Block
+var blockchain Chain
+
+type Chain struct {
+	Blocks []ichain.IBlock
 }
 
-//var B17 Blockchain
-type Block interface {
-	GetBatchHash() (hash []byte)
-	GetWalletStatsHash() (hash []byte)
-	GetHash() (hash []byte)
-	IsValid(blockchain *Chain) (bool, error)
-	Mining(stop chan bool) []byte
-	HasTransaction(transact *tr.Transaction) (index int, has bool)
-	AddTransaction(tr *tr.Transaction) error
+func (c *Chain) IsValid(startIndx, endIndx uint64) (bool, uint64) {
+
+	// TODO: finish
+	return true, 0
+}
+
+func (c *Chain) GetBlocks() []ichain.IBlock {
+	return c.Blocks
+}
+
+func (c *Chain) SetBlocks([]ichain.IBlock)  {
+
+}
+
+func GetBlockchain() Chain{
+	return blockchain
 }
