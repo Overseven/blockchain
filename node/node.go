@@ -4,22 +4,27 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+
+	"github.com/Overseven/blockchain/chain"
+	"github.com/Overseven/blockchain/chain/block"
+	chainimpl "github.com/Overseven/blockchain/chain/chain"
 	tr "github.com/overseven/blockchain/transaction"
-	blockchain "github.com/overseven/blockchain/blockchain"
 	//"github.com/davecgh/go-spew/spew"
 )
 
 var (
-	localBlockchain blockchain.Blockchain
+	localBlockchain chainimpl.Chain
 )
-func Run(){
+
+func Run() {
 	fmt.Println("Launching node.")
 	http.HandleFunc("/transaction/new", receiveNewTransaction)
 	http.ListenAndServe(":8090", nil)
-	bl := blockchain.Block{
+	bl := block.Block{
 		Id: 0,
 	}
-	localBlockchain.Blocks = append(localBlockchain.Blocks, bl)
+	blBase := chain.Block(bl)
+	localBlockchain.Blocks = append(localBlockchain.Blocks, blBase)
 	fmt.Println(localBlockchain)
 }
 

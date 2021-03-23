@@ -10,15 +10,16 @@ import (
 	"net/http"
 	"time"
 
+	tr "github.com/Overseven/blockchain/transaction"
+	"github.com/Overseven/blockchain/transaction/parser"
+	"github.com/Overseven/blockchain/transaction/transfer"
 	cr "github.com/ethereum/go-ethereum/crypto"
-	tr "github.com/overseven/blockchain/transaction"
-	wallet "github.com/overseven/blockchain/wallet"
+	wallet "github.com/Overseven/blockchain/wallet"
 )
 
 func Run(configFile string) {
 	wallet.Init()
 	test2(configFile)
-
 }
 
 func test2(configFile string) {
@@ -43,7 +44,7 @@ func test2(configFile string) {
 }
 
 func test(configFile string) {
-	transaction := tr.Transaction{}
+	transaction := transfer.Transfer{}
 	privkey, err := cr.GenerateKey()
 	if err != nil {
 		panic(err)
@@ -61,16 +62,17 @@ func test(configFile string) {
 	fmt.Println("Private key:", encodedStr)
 	//fmt.Println(encodedStr)
 
-	transaction.Pubkey = pubkey
-	transaction.Pay = 14
-	transaction.Fee = 0.123
-	transaction.Receiver = pubkey2
-	transaction.Message = "memsage"
+	data := transaction.GetData()
+	data.Pubkey = pubkey
+	data.Pay = 14
+	data.Fee = 0.123
+	data.Receiver = pubkey2
+	data.Message = "memsage"
 	{
 		t := time.Now()
-		transaction.Timestamp = time.Date(t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), t.Second(), t.Nanosecond(), time.UTC)
+		data.Timestamp = time.Date(t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), t.Second(), t.Nanosecond(), time.UTC)
 	}
-	hashed := transaction.GetHash()
+	hashed := tr.GetHash(data)
 
 	//fmt.Println("Public key:", pubkey)
 
@@ -79,7 +81,7 @@ func test(configFile string) {
 		panic(err)
 	}
 
-	transaction.Sign = sign
+	data.Sign = sign
 	//spew.Dump(transaction)
 
 	jsonTr, err := json.Marshal(transaction)
@@ -89,8 +91,14 @@ func test(configFile string) {
 
 	fmt.Println(string(jsonTr))
 
-	reverseTr := tr.FromJSON(jsonTr)
-	valid := reverseTr.Verify
+	
+	reverseTr, err := parser.FromJSON(jsonTr)
+	if err != nil {
+		panic(err)
+	}
+
+	transf1 := transfer.Transfer{Data: *reverseTr}
+	valid := transf1.Verify()
 	fmt.Println("Valid: ", valid)
 	url := "http://127.0.0.1:8090/test"
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonTr))
@@ -124,27 +132,10 @@ func testTransaction(privkey *ecdsa.PrivateKey) bool {
 
 	wallet.Update(pubkey, 0, 2345.7)
 
-	transaction := tr.Transaction{}
-	transaction.Pubkey = pubkey
-	transaction.Pay = 14
-	transaction.Fee = 0.123
-	transaction.Receiver = pubkey2
-	transaction.Message = "memsage"
-	{
-		t := time.Now()
-		transaction.Timestamp = time.Date(t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), t.Second(), t.Nanosecond(), time.UTC)
-	}
-	hashed := transaction.GetHash()
-
-	//fmt.Println("Public key:", pubkey)
-
-	sign, err := cr.Sign(hashed, privkey)
+	transaction, err := transfer.New(privkey, pubkey2, 14, 0.123, "memsage")
 	if err != nil {
 		panic(err)
 	}
-
-	transaction.Sign = sign
-	//spew.Dump(transaction)
 
 	jsonTr, err := json.Marshal(transaction)
 	if err != nil {
@@ -159,7 +150,14 @@ func testTransaction(privkey *ecdsa.PrivateKey) bool {
 	}
 	fmt.Println(string(out2.Bytes()))
 
-	reverseTr := tr.FromJSON(jsonTr)
-	valid := reverseTr.Verify()
-	return valid
+	reverseTr, err := parser.FromJSON(jsonTr)
+	if err != nil {
+		panic(err)
+	}
+	transf := transfer.Transfer{Data: *reverseTr}
+	err = transf.Verify()
+	if err != nil {
+		return false
+	}
+	return true
 }
