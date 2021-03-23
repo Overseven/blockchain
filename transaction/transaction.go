@@ -2,18 +2,32 @@ package transaction
 
 import (
 	"bytes"
-	"encoding/json"
-	"fmt"
+	"strconv"
 	"time"
-
-	"github.com/Overseven/blockchain/wallet"
 
 	cr "github.com/ethereum/go-ethereum/crypto"
 )
 
 // TODO: calc pubkey len and set const size for all
 
-type Transaction struct {
+type Type int64
+
+const (
+	Transfer = iota
+	Airdrop
+)
+
+type Transaction interface {
+	Verify() bool
+	SetData(*Data)
+	// GetHash() []byte
+
+	// IsEqual(tr2 *Transaction) bool
+
+}
+
+type Data struct {
+	Type      Type
 	Pubkey    []byte
 	Receiver  []byte
 	Message   string
@@ -23,67 +37,39 @@ type Transaction struct {
 	Sign      []byte
 }
 
-func (tr *Transaction) GetHash() []byte {
-	temp := append(tr.Pubkey, tr.Receiver...)
-	temp = append(temp, tr.Message...)
-	temp = append(temp, fmt.Sprintf("%.4f", tr.Pay)...)
-	temp = append(temp, fmt.Sprintf("%.4f", tr.Fee)...)
-	temp = append(temp, tr.Timestamp.String()...)
+func IsEqual(t1, t2 *Data) bool {
+	if !bytes.Equal(t1.Pubkey, t2.Pubkey) {
+		return false
+	}
+	if !bytes.Equal(t1.Receiver, t2.Receiver) {
+		return false
+	}
+	if !bytes.Equal(t1.Sign, t2.Sign) {
+		return false
+	}
+	if t1.Message != t2.Message {
+		return false
+	}
+	if t1.Timestamp != t2.Timestamp {
+		return false
+	}
+	if t1.Pay != t2.Pay {
+		return false
+	}
+	if t1.Fee != t2.Fee {
+		return false
+	}
+
+	return true
+}
+
+func GetHash(t *Data) []byte {
+	temp := []byte(strconv.FormatInt(int64(t.Type), 10))
+	temp = append(temp, t.Pubkey...)
+	temp = append(temp, t.Receiver...)
+	temp = append(temp, t.Message...)
+	temp = append(temp, strconv.FormatFloat(t.Pay, 'e', 8, 64)...)
+	temp = append(temp, strconv.FormatFloat(t.Fee, 'e', 8, 64)...)
+	temp = append(temp, t.Timestamp.String()...)
 	return cr.Keccak256(temp)
-}
-
-/*
-	Use it only if the sender has no more than one transaction in the block
-*/
-func (tr *Transaction) Verify() bool {
-	hash := tr.GetHash()
-	if !cr.VerifySignature(tr.Pubkey, hash, tr.Sign[0:64]) {
-		return false
-	}
-
-	wallet, err := wallet.Info(tr.Pubkey)
-	if err != nil {
-		return false
-	}
-	if wallet.CurrentBalance < (tr.Pay + tr.Fee) {
-		return false
-	}
-
-	return true
-}
-
-func (tr *Transaction) IsEqual(tr2 *Transaction) bool {
-	if !bytes.Equal(tr.Pubkey, tr2.Pubkey) {
-		return false
-	}
-	if !bytes.Equal(tr.Receiver, tr2.Receiver) {
-		return false
-	}
-	if !bytes.Equal(tr.Sign, tr2.Sign) {
-		return false
-	}
-	if tr.Message != tr2.Message {
-		return false
-	}
-	if tr.Timestamp != tr2.Timestamp {
-		return false
-	}
-	if tr.Pay != tr2.Pay {
-		return false
-	}
-	if tr.Fee != tr2.Fee {
-		return false
-	}
-
-	return true
-}
-
-func FromJSON(js []byte) Transaction {
-	tr := Transaction{}
-	err := json.Unmarshal(js, &tr)
-	if err != nil {
-		panic(err)
-	}
-	//spew.Dump(tr)
-	return tr
 }
