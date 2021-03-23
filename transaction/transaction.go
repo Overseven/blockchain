@@ -20,7 +20,7 @@ const (
 type Transaction interface {
 	SetData(*Data)
 	GetData() *Data
-	Verify() bool
+	Verify() error
 }
 
 type Data struct {

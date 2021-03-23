@@ -24,21 +24,21 @@ func (t *Transfer) SetData(d *tr.Data) {
 	t.Data = *d
 }
 
-func (t *Transfer) Verify() bool {
+func (t *Transfer) Verify() error {
 	hash := tr.GetHash(t.GetData())
 	if !cr.VerifySignature(t.Data.Pubkey, hash, t.Data.Sign[0:64]) {
-		return false
+		return errors.New("incorrect signature")
 	}
 
 	senderWallet, err := wallet.Info(t.Data.Pubkey)
 	if err != nil {
-		return false
+		return err
 	}
 	if senderWallet.CurrentBalance < (t.Data.Pay + t.Data.Fee) {
-		return false
+		return errors.New("sender wallet not enough tokens")
 	}
 
-	return true
+	return nil
 }
 
 // TODO: finish

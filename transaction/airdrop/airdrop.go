@@ -2,6 +2,7 @@ package airdrop
 
 import (
 	"bytes"
+	"errors"
 
 	"github.com/Overseven/blockchain/chain"
 	tr "github.com/Overseven/blockchain/transaction"
@@ -20,25 +21,22 @@ func (a *Airdrop) GetData() *tr.Data {
 	return &a.Data
 }
 
-/*
-	Use it only if the sender has no more than one transaction in the block
-*/
-func (a *Airdrop) Verify() bool {
+func (a *Airdrop) Verify() error {
 
 	if len(AirDropModeratorPubKey) == 0 {
-		return false
+		return errors.New("empty AirDrop moderator public key")
 	}
 
 	hash := tr.GetHash(a.GetData())
 	if !cr.VerifySignature(a.Data.Pubkey, hash, a.Data.Sign[0:64]) {
-		return false
+		return errors.New("incorrect AirDrop moderator signature")
 	}
 
 	if bytes.Compare(a.Data.Pubkey, AirDropModeratorPubKey) != 0 {
-		return false
+		return errors.New("incorrect AirDrop moderator public key")
 	}
 
-	return true
+	return nil
 }
 
 // Airdrop is sending value from unlimited admin wallet to user wallet
