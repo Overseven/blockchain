@@ -1,4 +1,4 @@
-package blockchain
+package block
 
 import (
 	"bytes"
@@ -7,9 +7,10 @@ import (
 	"math"
 	"strconv"
 
+	chain "github.com/Overseven/blockchain/chain"
 	tr "github.com/Overseven/blockchain/transaction"
+	blUtility "github.com/Overseven/blockchain/utility"
 	cr "github.com/ethereum/go-ethereum/crypto"
-	blUtility "github.com/overseven/blockchain/utility"
 )
 
 type Block struct {
@@ -34,7 +35,7 @@ type WalletStats struct {
 func (block *Block) GetBatchHash() (hash []byte) {
 	var toHashBytes []byte
 	for _, tran := range block.Transactions {
-		toHashBytes = append(toHashBytes, tran.GetHash()...)
+		toHashBytes = append(toHashBytes, tr.GetHash(tran.GetData())...)
 	}
 	hash = cr.Keccak256(toHashBytes)
 	return
@@ -62,11 +63,28 @@ func (block *Block) GetHash() (hash []byte) {
 	return hash
 }
 
-func (block *Block) IsValid(blockchain *Blockchain) (bool, error) {
+func (block *Block) IsValid(blockchain chain.Chain) (bool, error) {
 	// TODO: finish him!!
-	if uint64(len(blockchain.Blocks))+1 != block.Id {
+	if uint64(len(blockchain.GetBlocks()))+1 != block.Id {
 		return false, errors.New("incorrect block ID")
 	}
+
+	// if block is the first in chain
+	if len(blockchain.GetBlocks()) == 0 {
+		for _, t := range block.Transactions {
+			data := t.GetData()
+			if data.Type != tr.Airdrop {
+				return false, errors.New("first block must have only airdrop transactions")
+			}
+			if err := t.Verify(); err != nil {
+				return false, errors.New("not valid transaction: " + err.Error())
+			}
+		}
+		return true, nil
+	}
+
+	// TODO: finish for not first block
+
 	//block.WalletsStats
 	return true, nil
 }
@@ -95,9 +113,9 @@ func (block *Block) Mining(stop chan bool) []byte {
 	return []byte{}
 }
 
-func (block *Block) HasTransaction(tr *tr.Transaction) (index int, has bool) {
+func (block *Block) HasTransaction(transact *tr.Transaction) (index int, has bool) {
 	for i, tran := range block.Transactions {
-		if tran.IsEqual(tr) {
+		if tr.IsEqual((*transact).GetData(), tran.GetData()) {
 			return i, true
 		}
 	}
