@@ -3,8 +3,9 @@ package transaction
 import (
 	"bytes"
 	"errors"
-	"github.com/overseven/blockchain/chain/ichain"
-	"github.com/overseven/blockchain/transaction/itransaction"
+
+	// "github.com/overseven/blockchain/chain/ichain"
+	"github.com/overseven/blockchain/interfaces"
 
 	cr "github.com/ethereum/go-ethereum/crypto"
 )
@@ -14,10 +15,10 @@ var (
 )
 
 type Airdrop struct {
-	Data itransaction.Data
+	Data interfaces.Data
 }
 
-func (a *Airdrop) GetData() *itransaction.Data {
+func (a *Airdrop) GetData() *interfaces.Data {
 	return &a.Data
 }
 
@@ -27,7 +28,7 @@ func (a *Airdrop) Verify() error {
 		return errors.New("empty AirDrop moderator public key")
 	}
 
-	hash := itransaction.GetHash(a.GetData())
+	hash := GetHash(a.GetData())
 	if !cr.VerifySignature(a.Data.Pubkey, hash, a.Data.Sign[0:64]) {
 		return errors.New("incorrect AirDrop moderator signature")
 	}
@@ -40,7 +41,7 @@ func (a *Airdrop) Verify() error {
 }
 
 // Airdrop is sending value from unlimited admin wallet to user wallet
-func NewAirdrop(receiver, adminPrivKey []byte, chain ichain.IChain) (*Airdrop, error) {
+func NewAirdrop(receiver, adminPrivKey []byte, chain interfaces.Chainable) (*Airdrop, error) {
 	// TODO: add check below
 
 	// if len(blockchain.B17.Blocks) > 0 {
@@ -48,11 +49,11 @@ func NewAirdrop(receiver, adminPrivKey []byte, chain ichain.IChain) (*Airdrop, e
 	// }
 	a := new(Airdrop)
 
-	a.Data.Type = itransaction.Airdrop
+	a.Data.Type = TypeAirdrop
 
 	return a, nil
 }
 
-func (a *Airdrop) SetData(d *itransaction.Data) {
+func (a *Airdrop) SetData(d *interfaces.Data) {
 	a.Data = *d
 }

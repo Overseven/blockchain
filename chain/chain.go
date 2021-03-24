@@ -1,13 +1,11 @@
 package chain
 
-import (
-	"github.com/overseven/blockchain/chain/ichain"
-)
+import "github.com/overseven/blockchain/interfaces"
 
 var blockchain Chain
 
 type Chain struct {
-	Blocks []ichain.IBlock
+	Blocks []interfaces.Blockable
 }
 
 func (c *Chain) IsValid(startIndx, endIndx uint64) (bool, uint64) {
@@ -16,11 +14,11 @@ func (c *Chain) IsValid(startIndx, endIndx uint64) (bool, uint64) {
 	return true, 0
 }
 
-func (c *Chain) GetBlocks() []ichain.IBlock {
+func (c *Chain) GetBlocks() []interfaces.Blockable {
 	return c.Blocks
 }
 
-func (c *Chain) SetBlocks([]ichain.IBlock) {
+func (c *Chain) SetBlocks([]interfaces.Blockable) {
 
 }
 

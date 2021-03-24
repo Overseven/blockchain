@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/overseven/blockchain/chain/ichain"
-	"github.com/overseven/blockchain/transaction/itransaction"
+	"github.com/overseven/blockchain/interfaces"
+	"github.com/overseven/blockchain/transaction"
 )
 
 var UsersBalance Balance
@@ -63,14 +63,9 @@ func (b *Balance) Clear() {
 	b.usersBalances = make(map[string]BalanceStat)
 }
 
-func (b *Balance) FullCalc() error {
+func (b *Balance) FullCalc(blockchain interfaces.Chainable) error {
 	// TODO : finish
-	var blockchain ichain.IChain
-	{
-		b := GetBlockchain()
-		// a, ok := b.(ichain.IChain)
-		blockchain = b
-	}
+
 	b.Clear()
 
 	for _, block := range blockchain.GetBlocks() {
@@ -93,7 +88,7 @@ func (b *Balance) FullCalc() error {
 			rcvrBalance.CurrentBalance += data.Pay
 
 			// miner fee
-			if data.Type != itransaction.Airdrop {
+			if data.Type != transaction.TypeAirdrop {
 				sndrData := trans.GetData()
 				balance := b.usersBalances[string(sndrData.Pubkey)]
 				balance.LastTransBlock = block.GetId()

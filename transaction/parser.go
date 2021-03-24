@@ -2,11 +2,12 @@ package transaction
 
 import (
 	"encoding/json"
-	"github.com/overseven/blockchain/transaction/itransaction"
+
+	"github.com/overseven/blockchain/interfaces"
 )
 
-func FromJSON(js []byte) (*itransaction.Data, error) {
-	data := itransaction.Data{}
+func FromJSON(js []byte) (*interfaces.Data, error) {
+	data := interfaces.Data{}
 
 	err := json.Unmarshal(js, &data)
 	if err != nil {

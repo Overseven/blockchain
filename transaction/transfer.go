@@ -6,28 +6,27 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/overseven/blockchain/chain"
-	"github.com/overseven/blockchain/transaction/itransaction"
+	"github.com/overseven/blockchain/interfaces"
 
 	cr "github.com/ethereum/go-ethereum/crypto"
+	"github.com/overseven/blockchain/chain"
 	"github.com/overseven/blockchain/utility"
 )
 
 type Transfer struct {
-	itransaction.ITransaction
-	Data itransaction.Data
+	Data interfaces.Data
 }
 
-func (t *Transfer) GetData() *itransaction.Data {
+func (t *Transfer) GetData() *interfaces.Data {
 	return &t.Data
 }
 
-func (t *Transfer) SetData(d *itransaction.Data) {
+func (t *Transfer) SetData(d *interfaces.Data) {
 	t.Data = *d
 }
 
 func (t *Transfer) Verify() error {
-	hash := itransaction.GetHash(t.GetData())
+	hash := GetHash(t.GetData())
 	if len(t.Data.Sign) < 64 {
 		return errors.New("incorrect signature len: " + strconv.FormatInt(int64(len(t.Data.Sign)), 10))
 	}
@@ -57,9 +56,9 @@ func NewTransfer(sndrPrivKey *ecdsa.PrivateKey, rcvrPubKey []byte, value, fee fl
 		return nil, errors.New("not enough tokens")
 	}
 
-	data := itransaction.Data{}
+	data := interfaces.Data{}
 
-	data.Type = itransaction.Transfer
+	data.Type = TypeTransfer
 	data.Pubkey = sndrPubKey
 	data.Receiver = rcvrPubKey
 	data.Pay = value
@@ -70,7 +69,7 @@ func NewTransfer(sndrPrivKey *ecdsa.PrivateKey, rcvrPubKey []byte, value, fee fl
 		t := time.Now()
 		data.Timestamp = time.Date(t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), t.Second(), t.Nanosecond(), time.UTC)
 	}
-	hashed := itransaction.GetHash(&data)
+	hashed := GetHash(&data)
 
 	sign, err := cr.Sign(hashed, sndrPrivKey)
 	if err != nil {

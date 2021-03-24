@@ -1,12 +1,14 @@
-package chain
+package test
 
 import (
 	"crypto/ecdsa"
 	"testing"
 
 	cr "github.com/ethereum/go-ethereum/crypto"
+	"github.com/overseven/balance"
+	"github.com/overseven/blockchain/interfaces"
 	"github.com/overseven/blockchain/transaction"
-	. "github.com/overseven/blockchain/transaction/itransaction"
+
 	"github.com/overseven/blockchain/utility"
 )
 
@@ -24,7 +26,9 @@ func generateWallet(value float64) (privKey *ecdsa.PrivateKey, pubKey []byte, er
 
 func TestBlockIsValid(t *testing.T) {
 	// TODO: finish test
-	UsersBalance.Init()
+	var balance interfaces.Balancer = &balance.Balance{}
+	balance.Init()
+
 	sndrPrivKey, sndrPubKey, err := generateWallet(15.0)
 	if err != nil {
 		t.Error(err)
@@ -39,12 +43,12 @@ func TestBlockIsValid(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	err = UsersBalance.FullCalc()
+	err = balance.FullCalc()
 	if err != nil {
 		t.Error(err)
 	}
 	var bl Block
-	transBase := ITransaction(trans)
+	transBase := interfaces.Transferable(trans)
 
 	err = bl.AddTransaction(&transBase)
 	if err != nil {

@@ -7,8 +7,8 @@ import (
 	"math"
 	"strconv"
 
-	"github.com/overseven/blockchain/chain/ichain"
-	"github.com/overseven/blockchain/transaction/itransaction"
+	"github.com/overseven/blockchain/interfaces"
+	"github.com/overseven/blockchain/transaction"
 
 	cr "github.com/ethereum/go-ethereum/crypto"
 	blUtility "github.com/overseven/blockchain/utility"
@@ -16,7 +16,7 @@ import (
 
 type Block struct {
 	Id           uint64
-	Transactions []itransaction.ITransaction
+	Transactions []interfaces.Transferable
 	PrevHash     []byte
 	WalletsStats map[string]WalletStats
 
@@ -36,7 +36,7 @@ type WalletStats struct {
 func (block *Block) GetBatchHash() (hash []byte) {
 	var toHashBytes []byte
 	for _, tran := range block.Transactions {
-		toHashBytes = append(toHashBytes, itransaction.GetHash(tran.GetData())...)
+		toHashBytes = append(toHashBytes, transaction.GetHash(tran.GetData())...)
 	}
 	hash = cr.Keccak256(toHashBytes)
 	return
@@ -64,7 +64,7 @@ func (block *Block) GetHash() (hash []byte) {
 	return hash
 }
 
-func (block *Block) IsValid(blockchain ichain.IChain) (bool, error) {
+func (block *Block) IsValid(blockchain interfaces.Chainable) (bool, error) {
 	// TODO: finish him!!
 	if uint64(len(blockchain.GetBlocks()))+1 != block.Id {
 		return false, errors.New("incorrect block ID")
@@ -74,7 +74,7 @@ func (block *Block) IsValid(blockchain ichain.IChain) (bool, error) {
 	if len(blockchain.GetBlocks()) == 0 {
 		for _, t := range block.Transactions {
 			data := t.GetData()
-			if data.Type != itransaction.Airdrop {
+			if data.Type != transaction.TypeAirdrop {
 				return false, errors.New("first block must have only airdrop transactions")
 			}
 			if err := t.Verify(); err != nil {
@@ -114,20 +114,20 @@ func (block *Block) Mining(stop chan bool) []byte {
 	return []byte{}
 }
 
-func (block *Block) GetTransaction() []itransaction.ITransaction {
+func (block *Block) GetTransaction() []interfaces.Transferable {
 	return block.Transactions
 }
 
-func (block *Block) HasTransaction(transact *itransaction.ITransaction) (index int, has bool) {
+func (block *Block) HasTransaction(transact *interfaces.Transferable) (index int, has bool) {
 	for i, tran := range block.Transactions {
-		if itransaction.IsEqual((*transact).GetData(), tran.GetData()) {
+		if transaction.IsEqual((*transact).GetData(), tran.GetData()) {
 			return i, true
 		}
 	}
 	return 0, false
 }
 
-func (block *Block) AddTransaction(tr *itransaction.ITransaction) error {
+func (block *Block) AddTransaction(tr *interfaces.Transferable) error {
 	// TODO: Finish him!!
 	return nil
 }

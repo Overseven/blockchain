@@ -38,3 +38,18 @@ type Data struct {
 	Fee       float64
 	Sign      []byte
 }
+
+type Balancer interface {
+	Init()
+	IsBeing(pubkey []byte) bool
+	Info(pubkey []byte) (BalanceStat, error)
+	Update(pubkey []byte, lastTransBlock uint64, sum float64) (isNew bool)
+	Clear()
+	FullCalc(Chainable) error
+}
+
+type BalanceStat struct {
+	Pubkey         []byte
+	LastTransBlock uint64
+	CurrentBalance float64
+}

@@ -1,11 +1,11 @@
-package itransaction
+package transaction
 
 import (
 	"bytes"
 	"strconv"
-	"time"
 
 	cr "github.com/ethereum/go-ethereum/crypto"
+	"github.com/overseven/blockchain/interfaces"
 )
 
 // TODO: calc pubkey len and set const size for all
@@ -13,28 +13,11 @@ import (
 type Type int64
 
 const (
-	Transfer = iota
-	Airdrop
+	TypeTransfer = iota
+	TypeAirdrop
 )
 
-type ITransaction interface {
-	SetData(*Data)
-	GetData() *Data
-	Verify() error
-}
-
-type Data struct {
-	Type      Type
-	Pubkey    []byte
-	Receiver  []byte
-	Message   string
-	Timestamp time.Time
-	Pay       float64
-	Fee       float64
-	Sign      []byte
-}
-
-func IsEqual(t1, t2 *Data) bool {
+func IsEqual(t1, t2 *interfaces.Data) bool {
 	if !bytes.Equal(t1.Pubkey, t2.Pubkey) {
 		return false
 	}
@@ -60,7 +43,7 @@ func IsEqual(t1, t2 *Data) bool {
 	return true
 }
 
-func GetHash(t *Data) []byte {
+func GetHash(t *interfaces.Data) []byte {
 	temp := []byte(strconv.FormatInt(int64(t.Type), 10))
 	temp = append(temp, t.Pubkey...)
 	temp = append(temp, t.Receiver...)
