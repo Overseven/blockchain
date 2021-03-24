@@ -4,13 +4,14 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"github.com/overseven/blockchain/chain/ichain"
-	"github.com/overseven/blockchain/transaction/itransaction"
 	"math"
 	"strconv"
 
-	blUtility "github.com/Overseven/blockchain/utility"
+	"github.com/overseven/blockchain/chain/ichain"
+	"github.com/overseven/blockchain/transaction/itransaction"
+
 	cr "github.com/ethereum/go-ethereum/crypto"
+	blUtility "github.com/overseven/blockchain/utility"
 )
 
 type Block struct {
@@ -113,10 +114,9 @@ func (block *Block) Mining(stop chan bool) []byte {
 	return []byte{}
 }
 
-func (block *Block) GetTransaction() []itransaction.ITransaction{
+func (block *Block) GetTransaction() []itransaction.ITransaction {
 	return block.Transactions
 }
-
 
 func (block *Block) HasTransaction(transact *itransaction.ITransaction) (index int, has bool) {
 	for i, tran := range block.Transactions {
@@ -132,6 +132,6 @@ func (block *Block) AddTransaction(tr *itransaction.ITransaction) error {
 	return nil
 }
 
-func (block *Block) GetId() uint64{
+func (block *Block) GetId() uint64 {
 	return block.Id
 }

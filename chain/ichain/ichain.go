@@ -4,10 +4,8 @@ import (
 	"github.com/overseven/blockchain/transaction/itransaction"
 )
 
-
-
 type IChain interface {
-	IsValid(startIndx, endIndx uint64)
+	IsValid(startIndx, endIndx uint64) (bool, uint64)
 	GetBlocks() []IBlock
 	SetBlocks([]IBlock)
 }
@@ -24,4 +22,3 @@ type IBlock interface {
 	HasTransaction(transact *itransaction.ITransaction) (index int, has bool)
 	AddTransaction(tr *itransaction.ITransaction) error
 }
-

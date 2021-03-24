@@ -20,10 +20,10 @@ func (c *Chain) GetBlocks() []ichain.IBlock {
 	return c.Blocks
 }
 
-func (c *Chain) SetBlocks([]ichain.IBlock)  {
+func (c *Chain) SetBlocks([]ichain.IBlock) {
 
 }
 
-func GetBlockchain() Chain{
-	return blockchain
+func GetBlockchain() *Chain {
+	return &blockchain
 }

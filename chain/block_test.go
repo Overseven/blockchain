@@ -2,12 +2,12 @@ package chain
 
 import (
 	"crypto/ecdsa"
-	"github.com/Overseven/blockchain/utility"
-	"github.com/Overseven/blockchain/wallet"
+	"testing"
+
 	cr "github.com/ethereum/go-ethereum/crypto"
 	"github.com/overseven/blockchain/transaction"
 	. "github.com/overseven/blockchain/transaction/itransaction"
-	"testing"
+	"github.com/overseven/blockchain/utility"
 )
 
 func generateWallet(value float64) (privKey *ecdsa.PrivateKey, pubKey []byte, err error) {
@@ -18,15 +18,13 @@ func generateWallet(value float64) (privKey *ecdsa.PrivateKey, pubKey []byte, er
 
 	pubKey = utility.PrivToPubKey(privKey)
 
-	wallet.Update(pubKey, 0, value)
+	UsersBalance.Update(pubKey, 0, value)
 	return
 }
 
-
-
 func TestBlockIsValid(t *testing.T) {
 	// TODO: finish test
-	wallet.Init()
+	UsersBalance.Init()
 	sndrPrivKey, sndrPubKey, err := generateWallet(15.0)
 	if err != nil {
 		t.Error(err)
@@ -41,7 +39,7 @@ func TestBlockIsValid(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	err = wallet.FullCalc()
+	err = UsersBalance.FullCalc()
 	if err != nil {
 		t.Error(err)
 	}
@@ -53,11 +51,11 @@ func TestBlockIsValid(t *testing.T) {
 		t.Error(err)
 	}
 
-	sndrWal, err := wallet.Info(sndrPubKey)
+	sndrWal, err := UsersBalance.Info(sndrPubKey)
 	if err != nil {
 		panic(err)
 	}
-	rcvrWal, err := wallet.Info(rcvrPubKey)
+	rcvrWal, err := UsersBalance.Info(rcvrPubKey)
 	if err != nil {
 		panic(err)
 	}

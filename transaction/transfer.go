@@ -3,13 +3,14 @@ package transaction
 import (
 	"crypto/ecdsa"
 	"errors"
-	"github.com/overseven/blockchain/transaction/itransaction"
 	"strconv"
 	"time"
 
-	"github.com/Overseven/blockchain/utility"
-	"github.com/Overseven/blockchain/wallet"
+	"github.com/overseven/blockchain/chain"
+	"github.com/overseven/blockchain/transaction/itransaction"
+
 	cr "github.com/ethereum/go-ethereum/crypto"
+	"github.com/overseven/blockchain/utility"
 )
 
 type Transfer struct {
@@ -34,7 +35,7 @@ func (t *Transfer) Verify() error {
 		return errors.New("incorrect signature")
 	}
 
-	senderWallet, err := wallet.Info(t.Data.Pubkey)
+	senderWallet, err := chain.UsersBalance.Info(t.Data.Pubkey)
 	if err != nil {
 		return err
 	}
@@ -48,7 +49,7 @@ func (t *Transfer) Verify() error {
 // TODO: finish
 func NewTransfer(sndrPrivKey *ecdsa.PrivateKey, rcvrPubKey []byte, value, fee float64, message string) (*Transfer, error) {
 	sndrPubKey := utility.PrivToPubKey(sndrPrivKey)
-	wall, err := wallet.Info(sndrPubKey)
+	wall, err := chain.UsersBalance.Info(sndrPubKey)
 	if err != nil {
 		return nil, err
 	}

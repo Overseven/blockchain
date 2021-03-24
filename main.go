@@ -4,8 +4,8 @@ import (
 	"flag"
 	"fmt"
 
-	"github.com/Overseven/blockchain/client"
-	"github.com/Overseven/blockchain/node"
+	"github.com/overseven/blockchain/client"
+	"github.com/overseven/blockchain/node"
 )
 
 func main() {
