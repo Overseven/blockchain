@@ -18,7 +18,7 @@ type Block struct {
 	Id           uint64
 	Transactions []interfaces.Transferable
 	PrevHash     []byte
-	WalletsStats map[string]WalletStats
+	//WalletsStats map[string]WalletStats
 
 	Difficulty uint64
 	Miner      []byte
@@ -42,23 +42,23 @@ func (block *Block) GetBatchHash() (hash []byte) {
 	return
 }
 
-func (block *Block) GetWalletStatsHash() (hash []byte) {
-	var toHashBytes []byte
-	for _, stats := range block.WalletsStats {
-		toHashBytes = append(toHashBytes, stats.Address...)
-		toHashBytes = append(toHashBytes, blUtility.Float64Bytes(stats.BalanceBefore)...)
-		toHashBytes = append(toHashBytes, blUtility.Float64Bytes(stats.BalanceAfter)...)
-		toHashBytes = append(toHashBytes, blUtility.UInt64Bytes(stats.PrevTransBlockId)...)
-	}
-	hash = cr.Keccak256(toHashBytes)
-	return
-}
+//func (block *Block) GetWalletStatsHash() (hash []byte) {
+//	var toHashBytes []byte
+//	for _, stats := range block.WalletsStats {
+//		toHashBytes = append(toHashBytes, stats.Address...)
+//		toHashBytes = append(toHashBytes, blUtility.Float64Bytes(stats.BalanceBefore)...)
+//		toHashBytes = append(toHashBytes, blUtility.Float64Bytes(stats.BalanceAfter)...)
+//		toHashBytes = append(toHashBytes, blUtility.UInt64Bytes(stats.PrevTransBlockId)...)
+//	}
+//	hash = cr.Keccak256(toHashBytes)
+//	return
+//}
 
 func (block *Block) GetHash() (hash []byte) {
 	hash = blUtility.UInt64Bytes(block.Id)
 	hash = append(hash, block.GetBatchHash()...)
 	hash = append(hash, block.PrevHash...)
-	hash = append(hash, block.GetWalletStatsHash()...)
+	//hash = append(hash, block.GetWalletStatsHash()...)
 	hash = append(hash, blUtility.UInt64Bytes(block.Difficulty)...)
 	hash = append(hash, block.Miner...)
 	return hash
@@ -78,7 +78,7 @@ func (block *Block) IsValid(blockchain interfaces.Chainable, balance interfaces.
 			return false, errors.New("conflicting block Id with prev. block Id: " + strconv.FormatUint(block.Id, 10))
 		}
 	}
-	if uint64(len(blocks)) > block.Id {
+	if uint64(len(blocks)) > block.Id+1 {
 		if blocks[block.Id+1].GetId() != block.Id+1 {
 			return false, errors.New("conflicting block Id with next block Id: " + strconv.FormatUint(block.Id, 10))
 		}
@@ -104,7 +104,8 @@ func (block *Block) IsValid(blockchain interfaces.Chainable, balance interfaces.
 	return true, nil
 }
 
-func (block *Block) Mining(stop chan bool) []byte {
+func (block *Block) Mining(minerPubKey []byte, stop chan bool) []byte {
+	block.Miner = minerPubKey
 	mask := make([]byte, block.Difficulty)
 	for i := uint64(0); i < math.MaxUint64; i++ {
 		select {
@@ -115,7 +116,7 @@ func (block *Block) Mining(stop chan bool) []byte {
 
 		}
 		nonce := []byte(strconv.FormatUint(i, 10))
-		tryData := append(block.Hash, nonce...)
+		tryData := append(block.GetHash(), nonce...)
 		hash := cr.Keccak256(tryData)
 
 		if bytes.HasPrefix(hash, mask) {

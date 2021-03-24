@@ -72,35 +72,35 @@ func (b *Balance) FullCalc(blockchain interfaces.Chainable) error {
 		minerFee := 0.0
 		for _, trans := range block.GetTransaction() { // TODO: Airdrop handle
 			data := trans.GetData()
-			// sender
-			var sndrBalance Stat
-			sndrBalance.Pubkey = data.Pubkey
-			sndrBalance.LastTransBlock = block.GetId()
-			sndrBalance.CurrentBalance -= data.Pay + data.Fee
-
-			b.usersBalances[string(data.Pubkey)] = sndrBalance
 
 			// receiver
-			var rcvrBalance Stat
+			var rcvrBalance Stat = b.usersBalances[string(data.Receiver)]
+
 			rcvrBalance.Pubkey = data.Receiver
 			rcvrBalance.LastTransBlock = block.GetId()
 			rcvrBalance.CurrentBalance += data.Pay
 
 			b.usersBalances[string(data.Receiver)] = rcvrBalance
-
-			// miner fee
 			if data.Type != transaction.TypeAirdrop {
-				minerFee += data.Fee
+				// sender
+				var sndrBalance Stat = b.usersBalances[string(data.Pubkey)]
+				sndrBalance.Pubkey = data.Pubkey
+				sndrBalance.LastTransBlock = block.GetId()
+				sndrBalance.CurrentBalance -= data.Pay + data.Fee
+
+				b.usersBalances[string(data.Pubkey)] = sndrBalance
 			}
-
+			minerFee += data.Fee
 		}
-		// miner fee
 
-		var minerBalance Stat
-		minerBalance.Pubkey = block.GetMiner()
-		minerBalance.LastTransBlock = block.GetId()
-		minerBalance.CurrentBalance += minerFee
-		b.usersBalances[string(minerBalance.Pubkey)] = minerBalance
+		// miner fee
+		if minerFee != 0.0 {
+			var minerBalance Stat = b.usersBalances[string(block.GetMiner())]
+			minerBalance.Pubkey = block.GetMiner()
+			minerBalance.LastTransBlock = block.GetId()
+			minerBalance.CurrentBalance += minerFee
+			b.usersBalances[string(minerBalance.Pubkey)] = minerBalance
+		}
 	}
 
 	return nil

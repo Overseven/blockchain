@@ -49,6 +49,11 @@ func TestBlockIsValid(t *testing.T) {
 		t.Error(err)
 	}
 
+	_, minerPubKey, err := generateWallet(0.0, usersBalance)
+	if err != nil {
+		t.Error(err)
+	}
+
 	t.Log("Count of wallets: " + strconv.FormatInt(int64(usersBalance.CountOfWallets()), 10))
 	//trans := generateTransaction(sndrPrivKey, rcvrPubKey, 14, 0.5, "trans1")
 
@@ -60,7 +65,7 @@ func TestBlockIsValid(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	airdrop, err := transaction.NewAirdrop(sndrPubKey, airPrKey, bchain, 100.0, usersBalance)
+	airdrop, err := transaction.NewAirdrop(sndrPubKey, airPrKey, bchain, 100.0, 7.0, usersBalance)
 	if err != nil {
 		t.Error(err)
 	}
@@ -75,12 +80,16 @@ func TestBlockIsValid(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
+	stop := make(chan bool)
+	block1.Mining(minerPubKey, stop)
 
 	block2 := bchain.NewBlock()
 	err = block2.AddTransaction(trans)
 	if err != nil {
 		t.Error(err)
 	}
+
+	block2.Mining(minerPubKey, stop)
 
 	err = usersBalance.FullCalc(bchain)
 	if err != nil {
@@ -98,15 +107,26 @@ func TestBlockIsValid(t *testing.T) {
 		t.Error(err)
 	}
 
-	if sndrWal.CurrentBalance != 0.5 || sndrWal.LastTransBlock != 0 {
+	minerWal, err := usersBalance.Info(minerPubKey)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if sndrWal.CurrentBalance != 85.5 || sndrWal.LastTransBlock != 1 {
 		t.Errorf("Error. sender wallet: %f  last trans. block: %d", sndrWal.CurrentBalance, sndrWal.LastTransBlock)
 	} else {
 		t.Logf("Sender wallet: %f  last trans. block: %d\n", sndrWal.CurrentBalance, sndrWal.LastTransBlock)
 	}
 
-	if rcvrWal.CurrentBalance != 0.5 || rcvrWal.LastTransBlock != 0 {
+	if rcvrWal.CurrentBalance != 14.0 || rcvrWal.LastTransBlock != 1 {
 		t.Errorf("Error. sender wallet: %f  last trans. block: %d", rcvrWal.CurrentBalance, rcvrWal.LastTransBlock)
 	} else {
 		t.Logf("Receiver wallet: %f  last trans. block: %d\n", rcvrWal.CurrentBalance, rcvrWal.LastTransBlock)
+	}
+
+	if minerWal.CurrentBalance != 7.5 || minerWal.LastTransBlock != 1 {
+		t.Errorf("Error. Miner wallet: %f  last trans. block: %d", minerWal.CurrentBalance, minerWal.LastTransBlock)
+	} else {
+		t.Logf("Miner wallet: %f  last trans. block: %d\n", minerWal.CurrentBalance, minerWal.LastTransBlock)
 	}
 }

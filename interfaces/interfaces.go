@@ -13,10 +13,10 @@ type Chainable interface {
 type Blockable interface {
 	GetId() uint64
 	GetBatchHash() (hash []byte)
-	GetWalletStatsHash() (hash []byte)
+	//GetWalletStatsHash() (hash []byte)
 	GetHash() (hash []byte)
 	IsValid(Chainable, Balancer) (bool, error)
-	Mining(stop chan bool) []byte
+	Mining(minerPubKey []byte, stop chan bool) []byte
 	GetTransaction() []Transferable
 	HasTransaction(Transferable) (index int, has bool)
 	AddTransaction(Transferable) error
