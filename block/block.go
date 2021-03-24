@@ -66,8 +66,22 @@ func (block *Block) GetHash() (hash []byte) {
 
 func (block *Block) IsValid(blockchain interfaces.Chainable, balance interfaces.Balancer) (bool, error) {
 	// TODO: finish him!!
-	if uint64(len(blockchain.GetBlocks()))+1 != block.Id {
-		return false, errors.New("incorrect block ID")
+
+	var blocks []interfaces.Blockable = blockchain.GetBlocks()
+
+	if uint64(len(blockchain.GetBlocks())) < block.Id+1 {
+		return false, errors.New("incorrect block Id: " + strconv.FormatUint(block.Id, 10))
+	}
+
+	if block.Id != 0 {
+		if blocks[block.Id-1].GetId()+1 != block.Id {
+			return false, errors.New("conflicting block Id with prev. block Id: " + strconv.FormatUint(block.Id, 10))
+		}
+	}
+	if uint64(len(blocks)) > block.Id {
+		if blocks[block.Id+1].GetId() != block.Id+1 {
+			return false, errors.New("conflicting block Id with next block Id: " + strconv.FormatUint(block.Id, 10))
+		}
 	}
 
 	// if block is the first in chain
@@ -128,10 +142,15 @@ func (block *Block) HasTransaction(transact interfaces.Transferable) (index int,
 }
 
 func (block *Block) AddTransaction(tr interfaces.Transferable) error {
-	// TODO: Finish him!!
+	block.Transactions = append(block.Transactions, tr)
+
 	return nil
 }
 
 func (block *Block) GetId() uint64 {
 	return block.Id
+}
+
+func (block *Block) GetMiner() []byte {
+	return block.Miner
 }

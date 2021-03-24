@@ -30,7 +30,10 @@ func Run(configFile string) {
 }
 
 func test2(configFile string) {
-	_, privkeyBytes := wallet.LoadFromFile(configFile)
+	_, privkeyBytes, err := wallet.LoadFromFile(configFile)
+	if err != nil {
+		panic(err)
+	}
 	//fmt.Println("Len privKey:", len(privkeyBytes))
 	privkey, err := cr.ToECDSA(privkeyBytes[:32])
 	if err != nil {

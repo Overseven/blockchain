@@ -6,6 +6,8 @@ type Chainable interface {
 	IsValid(startIndx, endIndx uint64) (bool, uint64)
 	GetBlocks() []Blockable
 	SetBlocks([]Blockable)
+	NewBlock() Blockable
+	AppendBlock(Blockable)
 }
 
 type Blockable interface {
@@ -18,6 +20,7 @@ type Blockable interface {
 	GetTransaction() []Transferable
 	HasTransaction(Transferable) (index int, has bool)
 	AddTransaction(Transferable) error
+	GetMiner() []byte
 }
 
 type Type int64
@@ -46,6 +49,7 @@ type Balancer interface {
 	Update(pubkey []byte, lastTransBlock uint64, sum float64) (isNew bool)
 	Clear()
 	FullCalc(Chainable) error
+	CountOfWallets() int
 }
 
 type BalanceStat struct {

@@ -73,7 +73,7 @@ func NewTransfer(sndrPrivKey *ecdsa.PrivateKey, rcvrPubKey []byte, value, fee fl
 
 	sign, err := cr.Sign(hashed, sndrPrivKey)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	data.Sign = sign

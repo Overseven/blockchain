@@ -69,27 +69,43 @@ func (b *Balance) FullCalc(blockchain interfaces.Chainable) error {
 			b.Clear()
 			return errors.New("incorrect block with number: " + strconv.FormatUint(block.GetId(), 10))
 		}
-		for _, trans := range block.GetTransaction() {
+		minerFee := 0.0
+		for _, trans := range block.GetTransaction() { // TODO: Airdrop handle
 			data := trans.GetData()
 			// sender
-			sndrBalance := b.usersBalances[string(data.Pubkey)]
+			var sndrBalance Stat
+			sndrBalance.Pubkey = data.Pubkey
 			sndrBalance.LastTransBlock = block.GetId()
 			sndrBalance.CurrentBalance -= data.Pay + data.Fee
 
+			b.usersBalances[string(data.Pubkey)] = sndrBalance
+
 			// receiver
-			rcvrBalance := b.usersBalances[string(data.Pubkey)]
+			var rcvrBalance Stat
+			rcvrBalance.Pubkey = data.Receiver
 			rcvrBalance.LastTransBlock = block.GetId()
 			rcvrBalance.CurrentBalance += data.Pay
 
+			b.usersBalances[string(data.Receiver)] = rcvrBalance
+
 			// miner fee
 			if data.Type != transaction.TypeAirdrop {
-				sndrData := trans.GetData()
-				balance := b.usersBalances[string(sndrData.Pubkey)]
-				balance.LastTransBlock = block.GetId()
-				balance.CurrentBalance += sndrData.Fee
+				minerFee += data.Fee
 			}
+
 		}
+		// miner fee
+
+		var minerBalance Stat
+		minerBalance.Pubkey = block.GetMiner()
+		minerBalance.LastTransBlock = block.GetId()
+		minerBalance.CurrentBalance += minerFee
+		b.usersBalances[string(minerBalance.Pubkey)] = minerBalance
 	}
 
 	return nil
+}
+
+func (b *Balance) CountOfWallets() int {
+	return len(b.usersBalances)
 }

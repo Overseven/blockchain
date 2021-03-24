@@ -2,17 +2,22 @@ package test
 
 import (
 	"crypto/ecdsa"
+	"strconv"
 	"testing"
 
 	cr "github.com/ethereum/go-ethereum/crypto"
 	"github.com/overseven/blockchain/balance"
-	"github.com/overseven/blockchain/block"
+	"github.com/overseven/blockchain/wallet"
 
 	"github.com/overseven/blockchain/chain"
 	"github.com/overseven/blockchain/interfaces"
 	"github.com/overseven/blockchain/transaction"
 
 	"github.com/overseven/blockchain/utility"
+)
+
+const (
+	airdropModeratorConfigFile = "..\\wallet.cfg"
 )
 
 func generateWallet(value float64, balance interfaces.Balancer) (privKey *ecdsa.PrivateKey, pubKey []byte, err error) {
@@ -39,34 +44,58 @@ func TestBlockIsValid(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	_, rcvrPubKey, err := generateWallet(0.0, usersBalance)
+	_, rcvrPubKey, err := generateWallet(0.1, usersBalance)
 	if err != nil {
 		t.Error(err)
 	}
 
+	t.Log("Count of wallets: " + strconv.FormatInt(int64(usersBalance.CountOfWallets()), 10))
 	//trans := generateTransaction(sndrPrivKey, rcvrPubKey, 14, 0.5, "trans1")
+
+	_, airdropPrKey, err := wallet.LoadFromFile(airdropModeratorConfigFile)
+	if err != nil {
+		t.Error(err)
+	}
+	airPrKey, err := cr.ToECDSA(airdropPrKey[:32])
+	if err != nil {
+		t.Error(err)
+	}
+	airdrop, err := transaction.NewAirdrop(sndrPubKey, airPrKey, bchain, 100.0, usersBalance)
+	if err != nil {
+		t.Error(err)
+	}
+
 	trans, err := transaction.NewTransfer(sndrPrivKey, rcvrPubKey, 14, 0.5, "trans1", usersBalance)
 	if err != nil {
 		t.Error(err)
 	}
+
+	block1 := bchain.NewBlock()
+	err = block1.AddTransaction(airdrop)
+	if err != nil {
+		t.Error(err)
+	}
+
+	block2 := bchain.NewBlock()
+	err = block2.AddTransaction(trans)
+	if err != nil {
+		t.Error(err)
+	}
+
 	err = usersBalance.FullCalc(bchain)
 	if err != nil {
 		t.Error(err)
 	}
-	var bl interfaces.Blockable = new(block.Block)
 
-	err = bl.AddTransaction(trans)
-	if err != nil {
-		t.Error(err)
-	}
+	t.Log("Count of wallets after FullCalc: " + strconv.FormatInt(int64(usersBalance.CountOfWallets()), 10))
 
 	sndrWal, err := usersBalance.Info(sndrPubKey)
 	if err != nil {
-		panic(err)
+		t.Error(err)
 	}
 	rcvrWal, err := usersBalance.Info(rcvrPubKey)
 	if err != nil {
-		panic(err)
+		t.Error(err)
 	}
 
 	if sndrWal.CurrentBalance != 0.5 || sndrWal.LastTransBlock != 0 {
