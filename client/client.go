@@ -12,14 +12,20 @@ import (
 
 	cr "github.com/ethereum/go-ethereum/crypto"
 
+	"github.com/overseven/blockchain/balance"
 	"github.com/overseven/blockchain/chain"
 	tr "github.com/overseven/blockchain/transaction"
-	"github.com/overseven/blockchain/transaction/itransaction"
 	wallet "github.com/overseven/blockchain/wallet"
 )
 
+var (
+	usersBalance balance.Balance
+	bchain       chain.Chain
+)
+
 func Run(configFile string) {
-	chain.UsersBalance.Init()
+	// TODO: create Balance
+	usersBalance.Init()
 	test2(configFile)
 }
 
@@ -73,7 +79,7 @@ func test(configFile string) {
 		t := time.Now()
 		data.Timestamp = time.Date(t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), t.Second(), t.Nanosecond(), time.UTC)
 	}
-	hashed := itransaction.GetHash(data)
+	hashed := tr.GetHash(data)
 
 	//fmt.Println("Public key:", pubkey)
 
@@ -98,7 +104,7 @@ func test(configFile string) {
 	}
 
 	transf1 := tr.Transfer{Data: *reverseTr}
-	valid := transf1.Verify()
+	valid := transf1.Verify(&usersBalance)
 	fmt.Println("Valid: ", valid)
 	url := "http://127.0.0.1:8090/test"
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonTr))
@@ -130,9 +136,9 @@ func testTransaction(privkey *ecdsa.PrivateKey) bool {
 	pubkey := cr.CompressPubkey(&privkey.PublicKey)
 	pubkey2 := cr.CompressPubkey(&privkey2.PublicKey)
 
-	chain.UsersBalance.Update(pubkey, 0, 2345.7)
+	usersBalance.Update(pubkey, 0, 2345.7)
 
-	transaction, err := tr.NewTransfer(privkey, pubkey2, 14, 0.123, "memsage")
+	transaction, err := tr.NewTransfer(privkey, pubkey2, 14, 0.123, "memsage", &usersBalance)
 	if err != nil {
 		panic(err)
 	}
@@ -155,7 +161,7 @@ func testTransaction(privkey *ecdsa.PrivateKey) bool {
 		panic(err)
 	}
 	transf := tr.Transfer{Data: *reverseTr}
-	err = transf.Verify()
+	err = transf.Verify(&usersBalance)
 	if err != nil {
 		return false
 	}

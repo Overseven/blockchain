@@ -1,4 +1,4 @@
-package chain
+package balance
 
 import (
 	"errors"
@@ -9,22 +9,16 @@ import (
 	"github.com/overseven/blockchain/transaction"
 )
 
-var UsersBalance Balance
+type Stat = interfaces.BalanceStat
 
 type Balance struct {
-	usersBalances map[string]BalanceStat
+	usersBalances map[string]Stat
 	mutex         sync.Mutex
-}
-
-type BalanceStat struct {
-	Pubkey         []byte
-	LastTransBlock uint64
-	CurrentBalance float64
 }
 
 func (b *Balance) Init() {
 	if len(b.usersBalances) < 1 {
-		b.usersBalances = make(map[string]BalanceStat)
+		b.usersBalances = make(map[string]Stat)
 	}
 }
 
@@ -33,10 +27,10 @@ func (b *Balance) IsBeing(pubkey []byte) bool {
 	return ok
 }
 
-func (b *Balance) Info(pubkey []byte) (BalanceStat, error) {
+func (b *Balance) Info(pubkey []byte) (interfaces.BalanceStat, error) {
 	value, ok := b.usersBalances[string(pubkey)]
 	if !ok {
-		return BalanceStat{}, errors.New("wallet information is not found")
+		return interfaces.BalanceStat{}, errors.New("wallet information is not found")
 	}
 	return value, nil
 }
@@ -53,14 +47,14 @@ func (b *Balance) Update(pubkey []byte, lastTransBlock uint64, sum float64) (isN
 		return false
 	}
 
-	newWallet := BalanceStat{Pubkey: pubkey, LastTransBlock: lastTransBlock, CurrentBalance: sum}
+	newWallet := Stat{Pubkey: pubkey, LastTransBlock: lastTransBlock, CurrentBalance: sum}
 	b.usersBalances[string(pubkey)] = newWallet
 
 	return true
 }
 
 func (b *Balance) Clear() {
-	b.usersBalances = make(map[string]BalanceStat)
+	b.usersBalances = make(map[string]Stat)
 }
 
 func (b *Balance) FullCalc(blockchain interfaces.Chainable) error {
@@ -71,7 +65,7 @@ func (b *Balance) FullCalc(blockchain interfaces.Chainable) error {
 	for _, block := range blockchain.GetBlocks() {
 		//b := block.(chain.Block)
 		//c := ichain.IChain(*chain)
-		if _, err := block.IsValid(blockchain); err != nil {
+		if _, err := block.IsValid(blockchain, b); err != nil {
 			b.Clear()
 			return errors.New("incorrect block with number: " + strconv.FormatUint(block.GetId(), 10))
 		}

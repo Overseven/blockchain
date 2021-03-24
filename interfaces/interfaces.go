@@ -13,11 +13,11 @@ type Blockable interface {
 	GetBatchHash() (hash []byte)
 	GetWalletStatsHash() (hash []byte)
 	GetHash() (hash []byte)
-	IsValid(blockchain Chainable) (bool, error)
+	IsValid(Chainable, Balancer) (bool, error)
 	Mining(stop chan bool) []byte
 	GetTransaction() []Transferable
-	HasTransaction(transact *Transferable) (index int, has bool)
-	AddTransaction(tr *Transferable) error
+	HasTransaction(Transferable) (index int, has bool)
+	AddTransaction(Transferable) error
 }
 
 type Type int64
@@ -25,7 +25,7 @@ type Type int64
 type Transferable interface {
 	SetData(*Data)
 	GetData() *Data
-	Verify() error
+	Verify(Balancer) error
 }
 
 type Data struct {

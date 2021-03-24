@@ -5,14 +5,17 @@ import (
 	"testing"
 
 	cr "github.com/ethereum/go-ethereum/crypto"
-	"github.com/overseven/balance"
+	"github.com/overseven/blockchain/balance"
+	"github.com/overseven/blockchain/block"
+
+	"github.com/overseven/blockchain/chain"
 	"github.com/overseven/blockchain/interfaces"
 	"github.com/overseven/blockchain/transaction"
 
 	"github.com/overseven/blockchain/utility"
 )
 
-func generateWallet(value float64) (privKey *ecdsa.PrivateKey, pubKey []byte, err error) {
+func generateWallet(value float64, balance interfaces.Balancer) (privKey *ecdsa.PrivateKey, pubKey []byte, err error) {
 	privKey, err = cr.GenerateKey()
 	if err != nil {
 		return nil, nil, err
@@ -20,46 +23,48 @@ func generateWallet(value float64) (privKey *ecdsa.PrivateKey, pubKey []byte, er
 
 	pubKey = utility.PrivToPubKey(privKey)
 
-	UsersBalance.Update(pubKey, 0, value)
+	balance.Update(pubKey, 0, value)
 	return
 }
 
 func TestBlockIsValid(t *testing.T) {
 	// TODO: finish test
-	var balance interfaces.Balancer = &balance.Balance{}
-	balance.Init()
 
-	sndrPrivKey, sndrPubKey, err := generateWallet(15.0)
+	var bchain interfaces.Chainable = &chain.Chain{}
+
+	var usersBalance interfaces.Balancer = &balance.Balance{}
+	usersBalance.Init()
+
+	sndrPrivKey, sndrPubKey, err := generateWallet(15.0, usersBalance)
 	if err != nil {
 		t.Error(err)
 	}
-	_, rcvrPubKey, err := generateWallet(0.0)
+	_, rcvrPubKey, err := generateWallet(0.0, usersBalance)
 	if err != nil {
 		t.Error(err)
 	}
 
 	//trans := generateTransaction(sndrPrivKey, rcvrPubKey, 14, 0.5, "trans1")
-	trans, err := transaction.NewTransfer(sndrPrivKey, rcvrPubKey, 14, 0.5, "trans1")
+	trans, err := transaction.NewTransfer(sndrPrivKey, rcvrPubKey, 14, 0.5, "trans1", usersBalance)
 	if err != nil {
 		t.Error(err)
 	}
-	err = balance.FullCalc()
+	err = usersBalance.FullCalc(bchain)
 	if err != nil {
 		t.Error(err)
 	}
-	var bl Block
-	transBase := interfaces.Transferable(trans)
+	var bl interfaces.Blockable = new(block.Block)
 
-	err = bl.AddTransaction(&transBase)
+	err = bl.AddTransaction(trans)
 	if err != nil {
 		t.Error(err)
 	}
 
-	sndrWal, err := UsersBalance.Info(sndrPubKey)
+	sndrWal, err := usersBalance.Info(sndrPubKey)
 	if err != nil {
 		panic(err)
 	}
-	rcvrWal, err := UsersBalance.Info(rcvrPubKey)
+	rcvrWal, err := usersBalance.Info(rcvrPubKey)
 	if err != nil {
 		panic(err)
 	}

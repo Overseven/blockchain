@@ -1,4 +1,4 @@
-package chain
+package block
 
 import (
 	"bytes"
@@ -64,7 +64,7 @@ func (block *Block) GetHash() (hash []byte) {
 	return hash
 }
 
-func (block *Block) IsValid(blockchain interfaces.Chainable) (bool, error) {
+func (block *Block) IsValid(blockchain interfaces.Chainable, balance interfaces.Balancer) (bool, error) {
 	// TODO: finish him!!
 	if uint64(len(blockchain.GetBlocks()))+1 != block.Id {
 		return false, errors.New("incorrect block ID")
@@ -77,7 +77,7 @@ func (block *Block) IsValid(blockchain interfaces.Chainable) (bool, error) {
 			if data.Type != transaction.TypeAirdrop {
 				return false, errors.New("first block must have only airdrop transactions")
 			}
-			if err := t.Verify(); err != nil {
+			if err := t.Verify(balance); err != nil {
 				return false, errors.New("not valid transaction: " + err.Error())
 			}
 		}
@@ -118,16 +118,16 @@ func (block *Block) GetTransaction() []interfaces.Transferable {
 	return block.Transactions
 }
 
-func (block *Block) HasTransaction(transact *interfaces.Transferable) (index int, has bool) {
+func (block *Block) HasTransaction(transact interfaces.Transferable) (index int, has bool) {
 	for i, tran := range block.Transactions {
-		if transaction.IsEqual((*transact).GetData(), tran.GetData()) {
+		if transaction.IsEqual(transact.GetData(), tran.GetData()) {
 			return i, true
 		}
 	}
 	return 0, false
 }
 
-func (block *Block) AddTransaction(tr *interfaces.Transferable) error {
+func (block *Block) AddTransaction(tr interfaces.Transferable) error {
 	// TODO: Finish him!!
 	return nil
 }

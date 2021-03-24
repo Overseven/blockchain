@@ -41,7 +41,7 @@ func (a *Airdrop) Verify() error {
 }
 
 // Airdrop is sending value from unlimited admin wallet to user wallet
-func NewAirdrop(receiver, adminPrivKey []byte, chain interfaces.Chainable) (*Airdrop, error) {
+func NewAirdrop(receiver, adminPrivKey []byte, chain interfaces.Chainable, balance interfaces.Balancer) (*Airdrop, error) {
 	// TODO: add check below
 
 	// if len(blockchain.B17.Blocks) > 0 {

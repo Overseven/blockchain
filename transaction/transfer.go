@@ -9,7 +9,7 @@ import (
 	"github.com/overseven/blockchain/interfaces"
 
 	cr "github.com/ethereum/go-ethereum/crypto"
-	"github.com/overseven/blockchain/chain"
+	// "github.com/overseven/blockchain/chain"
 	"github.com/overseven/blockchain/utility"
 )
 
@@ -25,7 +25,7 @@ func (t *Transfer) SetData(d *interfaces.Data) {
 	t.Data = *d
 }
 
-func (t *Transfer) Verify() error {
+func (t *Transfer) Verify(balance interfaces.Balancer) error {
 	hash := GetHash(t.GetData())
 	if len(t.Data.Sign) < 64 {
 		return errors.New("incorrect signature len: " + strconv.FormatInt(int64(len(t.Data.Sign)), 10))
@@ -34,7 +34,7 @@ func (t *Transfer) Verify() error {
 		return errors.New("incorrect signature")
 	}
 
-	senderWallet, err := chain.UsersBalance.Info(t.Data.Pubkey)
+	senderWallet, err := balance.Info(t.Data.Pubkey)
 	if err != nil {
 		return err
 	}
@@ -46,9 +46,9 @@ func (t *Transfer) Verify() error {
 }
 
 // TODO: finish
-func NewTransfer(sndrPrivKey *ecdsa.PrivateKey, rcvrPubKey []byte, value, fee float64, message string) (*Transfer, error) {
+func NewTransfer(sndrPrivKey *ecdsa.PrivateKey, rcvrPubKey []byte, value, fee float64, message string, balance interfaces.Balancer) (*Transfer, error) {
 	sndrPubKey := utility.PrivToPubKey(sndrPrivKey)
-	wall, err := chain.UsersBalance.Info(sndrPubKey)
+	wall, err := balance.Info(sndrPubKey)
 	if err != nil {
 		return nil, err
 	}

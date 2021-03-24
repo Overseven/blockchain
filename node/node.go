@@ -3,24 +3,25 @@ package node
 import (
 	"encoding/json"
 	"fmt"
-	chain2 "github.com/overseven/blockchain/chain"
-	"github.com/overseven/blockchain/transaction/itransaction"
 	"net/http"
 
-	"github.com/overseven/blockchain/chain"
-
+	"github.com/overseven/blockchain/balance"
+	"github.com/overseven/blockchain/block"
+	chain "github.com/overseven/blockchain/chain"
+	"github.com/overseven/blockchain/interfaces"
 	//"github.com/davecgh/go-spew/spew"
 )
 
 var (
 	localBlockchain chain.Chain
+	usersBalance    balance.Balance
 )
 
 func Run() {
 	fmt.Println("Launching node.")
 	http.HandleFunc("/transaction/new", receiveNewTransaction)
 	http.ListenAndServe(":8090", nil)
-	bl := chain2.Block{
+	bl := block.Block{
 		Id: 0,
 	}
 	//blBase := chain.Block(bl)
@@ -29,7 +30,7 @@ func Run() {
 }
 
 func receiveNewTransaction(w http.ResponseWriter, req *http.Request) {
-	var t itransaction.ITransaction
+	var t interfaces.Transferable
 	err := json.NewDecoder(req.Body).Decode(&t)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -38,6 +39,6 @@ func receiveNewTransaction(w http.ResponseWriter, req *http.Request) {
 
 	//spew.Dump(t)
 
-	valid := t.Verify()
+	valid := t.Verify(&usersBalance)
 	fmt.Println("Receive transaction, valid: ", valid)
 }
