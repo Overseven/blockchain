@@ -85,17 +85,14 @@ func (block *Block) IsValid(blockchain interfaces.Chainable, balance interfaces.
 	}
 
 	// if block is the first in chain
-	if len(blockchain.GetBlocks()) == 0 {
-		for _, t := range block.Transactions {
-			data := t.GetData()
-			if data.Type != transaction.TypeAirdrop {
-				return false, errors.New("first block must have only airdrop transactions")
-			}
-			if err := t.Verify(balance); err != nil {
-				return false, errors.New("not valid transaction: " + err.Error())
-			}
+	for _, t := range block.Transactions {
+		data := t.GetData()
+		if block.Id == 0 && data.Type != transaction.TypeAirdrop {
+			return false, errors.New("first block must have only airdrop transactions")
 		}
-		return true, nil
+		if err := t.Verify(balance); err != nil {
+			return false, errors.New("not valid transaction: " + err.Error())
+		}
 	}
 
 	// TODO: finish for not first block

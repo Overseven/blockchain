@@ -8,6 +8,7 @@ import (
 
 	// "github.com/overseven/blockchain/chain/ichain"
 	"github.com/overseven/blockchain/interfaces"
+	"github.com/overseven/blockchain/utility"
 
 	cr "github.com/ethereum/go-ethereum/crypto"
 )
@@ -43,20 +44,18 @@ func (a *Airdrop) Verify(balance interfaces.Balancer) error {
 }
 
 // Airdrop is sending value from unlimited admin wallet to user wallet
-func NewAirdrop(receiver []byte, adminPrivKey *ecdsa.PrivateKey, chain interfaces.Chainable, payment, fee float64, balance interfaces.Balancer) (*Airdrop, error) {
+func NewAirdrop(receiver []byte, adminPrivKey *ecdsa.PrivateKey, payment, fee float64, balance interfaces.Balancer) (*Airdrop, error) {
 	// TODO: add check below
 
-	// if len(blockchain.B17.Blocks) > 0 {
-	// 	return nil, errors.New("airdrop for not first block is not alowed")
-	// }
 	a := new(Airdrop)
 
 	a.Data.Type = TypeAirdrop
+	a.Data.Pubkey = utility.PrivToPubKey(adminPrivKey)
 	a.Data.Receiver = receiver
 
 	a.Data.Pay = payment
 	a.Data.Fee = fee
-
+	a.Data.Message = "Airdrop"
 	{
 		t := time.Now()
 		a.Data.Timestamp = time.Date(t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), t.Second(), t.Nanosecond(), time.UTC)
@@ -67,7 +66,7 @@ func NewAirdrop(receiver []byte, adminPrivKey *ecdsa.PrivateKey, chain interface
 	if err != nil {
 		return nil, err
 	}
-	a.Data.Message = "Airdrop"
+
 	a.Data.Sign = sign
 
 	return a, nil

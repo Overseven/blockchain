@@ -67,7 +67,7 @@ func (b *Balance) FullCalc(blockchain interfaces.Chainable) error {
 		//c := ichain.IChain(*chain)
 		if _, err := block.IsValid(blockchain, b); err != nil {
 			b.Clear()
-			return errors.New("incorrect block with number: " + strconv.FormatUint(block.GetId(), 10))
+			return errors.New("incorrect block with number: " + strconv.FormatUint(block.GetId(), 10) + ". Error: " + err.Error())
 		}
 		minerFee := 0.0
 		for _, trans := range block.GetTransaction() { // TODO: Airdrop handle
