@@ -1,0 +1,63 @@
+syntax = "proto3";
+
+option go_package = "github.com/overseven/blockchain/protocol/protocol";
+
+package protocol;
+
+import "google/protobuf/timestamp.proto";
+
+
+// The greeting service definition.
+service Noder {
+  // Sends a greeting
+  rpc AddTransaction(AddTransactionRequest) returns (AddTransactionReply) {}
+  rpc GetBlocks(GetBlocksRequest) returns (GetBlocksReply) {}
+}
+
+message Transaction{
+    enum Type {
+        AirDrop = 0;
+        Transfer = 1;
+    }
+    uint32 protocolVersion = 1;
+    Type type = 2;
+    bytes sender = 3;
+    bytes receiver = 4;
+    string message = 5;
+    google.protobuf.Timestamp timestamp = 6;
+    double pay = 7;
+    double fee = 8;
+    bytes senderSign = 9;
+}
+
+message Block{
+    uint32 protocolVersion = 1;
+    uint64 blockId = 2;
+    repeated Transaction trans = 3;
+    bytes prevBlockHash = 4;
+    uint32 difficulty = 5;
+    bytes miner = 6;
+    bytes blockHash = 7;
+    bytes nonce = 8;
+}
+
+
+
+message AddTransactionRequest {
+  string name = 1;
+  int32 age = 2;
+}
+
+message AddTransactionReply {
+  string message = 1;
+  string additional = 2;
+}
+
+message GetBlocksRequest{
+  uint64 blockIdBegin = 1;
+  uint64 blockIdEnd = 2;
+}
+
+message GetBlocksReply{
+    repeated Block blocks = 1;
+}
