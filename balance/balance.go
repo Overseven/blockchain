@@ -70,7 +70,7 @@ func (b *Balance) FullCalc(blockchain interfaces.Chainable) error {
 			return errors.New("incorrect block with number: " + strconv.FormatUint(block.GetId(), 10) + ". Error: " + err.Error())
 		}
 		minerFee := 0.0
-		for _, trans := range block.GetTransaction() { // TODO: Airdrop handle
+		for _, trans := range block.GetTransactions() { // TODO: Airdrop handle
 			data := trans.GetData()
 
 			// receiver

@@ -21,6 +21,7 @@ import (
 var (
 	usersBalance balance.Balance
 	bchain       chain.Chain
+	address      = "localhost:50051"
 )
 
 func Run(configFile string) {

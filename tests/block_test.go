@@ -16,19 +16,13 @@ import (
 	"github.com/overseven/blockchain/utility"
 )
 
-const (
-	airdropModeratorConfigFile = "..\\wallet.cfg"
-)
-
-func generateWallet(value float64, balance interfaces.Balancer) (privKey *ecdsa.PrivateKey, pubKey []byte, err error) {
+func generateWallet() (privKey *ecdsa.PrivateKey, pubKey []byte, err error) {
 	privKey, err = cr.GenerateKey()
 	if err != nil {
 		return nil, nil, err
 	}
 
 	pubKey = utility.PrivToPubKey(privKey)
-
-	balance.Update(pubKey, 0, value)
 	return
 }
 
@@ -38,16 +32,16 @@ func TestBlockIsValid(t *testing.T) {
 	var usersBalance interfaces.Balancer = &balance.Balance{}
 	usersBalance.Init()
 
-	sndrPrivKey, sndrPubKey, err := generateWallet(15.0, usersBalance)
+	sndrPrivKey, sndrPubKey, err := generateWallet()
 	if err != nil {
 		t.Error(err)
 	}
-	_, rcvrPubKey, err := generateWallet(0.1, usersBalance)
+	_, rcvrPubKey, err := generateWallet()
 	if err != nil {
 		t.Error(err)
 	}
 
-	_, minerPubKey, err := generateWallet(0.0, usersBalance)
+	_, minerPubKey, err := generateWallet()
 	if err != nil {
 		t.Error(err)
 	}
@@ -66,7 +60,7 @@ func TestBlockIsValid(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	airdrop, err := transaction.NewAirdrop(sndrPubKey, airPrKey, 100.0, 7.0, usersBalance)
+	airdrop, err := transaction.NewAirdrop(sndrPubKey, airPrKey, 100.0, 7.0)
 	if err != nil {
 		t.Error(err)
 	}
@@ -142,22 +136,22 @@ func Test3Airdrop1Block(t *testing.T) {
 	var usersBalance interfaces.Balancer = &balance.Balance{}
 	usersBalance.Init()
 
-	_, receiver1, err := generateWallet(0.0, usersBalance)
+	_, receiver1, err := generateWallet()
 	if err != nil {
 		t.Error(err)
 	}
 
-	_, receiver2, err := generateWallet(0.0, usersBalance)
+	_, receiver2, err := generateWallet()
 	if err != nil {
 		t.Error(err)
 	}
 
-	_, receiver3, err := generateWallet(0.0, usersBalance)
+	_, receiver3, err := generateWallet()
 	if err != nil {
 		t.Error(err)
 	}
 
-	_, minerPubKey, err := generateWallet(0.0, usersBalance)
+	_, minerPubKey, err := generateWallet()
 	if err != nil {
 		t.Error(err)
 	}
@@ -177,17 +171,17 @@ func Test3Airdrop1Block(t *testing.T) {
 		t.Error(err)
 	}
 
-	airdrop1, err := transaction.NewAirdrop(receiver1, airPrKey, 110.1, 11.1, usersBalance)
+	airdrop1, err := transaction.NewAirdrop(receiver1, airPrKey, 110.1, 11.1)
 	if err != nil {
 		t.Error(err)
 	}
 
-	airdrop2, err := transaction.NewAirdrop(receiver2, airPrKey, 120.2, 22.2, usersBalance)
+	airdrop2, err := transaction.NewAirdrop(receiver2, airPrKey, 120.2, 22.2)
 	if err != nil {
 		t.Error(err)
 	}
 
-	airdrop3, err := transaction.NewAirdrop(receiver3, airPrKey, 130.3, 33.3, usersBalance)
+	airdrop3, err := transaction.NewAirdrop(receiver3, airPrKey, 130.3, 33.3)
 	if err != nil {
 		t.Error(err)
 	}

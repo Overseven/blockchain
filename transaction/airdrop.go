@@ -44,7 +44,7 @@ func (a *Airdrop) Verify(balance interfaces.Balancer) error {
 }
 
 // Airdrop is sending value from unlimited admin wallet to user wallet
-func NewAirdrop(receiver []byte, adminPrivKey *ecdsa.PrivateKey, payment, fee float64, balance interfaces.Balancer) (*Airdrop, error) {
+func NewAirdrop(receiver []byte, adminPrivKey *ecdsa.PrivateKey, payment, fee float64) (*Airdrop, error) {
 	// TODO: add check below
 
 	a := new(Airdrop)

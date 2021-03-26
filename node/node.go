@@ -26,7 +26,7 @@ func Run() {
 	}
 	//blBase := chain.Block(bl)
 	localBlockchain.Blocks = append(localBlockchain.Blocks, &bl)
-	fmt.Println(localBlockchain)
+	fmt.Println(&localBlockchain)
 }
 
 func receiveNewTransaction(w http.ResponseWriter, req *http.Request) {

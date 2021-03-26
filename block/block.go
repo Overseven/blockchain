@@ -42,18 +42,6 @@ func (block *Block) GetBatchHash() (hash []byte) {
 	return
 }
 
-//func (block *Block) GetWalletStatsHash() (hash []byte) {
-//	var toHashBytes []byte
-//	for _, stats := range block.WalletsStats {
-//		toHashBytes = append(toHashBytes, stats.Address...)
-//		toHashBytes = append(toHashBytes, blUtility.Float64Bytes(stats.BalanceBefore)...)
-//		toHashBytes = append(toHashBytes, blUtility.Float64Bytes(stats.BalanceAfter)...)
-//		toHashBytes = append(toHashBytes, blUtility.UInt64Bytes(stats.PrevTransBlockId)...)
-//	}
-//	hash = cr.Keccak256(toHashBytes)
-//	return
-//}
-
 func (block *Block) GetHash() (hash []byte) {
 	hash = blUtility.UInt64Bytes(block.Id)
 	hash = append(hash, block.GetBatchHash()...)
@@ -61,6 +49,7 @@ func (block *Block) GetHash() (hash []byte) {
 	//hash = append(hash, block.GetWalletStatsHash()...)
 	hash = append(hash, blUtility.UInt64Bytes(block.Difficulty)...)
 	hash = append(hash, block.Miner...)
+	block.Hash = hash
 	return hash
 }
 
@@ -126,8 +115,12 @@ func (block *Block) Mining(minerPubKey []byte, stop chan bool) []byte {
 	return []byte{}
 }
 
-func (block *Block) GetTransaction() []interfaces.Transferable {
+func (block *Block) GetTransactions() []interfaces.Transferable {
 	return block.Transactions
+}
+
+func (block *Block) SetTransactions(tr []interfaces.Transferable) {
+	block.Transactions = tr
 }
 
 func (block *Block) HasTransaction(transact interfaces.Transferable) (index int, has bool) {
@@ -149,6 +142,38 @@ func (block *Block) GetId() uint64 {
 	return block.Id
 }
 
+func (block *Block) SetId(id uint64) {
+	block.Id = id
+}
+
 func (block *Block) GetMiner() []byte {
 	return block.Miner
+}
+
+func (block *Block) SetMiner(m []byte) {
+	block.Miner = m
+}
+
+func (block *Block) GetPrevHash() []byte {
+	return block.PrevHash
+}
+
+func (block *Block) SetPrevHash(ph []byte) {
+	block.PrevHash = ph
+}
+
+func (block *Block) GetDifficulty() uint64 {
+	return block.Difficulty
+}
+
+func (block *Block) SetDifficulty(d uint64) {
+	block.Difficulty = d
+}
+
+func (block *Block) GetNonce() []byte {
+	return block.Nonce
+}
+
+func (block *Block) SetNonce(n []byte) {
+	block.Nonce = n
 }

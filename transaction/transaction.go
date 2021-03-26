@@ -13,8 +13,8 @@ import (
 type Type int64
 
 const (
-	TypeTransfer = iota
-	TypeAirdrop
+	TypeAirdrop = iota
+	TypeTransfer
 )
 
 func IsEqual(t1, t2 *interfaces.Data) bool {

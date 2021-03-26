@@ -14,7 +14,7 @@ func TestAirdropVerify(t *testing.T) {
 	var usersBalance interfaces.Balancer = &balance.Balance{}
 	usersBalance.Init()
 
-	_, receiver1, err := generateWallet(0.0, usersBalance)
+	_, receiver1, err := generateWallet()
 	if err != nil {
 		t.Error(err)
 	}
@@ -31,7 +31,7 @@ func TestAirdropVerify(t *testing.T) {
 		t.Error(err)
 	}
 
-	airdrop, err := transaction.NewAirdrop(receiver1, airPrKey, 110.1, 11.1, usersBalance)
+	airdrop, err := transaction.NewAirdrop(receiver1, airPrKey, 110.1, 11.1)
 	if err != nil {
 		t.Error(err)
 	}

@@ -12,15 +12,23 @@ type Chainable interface {
 
 type Blockable interface {
 	GetId() uint64
+	SetId(uint64)
 	GetBatchHash() (hash []byte)
-	//GetWalletStatsHash() (hash []byte)
 	GetHash() (hash []byte)
+	GetPrevHash() []byte
+	SetPrevHash([]byte)
 	IsValid(Chainable, Balancer) (bool, error)
 	Mining(minerPubKey []byte, stop chan bool) []byte
-	GetTransaction() []Transferable
+	GetTransactions() []Transferable
+	SetTransactions([]Transferable)
 	HasTransaction(Transferable) (index int, has bool)
 	AddTransaction(Transferable) error
+	GetDifficulty() uint64
+	SetDifficulty(uint64)
 	GetMiner() []byte
+	SetMiner([]byte)
+	GetNonce() []byte
+	SetNonce([]byte)
 }
 
 type Type int64
