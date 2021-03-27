@@ -65,7 +65,7 @@ func TestBlockIsValid(t *testing.T) {
 		t.Error(err)
 	}
 
-	trans, err := transaction.NewTransfer(sndrPrivKey, rcvrPubKey, 14, 0.5, "trans1", usersBalance)
+	trans, err := transaction.NewTransfer(sndrPrivKey, rcvrPubKey, 14, 0.5, "trans1")
 	if err != nil {
 		t.Error(err)
 	}

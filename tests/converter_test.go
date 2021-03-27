@@ -3,8 +3,10 @@ package test
 import (
 	"bytes"
 	"errors"
+	"google.golang.org/protobuf/types/known/timestamppb"
 	"strconv"
 	"testing"
+	"time"
 
 	cr "github.com/ethereum/go-ethereum/crypto"
 	"github.com/overseven/blockchain/interfaces"
@@ -16,7 +18,7 @@ import (
 
 func compareTransactions(t1 interfaces.Transferable, t2 *pb.Transaction) error {
 	data := t1.GetData()
-	if bytes.Compare(data.Pubkey, t2.Sender) != 0 {
+	if bytes.Compare(data.Sender, t2.Sender) != 0 {
 		return errors.New("err: diff sender")
 	}
 	if bytes.Compare(data.Receiver, t2.Receiver) != 0 {
@@ -80,8 +82,8 @@ func compareBlocks(b1 interfaces.Blockable, b2 *pb.Block) error {
 	return nil
 }
 
-func TestTransProto2LocalAirdrop(t *testing.T) {
-	_, rcvrrPubKey, err := generateWallet()
+func TestTransLocal2ProtoAirdrop(t *testing.T) {
+	_, rcvrPubKey, err := generateWallet()
 
 	if err != nil {
 		t.Error(err)
@@ -99,7 +101,7 @@ func TestTransProto2LocalAirdrop(t *testing.T) {
 		t.Error(err)
 	}
 
-	airdrop, err := transaction.NewAirdrop(rcvrrPubKey, airPrKey, 178.9, 12.1)
+	airdrop, err := transaction.NewAirdrop(rcvrPubKey, airPrKey, 178.9, 12.1)
 	if err != nil {
 		t.Error(err)
 	}
@@ -116,14 +118,91 @@ func TestTransProto2LocalAirdrop(t *testing.T) {
 
 }
 
-func TestTransLocal2Proto(t *testing.T) {
+func TestTransLocal2ProtoTransfer(t *testing.T) {
 
+	sndrPrivKey, _, err := generateWallet()
+	if err != nil {
+		t.Error(err)
+	}
+
+	_, rcvrPubKey, err := generateWallet()
+	if err != nil {
+		t.Error(err)
+	}
+
+	transfer, err := transaction.NewTransfer(sndrPrivKey, rcvrPubKey, 14, 0.5, "trans1")
+	if err != nil {
+		t.Error(err)
+	}
+
+	transferPb, err := converter.TransactionLocal2Proto(transfer)
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = compareTransactions(transfer, transferPb)
+	if err != nil {
+		t.Error(err)
+	}
+
+}
+
+// TODO: add TestTransLocal2ProtoAirdrop
+
+func TestTransProto2LocalTransfer(t *testing.T) {
+	sndrPrivKey, sndrPubKey, err := generateWallet()
+	if err != nil {
+		t.Error(err)
+	}
+
+	_, rcvrPubKey, err := generateWallet()
+	if err != nil {
+		t.Error(err)
+	}
+	ti := time.Now()
+	trTimestamp := time.Date(ti.Year(), ti.Month(), ti.Day(), ti.Hour(), ti.Minute(), ti.Second(), ti.Nanosecond(), time.UTC)
+
+	data := interfaces.Data{
+		Type: transaction.TypeTransfer,
+		Sender: sndrPubKey,
+		Receiver: rcvrPubKey,
+		Pay: 156.4,
+		Fee: 13.225,
+		Message: "tr message",
+		Timestamp: trTimestamp,
+	}
+
+
+	hashed := transaction.GetHash(&data)
+
+	sign, err := cr.Sign(hashed, sndrPrivKey)
+	if err != nil {
+		t.Error(err)
+	}
+
+	data.Sign = sign
+
+	tr := pb.Transaction{}
+	tr.Type = pb.Transaction_Type(data.Type)
+	tr.Sender = sndrPubKey
+	tr.Receiver = rcvrPubKey
+	tr.Message = data.Message
+	tr.Pay = data.Pay
+	tr.Fee = data.Fee
+	tr.Timestamp = timestamppb.New(trTimestamp)
+	tr.SenderSign = data.Sign
+
+	var localTr interfaces.Transferable = &transaction.Transfer{Data: data}
+	err = compareTransactions(localTr, &tr)
+	if err != nil {
+		t.Error(err)
+	}
 }
 
 func TestBlockProto2Local(t *testing.T) {
-
+	// TODO: finish
 }
 
 func TestBlockLocal2Proto(t *testing.T) {
-
+	// TODO: finish
 }
