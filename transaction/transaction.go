@@ -18,7 +18,7 @@ const (
 )
 
 func IsEqual(t1, t2 *interfaces.Data) bool {
-	if !bytes.Equal(t1.Pubkey, t2.Pubkey) {
+	if !bytes.Equal(t1.Sender, t2.Sender) {
 		return false
 	}
 	if !bytes.Equal(t1.Receiver, t2.Receiver) {
@@ -45,7 +45,7 @@ func IsEqual(t1, t2 *interfaces.Data) bool {
 
 func GetHash(t *interfaces.Data) []byte {
 	temp := []byte(strconv.FormatInt(int64(t.Type), 10))
-	temp = append(temp, t.Pubkey...)
+	temp = append(temp, t.Sender...)
 	temp = append(temp, t.Receiver...)
 	temp = append(temp, t.Message...)
 	temp = append(temp, strconv.FormatFloat(t.Pay, 'e', 8, 64)...)

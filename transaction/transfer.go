@@ -30,11 +30,11 @@ func (t *Transfer) Verify(balance interfaces.Balancer) error {
 	if len(t.Data.Sign) < 64 {
 		return errors.New("incorrect signature len: " + strconv.FormatInt(int64(len(t.Data.Sign)), 10))
 	}
-	if !cr.VerifySignature(t.Data.Pubkey, hash, t.Data.Sign[0:64]) {
+	if !cr.VerifySignature(t.Data.Sender, hash, t.Data.Sign[0:64]) {
 		return errors.New("incorrect signature")
 	}
 
-	senderWallet, err := balance.Info(t.Data.Pubkey)
+	senderWallet, err := balance.Info(t.Data.Sender)
 	if err != nil {
 		return err
 	}
@@ -46,25 +46,19 @@ func (t *Transfer) Verify(balance interfaces.Balancer) error {
 }
 
 // TODO: finish
-func NewTransfer(sndrPrivKey *ecdsa.PrivateKey, rcvrPubKey []byte, value, fee float64, message string, balance interfaces.Balancer) (*Transfer, error) {
+func NewTransfer(sndrPrivKey *ecdsa.PrivateKey, rcvrPubKey []byte, value, fee float64, message string) (*Transfer, error) {
 	sndrPubKey := utility.PrivToPubKey(sndrPrivKey)
-	wall, err := balance.Info(sndrPubKey)
-	if err != nil {
-		return nil, err
-	}
-	if wall.CurrentBalance < (value + fee) {
-		return nil, errors.New("not enough tokens")
-	}
 
 	data := interfaces.Data{}
 
 	data.Type = TypeTransfer
-	data.Pubkey = sndrPubKey
+	data.Sender = sndrPubKey
 	data.Receiver = rcvrPubKey
 	data.Pay = value
 	data.Fee = fee
 	data.Message = message // TODO: add fix size message
 
+	// TODO: create timestamp function
 	{
 		t := time.Now()
 		data.Timestamp = time.Date(t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), t.Second(), t.Nanosecond(), time.UTC)

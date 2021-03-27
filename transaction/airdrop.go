@@ -32,11 +32,11 @@ func (a *Airdrop) Verify(balance interfaces.Balancer) error {
 	}
 
 	hash := GetHash(a.GetData())
-	if !cr.VerifySignature(a.Data.Pubkey, hash, a.Data.Sign[0:64]) {
+	if !cr.VerifySignature(a.Data.Sender, hash, a.Data.Sign[0:64]) {
 		return errors.New("incorrect AirDrop moderator signature")
 	}
 
-	if bytes.Compare(a.Data.Pubkey, AirDropModeratorPubKey) != 0 {
+	if bytes.Compare(a.Data.Sender, AirDropModeratorPubKey) != 0 {
 		return errors.New("incorrect AirDrop moderator public key")
 	}
 
@@ -50,7 +50,7 @@ func NewAirdrop(receiver []byte, adminPrivKey *ecdsa.PrivateKey, payment, fee fl
 	a := new(Airdrop)
 
 	a.Data.Type = TypeAirdrop
-	a.Data.Pubkey = utility.PrivToPubKey(adminPrivKey)
+	a.Data.Sender = utility.PrivToPubKey(adminPrivKey)
 	a.Data.Receiver = receiver
 
 	a.Data.Pay = payment

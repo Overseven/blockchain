@@ -83,12 +83,12 @@ func (b *Balance) FullCalc(blockchain interfaces.Chainable) error {
 			b.usersBalances[string(data.Receiver)] = rcvrBalance
 			if data.Type != transaction.TypeAirdrop {
 				// sender
-				var sndrBalance Stat = b.usersBalances[string(data.Pubkey)]
-				sndrBalance.Pubkey = data.Pubkey
+				var sndrBalance Stat = b.usersBalances[string(data.Sender)]
+				sndrBalance.Pubkey = data.Sender
 				sndrBalance.LastTransBlock = block.GetId()
 				sndrBalance.CurrentBalance -= data.Pay + data.Fee
 
-				b.usersBalances[string(data.Pubkey)] = sndrBalance
+				b.usersBalances[string(data.Sender)] = sndrBalance
 			}
 			minerFee += data.Fee
 		}

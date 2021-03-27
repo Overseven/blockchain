@@ -2,9 +2,9 @@ package converter
 
 import (
 	"errors"
+	"google.golang.org/protobuf/types/known/timestamppb"
 	"strconv"
 
-	"github.com/golang/protobuf/ptypes"
 	"github.com/overseven/blockchain/block"
 	"github.com/overseven/blockchain/interfaces"
 	pb "github.com/overseven/blockchain/protocol"
@@ -61,7 +61,7 @@ func BlockLocal2Proto(b interfaces.Blockable) (*pb.Block, error) {
 
 func TransactionProto2Local(t *pb.Transaction) (interfaces.Transferable, error) {
 	data := interfaces.Data{}
-	data.Pubkey = t.Sender
+	data.Sender = t.Sender
 	data.Receiver = t.Receiver
 	data.Message = t.Message
 	data.Timestamp = t.GetTimestamp().AsTime()
@@ -82,12 +82,12 @@ func TransactionLocal2Proto(trans interfaces.Transferable) (*pb.Transaction, err
 	data := trans.GetData()
 	tr := new(pb.Transaction)
 	tr.Type = pb.Transaction_Type(data.Type)
-	tr.Sender = data.Pubkey
+	tr.Sender = data.Sender
 	tr.Receiver = data.Receiver
 	tr.Message = data.Message
 
 	var err error
-	tr.Timestamp, err = ptypes.TimestampProto(data.Timestamp)
+	tr.Timestamp = timestamppb.New(data.Timestamp)
 	if err != nil {
 		return nil, err
 	}

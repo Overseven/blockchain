@@ -74,7 +74,7 @@ func test(configFile string) {
 	//fmt.Println(encodedStr)
 
 	data := transaction.GetData()
-	data.Pubkey = pubkey
+	data.Sender = pubkey
 	data.Pay = 14
 	data.Fee = 0.123
 	data.Receiver = pubkey2

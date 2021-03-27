@@ -41,7 +41,7 @@ type Transferable interface {
 
 type Data struct {
 	Type      Type
-	Pubkey    []byte
+	Sender    []byte
 	Receiver  []byte
 	Message   string
 	Timestamp time.Time
