@@ -27,7 +27,7 @@ func generateWallet() (privKey *ecdsa.PrivateKey, pubKey []byte, err error) {
 }
 
 func TestBlockIsValid(t *testing.T) {
-	var bchain interfaces.Chainable = &chain.Chain{}
+	var bchain interfaces.BlockConnecter = &chain.Chain{}
 
 	var usersBalance interfaces.Balancer = &balance.Balance{}
 	usersBalance.Init()
@@ -131,7 +131,7 @@ func TestBlockIsValid(t *testing.T) {
 }
 
 func Test3Airdrop1Block(t *testing.T) {
-	var bchain interfaces.Chainable = &chain.Chain{}
+	var bchain interfaces.BlockConnecter = &chain.Chain{}
 
 	var usersBalance interfaces.Balancer = &balance.Balance{}
 	usersBalance.Init()

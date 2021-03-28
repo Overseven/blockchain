@@ -30,7 +30,7 @@ func Run() {
 }
 
 func receiveNewTransaction(w http.ResponseWriter, req *http.Request) {
-	var t interfaces.Transferable
+	var t interfaces.BlockElement
 	err := json.NewDecoder(req.Body).Decode(&t)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)

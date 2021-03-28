@@ -18,7 +18,7 @@ import (
 	"github.com/overseven/blockchain/wallet"
 )
 
-func compareTransactions(t1 interfaces.Transferable, t2 *pb.Transaction) error {
+func compareTransactions(t1 interfaces.BlockElement, t2 *pb.Transaction) error {
 	data := t1.GetData()
 	if bytes.Compare(data.Sender, t2.Sender) != 0 {
 		return errors.New("err: diff sender")
@@ -45,7 +45,7 @@ func compareTransactions(t1 interfaces.Transferable, t2 *pb.Transaction) error {
 	return nil
 }
 
-func compareBlocks(b1 interfaces.Blockable, b2 *pb.Block) error {
+func compareBlocks(b1 interfaces.TransactionsContainer, b2 *pb.Block) error {
 
 	if b1.GetId() != b2.BlockId {
 		return errors.New("err: diff pay: " + strconv.FormatUint(b1.GetId(), 10) + " vs " + strconv.FormatUint(b2.BlockId, 10))
@@ -194,7 +194,7 @@ func TestTransProto2LocalTransfer(t *testing.T) {
 	tr.Timestamp = timestamppb.New(trTimestamp)
 	tr.SenderSign = data.Sign
 
-	var localTr interfaces.Transferable = &transaction.Transfer{Data: data}
+	var localTr interfaces.BlockElement = &transaction.Transfer{Data: data}
 	err = compareTransactions(localTr, &tr)
 	if err != nil {
 		t.Error(err)
@@ -206,7 +206,7 @@ func TestBlockProto2Local(t *testing.T) {
 }
 
 func TestBlockLocal2Proto(t *testing.T) {
-	var bchain interfaces.Chainable = &chain.Chain{}
+	var bchain interfaces.BlockConnecter = &chain.Chain{}
 
 	var usersBalance interfaces.Balancer = &balance.Balance{}
 	usersBalance.Init()

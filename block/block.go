@@ -16,7 +16,7 @@ import (
 
 type Block struct {
 	Id           uint64
-	Transactions []interfaces.Transferable
+	Transactions []interfaces.BlockElement
 	PrevHash     []byte
 	//WalletsStats map[string]WalletStats
 
@@ -53,10 +53,10 @@ func (block *Block) GetHash() (hash []byte) {
 	return hash
 }
 
-func (block *Block) IsValid(blockchain interfaces.Chainable, balance interfaces.Balancer) (bool, error) {
+func (block *Block) IsValid(blockchain interfaces.BlockConnecter, balance interfaces.Balancer) (bool, error) {
 	// TODO: finish him!!
 
-	var blocks []interfaces.Blockable = blockchain.GetBlocks()
+	var blocks []interfaces.TransactionsContainer = blockchain.GetBlocks()
 
 	if uint64(len(blockchain.GetBlocks())) < block.Id+1 {
 		return false, errors.New("incorrect block Id: " + strconv.FormatUint(block.Id, 10))
@@ -115,15 +115,15 @@ func (block *Block) Mining(minerPubKey []byte, stop chan bool) []byte {
 	return []byte{}
 }
 
-func (block *Block) GetTransactions() []interfaces.Transferable {
+func (block *Block) GetTransactions() []interfaces.BlockElement {
 	return block.Transactions
 }
 
-func (block *Block) SetTransactions(tr []interfaces.Transferable) {
+func (block *Block) SetTransactions(tr []interfaces.BlockElement) {
 	block.Transactions = tr
 }
 
-func (block *Block) HasTransaction(transact interfaces.Transferable) (index int, has bool) {
+func (block *Block) HasTransaction(transact interfaces.BlockElement) (index int, has bool) {
 	for i, tran := range block.Transactions {
 		if transaction.IsEqual(transact.GetData(), tran.GetData()) {
 			return i, true
@@ -132,7 +132,7 @@ func (block *Block) HasTransaction(transact interfaces.Transferable) (index int,
 	return 0, false
 }
 
-func (block *Block) AddTransaction(tr interfaces.Transferable) error {
+func (block *Block) AddTransaction(tr interfaces.BlockElement) error {
 	block.Transactions = append(block.Transactions, tr)
 
 	return nil

@@ -1,6 +1,9 @@
 package test
 
 import (
+	cr "github.com/ethereum/go-ethereum/crypto"
+	"github.com/overseven/blockchain/transaction"
+	"github.com/overseven/blockchain/wallet"
 	"testing"
 )
 
@@ -13,35 +16,35 @@ func createClient() {
 }
 
 func TestNodeClientCommunication(t *testing.T) {
-	// clientPrKey, clientPubKey, err := generateWallet()
-	// if err != nil {
-	// 	t.Error(err)
-	// }
+	clientPrKey, clientPubKey, err := generateWallet()
+	if err != nil {
+		t.Error(err)
+	}
 
-	// _, rcvrPubKey, err := generateWallet()
-	// if err != nil {
-	// 	t.Error(err)
-	// }
+	_, rcvrPubKey, err := generateWallet()
+	if err != nil {
+		t.Error(err)
+	}
 
-	// _, minerPubKey, err := generateWallet()
-	// if err != nil {
-	// 	t.Error(err)
-	// }
+	_, minerPubKey, err := generateWallet()
+	if err != nil {
+		t.Error(err)
+	}
 
-	// airdropPubKey, airdropPrKey, err := wallet.LoadFromFile(airdropModeratorConfigFile)
-	// if err != nil {
-	// 	t.Error(err)
-	// }
+	airdropPubKey, airdropPrKey, err := wallet.LoadFromFile(airdropModeratorConfigFile)
+	if err != nil {
+		t.Error(err)
+	}
 
-	// transaction.AirDropModeratorPubKey = airdropPubKey
+	transaction.AirDropModeratorPubKey = airdropPubKey
 
-	// airPrKey, err := cr.ToECDSA(airdropPrKey[:32])
-	// if err != nil {
-	// 	t.Error(err)
-	// }
+	airPrKey, err := cr.ToECDSA(airdropPrKey[:32])
+	if err != nil {
+		t.Error(err)
+	}
 
-	// airdrop, err := transaction.NewAirdrop(receiver1, airPrKey, 100.0, 11.1, usersBalance)
-	// if err != nil {
-	// 	t.Error(err)
-	// }
+	airdrop, err := transaction.NewAirdrop(receiver1, airPrKey, 100.0, 11.1, usersBalance)
+	if err != nil {
+		t.Error(err)
+	}
 }

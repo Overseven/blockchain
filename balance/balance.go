@@ -57,7 +57,7 @@ func (b *Balance) Clear() {
 	b.usersBalances = make(map[string]Stat)
 }
 
-func (b *Balance) FullCalc(blockchain interfaces.Chainable) error {
+func (b *Balance) FullCalc(blockchain interfaces.BlockConnecter) error {
 	// TODO : finish
 
 	b.Clear()

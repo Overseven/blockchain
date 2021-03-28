@@ -1,28 +1,30 @@
 package interfaces
 
-import "time"
+import (
+	"time"
+)
 
-type Chainable interface {
+type BlockConnecter interface {
 	IsValid(startIndx, endIndx uint64) (bool, uint64)
-	GetBlocks() []Blockable
-	SetBlocks([]Blockable)
-	NewBlock() Blockable
-	AppendBlock(Blockable)
+	GetBlocks() []TransactionsContainer
+	SetBlocks([]TransactionsContainer)
+	NewBlock() TransactionsContainer
+	AppendBlock(TransactionsContainer)
 }
 
-type Blockable interface {
+type TransactionsContainer interface {
 	GetId() uint64
 	SetId(uint64)
 	GetBatchHash() (hash []byte)
 	GetHash() (hash []byte)
 	GetPrevHash() []byte
 	SetPrevHash([]byte)
-	IsValid(Chainable, Balancer) (bool, error)
+	IsValid(BlockConnecter, Balancer) (bool, error)
 	Mining(minerPubKey []byte, stop chan bool) []byte
-	GetTransactions() []Transferable
-	SetTransactions([]Transferable)
-	HasTransaction(Transferable) (index int, has bool)
-	AddTransaction(Transferable) error
+	GetTransactions() []BlockElement
+	SetTransactions([]BlockElement)
+	HasTransaction(BlockElement) (index int, has bool)
+	AddTransaction(BlockElement) error
 	GetDifficulty() uint64
 	SetDifficulty(uint64)
 	GetMiner() []byte
@@ -33,7 +35,7 @@ type Blockable interface {
 
 type Type int64
 
-type Transferable interface {
+type BlockElement interface {
 	SetData(*Data)
 	GetData() *Data
 	Verify(Balancer) error
@@ -56,7 +58,7 @@ type Balancer interface {
 	Info(pubkey []byte) (BalanceStat, error)
 	Update(pubkey []byte, lastTransBlock uint64, sum float64) (isNew bool)
 	Clear()
-	FullCalc(Chainable) error
+	FullCalc(BlockConnecter) error
 	CountOfWallets() int
 }
 
@@ -64,4 +66,22 @@ type BalanceStat struct {
 	Pubkey         []byte
 	LastTransBlock uint64
 	CurrentBalance float64
+}
+
+type ClientMode int32
+
+const (
+	ModeFull = iota
+	ModeLight
+)
+
+type NetworkClient interface{
+	SetMode(mode ClientMode)
+	GetMode() ClientMode
+	SetPort(uint32)
+	GetPort() uint32
+	SetListOfNodes(address []string)
+	GetListOfNodes() []string
+	SendTransactionToAllNodes(element BlockElement)
+	SendTransaction(element BlockElement, nodeAddress string)
 }
