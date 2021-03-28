@@ -3,6 +3,8 @@ package test
 import (
 	"bytes"
 	"errors"
+	"github.com/overseven/blockchain/balance"
+	"github.com/overseven/blockchain/chain"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"strconv"
 	"testing"
@@ -204,5 +206,102 @@ func TestBlockProto2Local(t *testing.T) {
 }
 
 func TestBlockLocal2Proto(t *testing.T) {
+	var bchain interfaces.Chainable = &chain.Chain{}
+
+	var usersBalance interfaces.Balancer = &balance.Balance{}
+	usersBalance.Init()
+
+	sndrPrivKey, sndrPubKey, err := generateWallet()
+	if err != nil {
+		t.Error(err)
+	}
+	_, rcvrPubKey, err := generateWallet()
+	if err != nil {
+		t.Error(err)
+	}
+
+	_, minerPubKey, err := generateWallet()
+	if err != nil {
+		t.Error(err)
+	}
+
+	airdropPubKey, airdropPrKey, err := wallet.LoadFromFile(airdropModeratorConfigFile)
+	if err != nil {
+		t.Error(err)
+	}
+
+	transaction.AirDropModeratorPubKey = airdropPubKey
+
+	airPrKey, err := cr.ToECDSA(airdropPrKey[:32])
+	if err != nil {
+		t.Error(err)
+	}
+	airdrop, err := transaction.NewAirdrop(sndrPubKey, airPrKey, 100.0, 7.0)
+	if err != nil {
+		t.Error(err)
+	}
+
+	trans, err := transaction.NewTransfer(sndrPrivKey, rcvrPubKey, 14, 0.5, "trans1")
+	if err != nil {
+		t.Error(err)
+	}
+
+	trans2, err := transaction.NewTransfer(sndrPrivKey, rcvrPubKey, 18, 0.8, "trans2")
+	if err != nil {
+		t.Error(err)
+	}
+
+	trans3, err := transaction.NewTransfer(sndrPrivKey, rcvrPubKey, 164, 0.7, "trans3")
+	if err != nil {
+		t.Error(err)
+	}
+
+	// first block
+	block := bchain.NewBlock()
+
+	err = block.AddTransaction(airdrop)
+	if err != nil {
+		t.Error(err)
+	}
+	err = block.AddTransaction(trans)
+	if err != nil {
+		t.Error(err)
+	}
+	stop := make(chan bool)
+	block.Mining(minerPubKey, stop)
+
+	// second block
+	block2 := bchain.NewBlock()
+
+	err = block2.AddTransaction(trans2)
+	if err != nil {
+		t.Error(err)
+	}
+	err = block2.AddTransaction(trans3)
+	if err != nil {
+		t.Error(err)
+	}
+	block2.Mining(minerPubKey, stop)
+
+	blockPb1, err := converter.BlockLocal2Proto(block)
+	if err != nil {
+		t.Error(err)
+	}
+
+	blockPb2, err := converter.BlockLocal2Proto(block2)
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = compareBlocks(block, blockPb1)
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = compareBlocks(block2, blockPb2)
+	if err != nil {
+		t.Error(err)
+	}
+
 	// TODO: finish
 }
