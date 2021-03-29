@@ -1,10 +1,13 @@
 package test
 
 import (
-	cr "github.com/ethereum/go-ethereum/crypto"
-	"github.com/overseven/blockchain/transaction"
-	"github.com/overseven/blockchain/wallet"
+	"strconv"
 	"testing"
+
+	"github.com/overseven/blockchain/client"
+	"github.com/overseven/blockchain/node"
+	pb "github.com/overseven/blockchain/protocol"
+	"github.com/overseven/blockchain/transaction"
 )
 
 const (
@@ -16,35 +19,52 @@ func createClient() {
 }
 
 func TestNodeClientCommunication(t *testing.T) {
-	clientPrKey, clientPubKey, err := generateWallet()
+	clientPrKey, _, err := generateWallet()
 	if err != nil {
 		t.Error(err)
 	}
+
+	cl := client.Client{}
+	cl.Init()
+	cl.SetPrivateKey(clientPrKey)
+
+	nd := node.Node{}
+	nd.Init()
 
 	_, rcvrPubKey, err := generateWallet()
 	if err != nil {
 		t.Error(err)
 	}
 
-	_, minerPubKey, err := generateWallet()
+	var (
+		clientPort uint32 = 505
+		nodePort   uint32 = 506
+	)
+
+	value := 152.313
+	fee := 0.0004
+	message := "network test"
+
+	trans, err := transaction.NewTransfer(clientPrKey, rcvrPubKey, value, fee, message)
 	if err != nil {
 		t.Error(err)
 	}
 
-	airdropPubKey, airdropPrKey, err := wallet.LoadFromFile(airdropModeratorConfigFile)
+	cl.SetPort(clientPort)
+	nd.SetPort(nodePort)
+
+	stop := make(chan bool)
+	err = nd.StartListening(stop)
 	if err != nil {
 		t.Error(err)
 	}
 
-	transaction.AirDropModeratorPubKey = airdropPubKey
-
-	airPrKey, err := cr.ToECDSA(airdropPrKey[:32])
+	replyCode, err := cl.SendTransaction(trans, "localhost:"+strconv.FormatUint(uint64(nodePort), 10))
 	if err != nil {
 		t.Error(err)
 	}
 
-	airdrop, err := transaction.NewAirdrop(receiver1, airPrKey, 100.0, 11.1, usersBalance)
-	if err != nil {
-		t.Error(err)
+	if replyCode != pb.AddTransactionReply_TR_Ok {
+		t.Error("replyCode != Ok")
 	}
 }
