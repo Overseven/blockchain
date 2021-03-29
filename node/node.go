@@ -1,44 +1,63 @@
 package node
 
 import (
-	"encoding/json"
-	"fmt"
-	"net/http"
+	"context"
+	"crypto/ecdsa"
+	"log"
+	"net"
+	"strconv"
 
 	"github.com/overseven/blockchain/balance"
-	"github.com/overseven/blockchain/block"
 	chain "github.com/overseven/blockchain/chain"
 	"github.com/overseven/blockchain/interfaces"
-	//"github.com/davecgh/go-spew/spew"
+	pb "github.com/overseven/blockchain/protocol"
+	"google.golang.org/grpc"
 )
 
-var (
-	localBlockchain chain.Chain
-	usersBalance    balance.Balance
-)
-
-func Run() {
-	fmt.Println("Launching node.")
-	http.HandleFunc("/transaction/new", receiveNewTransaction)
-	http.ListenAndServe(":8090", nil)
-	bl := block.Block{
-		Id: 0,
-	}
-	//blBase := chain.Block(bl)
-	localBlockchain.Blocks = append(localBlockchain.Blocks, &bl)
-	fmt.Println(&localBlockchain)
+type Node struct {
+	pb.UnimplementedNoderServer
+	Mode          interfaces.ClientMode
+	ListeningPort uint32
+	usersBalance  balance.Balance
+	localChain    chain.Chain
+	privateKey    *ecdsa.PrivateKey
 }
 
-func receiveNewTransaction(w http.ResponseWriter, req *http.Request) {
-	var t interfaces.BlockElement
-	err := json.NewDecoder(req.Body).Decode(&t)
+func (n *Node) Init() {
+
+}
+
+func (n *Node) SetPrivateKey(key *ecdsa.PrivateKey) {
+	n.privateKey = key
+}
+
+func (n *Node) SetPort(port uint32) {
+	n.ListeningPort = port
+}
+
+func (n *Node) GetPort() uint32 {
+	return n.ListeningPort
+}
+
+func (n *Node) StartListening(stop chan bool) error {
+	// TODO: stop signal handling
+	// TODO: goroutine ?
+	lis, err := net.Listen("tcp", "localhost:"+strconv.FormatUint(uint64(n.ListeningPort), 10))
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
+		return err
 	}
+	s := grpc.NewServer()
+	pb.RegisterNoderServer(s, n)
+	go s.Serve(lis)
+	// if err := s.Serve(lis); err != nil {
+	// 	return err
+	// }
+	return nil
+}
 
-	//spew.Dump(t)
+// SayHello implements helloworld.GreeterServer
+func (s *Node) AddTransaction(ctx context.Context, in *pb.AddTransactionRequest) (*pb.AddTransactionReply, error) {
+	log.Printf("Node received transaction request with %f value and %f fee", in.Transction.Pay, in.Transction.Fee)
 
-	valid := t.Verify(&usersBalance)
-	fmt.Println("Receive transaction, valid: ", valid)
+	return &pb.AddTransactionReply{Reply: pb.AddTransactionReply_TR_Ok, Message: "Ok!", Additional: "aga"}, nil
 }

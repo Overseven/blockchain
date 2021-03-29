@@ -1,31 +1,45 @@
 package client
 
 import (
+	"context"
+	"crypto/ecdsa"
+	"log"
+	"sync"
+	"time"
+
 	"github.com/overseven/blockchain/balance"
 	"github.com/overseven/blockchain/chain"
 	"github.com/overseven/blockchain/interfaces"
+	pb "github.com/overseven/blockchain/protocol"
+	"github.com/overseven/blockchain/protocol/converter"
+	"google.golang.org/grpc"
 )
 
-
-
 type Client struct {
-	Mode interfaces.ClientMode
+	Mode          interfaces.ClientMode
 	ListeningPort uint32
-	Nodes []string // TODO: create Node address type
-	usersBalance balance.Balance
-	localChain       chain.Chain
-	address string
+	usersBalance  balance.Balance
+	localChain    chain.Chain
+	privateKey    *ecdsa.PrivateKey
 }
 
-func (c *Client) SetMode(mode interfaces.ClientMode){
+func (c *Client) Init() {
+	c.usersBalance.Init()
+}
+
+func (c *Client) SetMode(mode interfaces.ClientMode) {
 	c.Mode = mode
 }
 
-func (c *Client) GetMode() interfaces.ClientMode{
+func (c *Client) GetMode() interfaces.ClientMode {
 	return c.Mode
 }
 
-func (c *Client) SetPort(port uint32){
+func (c *Client) SetPrivateKey(key *ecdsa.PrivateKey) {
+	c.privateKey = key
+}
+
+func (c *Client) SetPort(port uint32) {
 	c.ListeningPort = port
 }
 
@@ -33,20 +47,45 @@ func (c *Client) GetPort() uint32 {
 	return c.ListeningPort
 }
 
-func (c *Client) SetListOfNodes(nodes []string){
-	c.Nodes = nodes
+func (c *Client) SendTransactionToAllNodes(element interfaces.BlockElement, nodes []string) ([]pb.AddTransactionReply_Code, error) {
+	// TODO: test this
+	wg := sync.WaitGroup{}
+	wg.Add(len(nodes))
+
+	returnCodes := []pb.AddTransactionReply_Code{}
+	for i, n := range nodes {
+		f := func(index int, nodeAddress string) {
+			defer wg.Done()
+			code, err := c.SendTransaction(element, n)
+			if err != nil {
+				returnCodes[index] = pb.AddTransactionReply_TR_Error
+			} else {
+				returnCodes[index] = code
+			}
+		}
+		go f(i, n)
+	}
+	wg.Wait()
+	return returnCodes, nil
 }
 
-func (c *Client) GetListOfNodes() []string{
-	return c.Nodes
-}
-
-func (c* Client) SendTransactionToAllNodes(element interfaces.BlockElement){
+func (c *Client) SendTransaction(element interfaces.BlockElement, nodeAddress string) (pb.AddTransactionReply_Code, error) {
 	// TODO: finish
-}
+	// Set up a connection to the server.
+	conn, err := grpc.Dial(nodeAddress, grpc.WithInsecure(), grpc.WithBlock())
+	if err != nil {
+		log.Fatalf("did not connect: %v", err)
+	}
+	defer conn.Close()
+	con := pb.NewNoderClient(conn)
 
-func (c* Client) SendTransaction(element interfaces.BlockElement, nodeAddress string){
-	// TODO: finish
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	transPb, err := converter.TransactionLocal2Proto(element)
+	r, err := con.AddTransaction(ctx, &pb.AddTransactionRequest{Transction: transPb})
+
+	return r.Reply, err
 }
 
 //func Run(configFile string) {

@@ -44,13 +44,17 @@ message Block{
 
 
 message AddTransactionRequest {
-  string name = 1;
-  int32 age = 2;
+  Transaction transction = 1;
 }
 
 message AddTransactionReply {
-  string message = 1;
-  string additional = 2;
+  enum Code {
+    TR_Error = 0;
+    TR_Ok = 1;
+  }
+  Code reply = 1;
+  string message = 2;
+  string additional = 3;
 }
 
 message GetBlocksRequest{

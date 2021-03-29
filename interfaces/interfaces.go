@@ -67,21 +67,3 @@ type BalanceStat struct {
 	LastTransBlock uint64
 	CurrentBalance float64
 }
-
-type ClientMode int32
-
-const (
-	ModeFull = iota
-	ModeLight
-)
-
-type NetworkClient interface{
-	SetMode(mode ClientMode)
-	GetMode() ClientMode
-	SetPort(uint32)
-	GetPort() uint32
-	SetListOfNodes(address []string)
-	GetListOfNodes() []string
-	SendTransactionToAllNodes(element BlockElement)
-	SendTransaction(element BlockElement, nodeAddress string)
-}
