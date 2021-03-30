@@ -39,6 +39,10 @@ func (c *Client) SetPrivateKey(key *ecdsa.PrivateKey) {
 	c.privateKey = key
 }
 
+func (c *Client) GetPrivateKey() *ecdsa.PrivateKey {
+	return c.privateKey
+}
+
 func (c *Client) SetPort(port uint32) {
 	c.ListeningPort = port
 }

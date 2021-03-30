@@ -17,6 +17,7 @@ type NetworkClient interface {
 	Init()
 	SetMode(mode ClientMode)
 	GetMode() ClientMode
+	GetPrivateKey() *ecdsa.PrivateKey
 	SetPrivateKey(*ecdsa.PrivateKey)
 	SetPort(uint32)
 	GetPort() uint32
