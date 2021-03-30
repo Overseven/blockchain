@@ -65,7 +65,7 @@ func (b *Balance) FullCalc(blockchain interfaces.BlockConnecter) error {
 	for _, block := range blockchain.GetBlocks() {
 		//b := block.(chain.Block)
 		//c := ichain.IChain(*chain)
-		if _, err := block.IsValid(blockchain, b); err != nil {
+		if err := block.IsValid(blockchain, b); err != nil {
 			b.Clear()
 			return errors.New("incorrect block with number: " + strconv.FormatUint(block.GetId(), 10) + ". Error: " + err.Error())
 		}

@@ -1,8 +1,6 @@
 package interfaces
 
 import (
-	"crypto/ecdsa"
-
 	pb "github.com/overseven/blockchain/protocol"
 )
 
@@ -14,13 +12,11 @@ const (
 )
 
 type NetworkClient interface {
+	Networker
+	WalletOwner
+	ChainHolder
 	Init()
 	SetMode(mode ClientMode)
 	GetMode() ClientMode
-	GetPrivateKey() *ecdsa.PrivateKey
-	SetPrivateKey(*ecdsa.PrivateKey)
-	SetPort(uint32)
-	GetPort() uint32
-	SendTransactionToAllNodes(element BlockElement) ([]pb.AddTransactionReply_Code, error)
-	SendTransaction(element BlockElement, nodeAddress string) (pb.AddTransactionReply_Code, error)
+	SendTransactions(element BlockElement, nodesAddress []string) ([]pb.AddTransactionReply_Code, error)
 }

@@ -1,6 +1,7 @@
 package interfaces
 
 import (
+	"crypto/ecdsa"
 	"time"
 )
 
@@ -19,7 +20,7 @@ type TransactionsContainer interface {
 	GetHash() (hash []byte)
 	GetPrevHash() []byte
 	SetPrevHash([]byte)
-	IsValid(BlockConnecter, Balancer) (bool, error)
+	IsValid(BlockConnecter, Balancer) error
 	Mining(minerPubKey []byte, stop chan bool) []byte
 	GetTransactions() []BlockElement
 	SetTransactions([]BlockElement)
@@ -66,4 +67,21 @@ type BalanceStat struct {
 	Pubkey         []byte
 	LastTransBlock uint64
 	CurrentBalance float64
+}
+
+type WalletOwner interface {
+	GetPrivateKey() *ecdsa.PrivateKey
+	SetPrivateKey(*ecdsa.PrivateKey)
+	GetPublicKey() []byte
+	SetPublicKey([]byte)
+}
+
+type ChainHolder interface {
+	GetChain() BlockConnecter
+	SetChain(BlockConnecter)
+}
+
+type Networker interface {
+	SetPort(uint32)
+	GetPort() uint32
 }

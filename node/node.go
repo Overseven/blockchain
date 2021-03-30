@@ -8,10 +8,11 @@ import (
 	"sync"
 
 	"github.com/overseven/blockchain/balance"
-	chain "github.com/overseven/blockchain/chain"
+	"github.com/overseven/blockchain/chain"
 	"github.com/overseven/blockchain/interfaces"
 	pb "github.com/overseven/blockchain/protocol"
 	"github.com/overseven/blockchain/protocol/converter"
+	"github.com/overseven/blockchain/utility"
 	"google.golang.org/grpc"
 )
 
@@ -20,18 +21,32 @@ type Node struct {
 	Mode          interfaces.ClientMode
 	ListeningPort uint32
 	usersBalance  balance.Balance
-	localChain    chain.Chain
+	localChain    interfaces.BlockConnecter
 	privateKey    *ecdsa.PrivateKey
+	publicKey     []byte
 	waitingTrans  []interfaces.BlockElement
 	mutex         sync.Mutex
 }
 
 func (n *Node) Init() {
-
+	n.localChain = new(chain.Chain)
 }
 
 func (n *Node) SetPrivateKey(key *ecdsa.PrivateKey) {
 	n.privateKey = key
+	n.publicKey = utility.PrivToPubKey(key)
+}
+
+func (n *Node) GetPrivateKey() *ecdsa.PrivateKey {
+	return n.privateKey
+}
+
+func (n *Node) SetPublicKey(key []byte) {
+	n.publicKey = key
+}
+
+func (n *Node) GetPublicKey() []byte {
+	return n.publicKey
 }
 
 func (n *Node) SetPort(port uint32) {
@@ -79,4 +94,18 @@ func (n *Node) AddTransaction(ctx context.Context, in *pb.AddTransactionRequest)
 
 func (n *Node) GetWaitingTrans() []interfaces.BlockElement {
 	return n.waitingTrans
+}
+
+func (n *Node) CreateBlock([]interfaces.BlockElement) interfaces.TransactionsContainer {
+	block := n.localChain.NewBlock()
+	block.SetMiner(n.publicKey)
+	return block
+}
+
+func (n *Node) GetChain() interfaces.BlockConnecter {
+	return n.localChain
+}
+
+func (n *Node) SetChain(b interfaces.BlockConnecter) {
+	n.localChain = b
 }

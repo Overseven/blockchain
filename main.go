@@ -3,9 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-
-	"github.com/overseven/blockchain/client"
-	"github.com/overseven/blockchain/node"
 )
 
 func main() {
@@ -16,12 +13,12 @@ func main() {
 
 	if *flagNode {
 		fmt.Println("Node choosen!")
-		node.Run()
+		//node.Run()
 
 	} else if *flagClient {
 		fmt.Println("Client choosen!")
 		if len(*paramCfgFile) != 0 {
-			client.Run(*paramCfgFile)
+			//client.Run(*paramCfgFile)
 		} else {
 			panic("aaa config file?")
 		}

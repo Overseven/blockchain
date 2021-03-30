@@ -12,6 +12,7 @@ import (
 	"github.com/overseven/blockchain/interfaces"
 	pb "github.com/overseven/blockchain/protocol"
 	"github.com/overseven/blockchain/protocol/converter"
+	"github.com/overseven/blockchain/utility"
 	"google.golang.org/grpc"
 )
 
@@ -21,6 +22,7 @@ type Client struct {
 	usersBalance  balance.Balance
 	localChain    chain.Chain
 	privateKey    *ecdsa.PrivateKey
+	publicKey     []byte
 }
 
 func (c *Client) Init() {
@@ -37,10 +39,19 @@ func (c *Client) GetMode() interfaces.ClientMode {
 
 func (c *Client) SetPrivateKey(key *ecdsa.PrivateKey) {
 	c.privateKey = key
+	c.publicKey = utility.PrivToPubKey(key)
 }
 
 func (c *Client) GetPrivateKey() *ecdsa.PrivateKey {
 	return c.privateKey
+}
+
+func (c *Client) SetPublicKey(key []byte) {
+	c.publicKey = key
+}
+
+func (c *Client) GetPublicKey() []byte {
+	return c.publicKey
 }
 
 func (c *Client) SetPort(port uint32) {
@@ -51,7 +62,7 @@ func (c *Client) GetPort() uint32 {
 	return c.ListeningPort
 }
 
-func (c *Client) SendTransactionToAllNodes(element interfaces.BlockElement, nodes []string) ([]pb.AddTransactionReply_Code, error) {
+func (c *Client) SendTransactions(element interfaces.BlockElement, nodes []string) ([]pb.AddTransactionReply_Code, error) {
 	// TODO: test this
 	wg := sync.WaitGroup{}
 	wg.Add(len(nodes))

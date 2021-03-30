@@ -49,45 +49,50 @@ func (block *Block) GetHash() (hash []byte) {
 	//hash = append(hash, block.GetWalletStatsHash()...)
 	hash = append(hash, blUtility.UInt64Bytes(block.Difficulty)...)
 	hash = append(hash, block.Miner...)
+	hash = cr.Keccak256(hash)
 	block.Hash = hash
 	return hash
 }
 
-func (block *Block) IsValid(blockchain interfaces.BlockConnecter, balance interfaces.Balancer) (bool, error) {
-	// TODO: finish him!!
-
+func (block *Block) IsValid(blockchain interfaces.BlockConnecter, balance interfaces.Balancer) error {
+	// TODO: add test
 	var blocks []interfaces.TransactionsContainer = blockchain.GetBlocks()
 
 	if uint64(len(blockchain.GetBlocks())) < block.Id+1 {
-		return false, errors.New("incorrect block Id: " + strconv.FormatUint(block.Id, 10))
+		return errors.New("incorrect block Id: " + strconv.FormatUint(block.Id, 10))
 	}
 
 	if block.Id != 0 {
 		if blocks[block.Id-1].GetId()+1 != block.Id {
-			return false, errors.New("conflicting block Id with prev. block Id: " + strconv.FormatUint(block.Id, 10))
+			return errors.New("conflicting block Id with prev. block Id: " + strconv.FormatUint(block.Id, 10))
 		}
 	}
-	if uint64(len(blocks)) > block.Id+1 {
-		if blocks[block.Id+1].GetId() != block.Id+1 {
-			return false, errors.New("conflicting block Id with next block Id: " + strconv.FormatUint(block.Id, 10))
-		}
-	}
+	// if uint64(len(blocks)) > block.Id+1 {
+	// 	if blocks[block.Id+1].GetId() != block.Id+1 {
+	// 		return errors.New("conflicting block Id with next block Id: " + strconv.FormatUint(block.Id, 10))
+	// 	}
+	// }
 
 	// if block is the first in chain
 	for _, t := range block.Transactions {
 		data := t.GetData()
 		if block.Id == 0 && data.Type != transaction.TypeAirdrop {
-			return false, errors.New("first block must have only airdrop transactions")
+			return errors.New("first block must have only airdrop transactions")
 		}
 		if err := t.Verify(balance); err != nil {
-			return false, errors.New("not valid transaction: " + err.Error())
+			return errors.New("not valid transaction: " + err.Error())
 		}
 	}
 
-	// TODO: finish for not first block
+	// check hash
+	hash := cr.Keccak256(append(block.GetHash(), block.Nonce...))
+	mask := make([]byte, block.Difficulty)
+	if !bytes.HasPrefix(hash, mask) {
+		return errors.New("incorrect resulting hash, not have required zeroes")
+	}
 
 	//block.WalletsStats
-	return true, nil
+	return nil
 }
 
 func (block *Block) Mining(minerPubKey []byte, stop chan bool) []byte {
@@ -107,6 +112,7 @@ func (block *Block) Mining(minerPubKey []byte, stop chan bool) []byte {
 
 		if bytes.HasPrefix(hash, mask) {
 			// YEA!! Finish work
+			block.Nonce = nonce
 			return nonce
 		}
 	}
