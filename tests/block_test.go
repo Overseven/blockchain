@@ -349,4 +349,24 @@ func TestNetworkBlockGeneration(t *testing.T) {
 	if !transaction.IsEqual(airdrop2.GetData(), nodeTrans[1].GetData()) {
 		t.Error("error: client and node version of one transfer is different")
 	}
+
+	block := nd.CreateBlock(nodeTrans)
+	var difficulty uint64 = 2
+	block.SetDifficulty(difficulty)
+	for _, t := range nodeTrans {
+		block.AddTransaction(t)
+	}
+
+	stopMining := make(chan bool)
+	block.Mining(nd.GetPublicKey(), stopMining)
+	//blockHash := cr.Keccak256(append(block.GetHash(), block.GetNonce()...))
+	//t.Log("Block hash: ")
+	//t.Log(blockHash)
+
+	b := createBalance()
+
+	if err := block.IsValid(nd.GetChain(), b); err != nil {
+		t.Error(err)
+	}
+
 }

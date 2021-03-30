@@ -4,7 +4,9 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/overseven/blockchain/balance"
 	"github.com/overseven/blockchain/client"
+	"github.com/overseven/blockchain/interfaces"
 	"github.com/overseven/blockchain/node"
 	pb "github.com/overseven/blockchain/protocol"
 	"github.com/overseven/blockchain/transaction"
@@ -31,11 +33,22 @@ func createClient() (*client.Client, error) {
 }
 
 func createNode() (*node.Node, error) {
+	nodePrKey, _, err := generateWallet()
+	if err != nil {
+		return nil, err
+	}
+
 	nd := node.Node{}
 	nd.Init()
 	nd.SetPort(nodePort)
-
+	nd.SetPrivateKey(nodePrKey)
 	return &nd, nil
+}
+
+func createBalance() interfaces.Balancer {
+	b := balance.Balance{}
+	b.Init()
+	return &b
 }
 
 func TestNodeClientCommunication(t *testing.T) {
