@@ -131,7 +131,7 @@ func (block *Block) SetTransactions(tr []interfaces.BlockElement) {
 
 func (block *Block) HasTransaction(transact interfaces.BlockElement) (index int, has bool) {
 	for i, tran := range block.Transactions {
-		if transaction.IsEqual(transact.GetData(), tran.GetData()) {
+		if transaction.IsEqual(transact.GetData(), tran.GetData(), true) {
 			return i, true
 		}
 	}
