@@ -17,20 +17,23 @@ const (
 	TypeTransfer
 )
 
-func IsEqual(t1, t2 *interfaces.Data) bool {
+func IsEqual(t1, t2 *interfaces.Data, timestampAndSignCheck bool) bool {
 	if !bytes.Equal(t1.Sender, t2.Sender) {
 		return false
 	}
 	if !bytes.Equal(t1.Receiver, t2.Receiver) {
 		return false
 	}
-	if !bytes.Equal(t1.Sign, t2.Sign) {
-		return false
+	if timestampAndSignCheck {
+		if t1.Timestamp != t2.Timestamp {
+			return false
+		}
+		if !bytes.Equal(t1.Sign, t2.Sign) {
+			return false
+		}
 	}
+
 	if t1.Message != t2.Message {
-		return false
-	}
-	if t1.Timestamp != t2.Timestamp {
 		return false
 	}
 	if t1.Pay != t2.Pay {

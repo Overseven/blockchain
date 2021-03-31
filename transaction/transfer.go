@@ -3,10 +3,8 @@ package transaction
 import (
 	"crypto/ecdsa"
 	"errors"
-	"strconv"
-	"time"
-
 	"github.com/overseven/blockchain/interfaces"
+	"strconv"
 
 	cr "github.com/ethereum/go-ethereum/crypto"
 	// "github.com/overseven/blockchain/chain"
@@ -58,11 +56,7 @@ func NewTransfer(sndrPrivKey *ecdsa.PrivateKey, rcvrPubKey []byte, value, fee fl
 	data.Fee = fee
 	data.Message = message // TODO: add fix size message
 
-	// TODO: create timestamp function
-	{
-		t := time.Now()
-		data.Timestamp = time.Date(t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), t.Second(), t.Nanosecond(), time.UTC)
-	}
+	data.Timestamp = utility.NewTimestamp()
 	hashed := GetHash(&data)
 
 	sign, err := cr.Sign(hashed, sndrPrivKey)
