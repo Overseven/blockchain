@@ -4,6 +4,7 @@ import (
 	"crypto/ecdsa"
 	"encoding/binary"
 	"math"
+	"time"
 
 	cr "github.com/ethereum/go-ethereum/crypto"
 )
@@ -30,4 +31,19 @@ func Float64Bytes(float float64) []byte {
 
 func PrivToPubKey(sndrPrivKey *ecdsa.PrivateKey) []byte {
 	return cr.CompressPubkey(&sndrPrivKey.PublicKey)
+}
+
+func GenerateWallet() (privKey *ecdsa.PrivateKey, pubKey []byte, err error) {
+	privKey, err = cr.GenerateKey()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	pubKey = PrivToPubKey(privKey)
+	return
+}
+
+func NewTimestamp() time.Time {
+	t := time.Now()
+	return time.Date(t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), t.Second(), t.Nanosecond(), time.UTC)
 }
