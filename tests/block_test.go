@@ -1,7 +1,6 @@
 package test
 
 import (
-	"crypto/ecdsa"
 	"strconv"
 	"testing"
 
@@ -17,15 +16,6 @@ import (
 	"github.com/overseven/blockchain/utility"
 )
 
-func generateWallet() (privKey *ecdsa.PrivateKey, pubKey []byte, err error) {
-	privKey, err = cr.GenerateKey()
-	if err != nil {
-		return nil, nil, err
-	}
-
-	pubKey = utility.PrivToPubKey(privKey)
-	return
-}
 
 func TestBlockIsValid(t *testing.T) {
 	var bchain interfaces.BlockConnecter = &chain.Chain{}
@@ -33,16 +23,16 @@ func TestBlockIsValid(t *testing.T) {
 	var usersBalance interfaces.Balancer = &balance.Balance{}
 	usersBalance.Init()
 
-	sndrPrivKey, sndrPubKey, err := generateWallet()
+	sndrPrivKey, sndrPubKey, err := utility.GenerateWallet()
 	if err != nil {
 		t.Error(err)
 	}
-	_, rcvrPubKey, err := generateWallet()
+	_, rcvrPubKey, err := utility.GenerateWallet()
 	if err != nil {
 		t.Error(err)
 	}
 
-	_, minerPubKey, err := generateWallet()
+	_, minerPubKey, err := utility.GenerateWallet()
 	if err != nil {
 		t.Error(err)
 	}
@@ -137,22 +127,22 @@ func Test3Airdrop1Block(t *testing.T) {
 	var usersBalance interfaces.Balancer = &balance.Balance{}
 	usersBalance.Init()
 
-	_, receiver1, err := generateWallet()
+	_, receiver1, err := utility.GenerateWallet()
 	if err != nil {
 		t.Error(err)
 	}
 
-	_, receiver2, err := generateWallet()
+	_, receiver2, err := utility.GenerateWallet()
 	if err != nil {
 		t.Error(err)
 	}
 
-	_, receiver3, err := generateWallet()
+	_, receiver3, err := utility.GenerateWallet()
 	if err != nil {
 		t.Error(err)
 	}
 
-	_, minerPubKey, err := generateWallet()
+	_, minerPubKey, err := utility.GenerateWallet()
 	if err != nil {
 		t.Error(err)
 	}
@@ -274,12 +264,12 @@ func TestNetworkBlockGeneration(t *testing.T) {
 		t.Error(err)
 	}
 
-	_, rcvrPubKey1, err := generateWallet()
+	_, rcvrPubKey1, err := utility.GenerateWallet()
 	if err != nil {
 		t.Error(err)
 	}
 
-	_, rcvrPubKey2, err := generateWallet()
+	_, rcvrPubKey2, err := utility.GenerateWallet()
 	if err != nil {
 		t.Error(err)
 	}
@@ -342,11 +332,11 @@ func TestNetworkBlockGeneration(t *testing.T) {
 		return
 	}
 
-	if !transaction.IsEqual(airdrop1.GetData(), nodeTrans[0].GetData()) {
+	if !transaction.IsEqual(airdrop1.GetData(), nodeTrans[0].GetData(), true) {
 		t.Error("error: client and node version of one transfer is different")
 	}
 
-	if !transaction.IsEqual(airdrop2.GetData(), nodeTrans[1].GetData()) {
+	if !transaction.IsEqual(airdrop2.GetData(), nodeTrans[1].GetData(), true) {
 		t.Error("error: client and node version of one transfer is different")
 	}
 
