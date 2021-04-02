@@ -86,6 +86,25 @@ func TestIsEqual(t *testing.T) {
 	if equal {
 		t.Error("error with compare tr1 and tr7")
 	}
+
+	tr2.Data = *tr1.GetData()
+	tr1.Data.Timestamp = utility.NewTimestamp().Add(1)
+	if err != nil {
+		t.Error(err)
+	}
+
+	equal = transaction.IsEqual(tr1.GetData(), tr2.GetData(), true)
+	if equal {
+		t.Error("error with compare tr1 and tr2 with diff timestamp")
+	}
+
+	tr1.Data = *tr2.GetData()
+	tr1.Data.Sign = []byte("Siign!")
+
+	equal = transaction.IsEqual(tr1.GetData(), tr2.GetData(), true)
+	if equal {
+		t.Error("error with compare tr1 and tr2 with diff sign")
+	}
 }
 
 func TestGetHash(t *testing.T) {
