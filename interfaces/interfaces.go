@@ -34,14 +34,6 @@ type TransactionsContainer interface {
 	SetNonce([]byte)
 }
 
-type Type int64
-
-type BlockElement interface {
-	SetData(*Data)
-	GetData() *Data
-	Verify(Balancer) error
-}
-
 type Data struct {
 	Type      Type
 	Sender    []byte

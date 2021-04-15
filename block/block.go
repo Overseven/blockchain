@@ -16,7 +16,7 @@ import (
 
 type Block struct {
 	Id           uint64
-	Transactions []interfaces.BlockElement
+	Transactions []transaction.Transaction
 	PrevHash     []byte
 	//WalletsStats map[string]WalletStats
 
@@ -36,7 +36,7 @@ type WalletStats struct {
 func (block *Block) GetBatchHash() (hash []byte) {
 	var toHashBytes []byte
 	for _, tran := range block.Transactions {
-		toHashBytes = append(toHashBytes, transaction.GetHash(tran.GetData())...)
+		toHashBytes = append(toHashBytes, tran.Hash()...)
 	}
 	hash = cr.Keccak256(toHashBytes)
 	return
@@ -121,15 +121,15 @@ func (block *Block) Mining(minerPubKey []byte, stop chan bool) []byte {
 	return []byte{}
 }
 
-func (block *Block) GetTransactions() []interfaces.BlockElement {
+func (block *Block) GetTransactions() []transaction.Transaction {
 	return block.Transactions
 }
 
-func (block *Block) SetTransactions(tr []interfaces.BlockElement) {
+func (block *Block) SetTransactions(tr []transaction.Transaction) {
 	block.Transactions = tr
 }
 
-func (block *Block) HasTransaction(transact interfaces.BlockElement) (index int, has bool) {
+func (block *Block) HasTransaction(transact transaction.Transaction) (index int, has bool) {
 	for i, tran := range block.Transactions {
 		if transaction.IsEqual(transact.GetData(), tran.GetData(), true) {
 			return i, true
@@ -138,7 +138,7 @@ func (block *Block) HasTransaction(transact interfaces.BlockElement) (index int,
 	return 0, false
 }
 
-func (block *Block) AddTransaction(tr interfaces.BlockElement) error {
+func (block *Block) AddTransaction(tr transaction.Transaction) error {
 	block.Transactions = append(block.Transactions, tr)
 
 	return nil

@@ -8,15 +8,6 @@ import (
 	"github.com/overseven/blockchain/interfaces"
 )
 
-// TODO: calc pubkey len and set const size for all
-
-type Type int64
-
-const (
-	TypeAirdrop = iota
-	TypeTransfer
-)
-
 func IsEqual(t1, t2 *interfaces.Data, timestampAndSignCheck bool) bool {
 	if !bytes.Equal(t1.Sender, t2.Sender) {
 		return false

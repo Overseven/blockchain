@@ -1,13 +1,14 @@
 package transaction_test
 
 import (
+	"testing"
+
 	cr "github.com/ethereum/go-ethereum/crypto"
 	"github.com/overseven/blockchain/balance"
 	"github.com/overseven/blockchain/interfaces"
+	"github.com/overseven/blockchain/transaction"
 	"github.com/overseven/blockchain/utility"
 	"github.com/overseven/blockchain/wallet"
-	"github.com/overseven/blockchain/transaction"
-	"testing"
 )
 
 const airdropModeratorConfigFile = "..\\wallet.cfg"
@@ -38,7 +39,7 @@ func TestAirdrop_GetData(t *testing.T) {
 	data.Timestamp = timestamp
 	data.Sign = []byte("eeee sign!")
 
-	tr1 := transaction.Transfer{Data: data}
+	tr1 := transfer.Transfer{Data: data}
 
 	if !transaction.IsEqual(&data, tr1.GetData(), true) {
 		t.Error("err: data and tr1.data are not equal!")
@@ -75,7 +76,7 @@ func TestAirdropVerify(t *testing.T) {
 		t.Error(err)
 	}
 
-	airdrop, err := transaction. NewAirdrop(receiver1, airPrKey, 110.1, 11.1)
+	airdrop, err := transaction.NewAirdrop(receiver1, airPrKey, 110.1, 11.1)
 	if err != nil {
 		t.Error(err)
 	}
