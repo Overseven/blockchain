@@ -1,4 +1,4 @@
-package transaction_test
+package airdrop_test
 
 import (
 	"testing"
@@ -7,6 +7,7 @@ import (
 	"github.com/overseven/blockchain/balance"
 	"github.com/overseven/blockchain/interfaces"
 	"github.com/overseven/blockchain/transaction"
+	"github.com/overseven/blockchain/transaction/transfer"
 	"github.com/overseven/blockchain/utility"
 	"github.com/overseven/blockchain/wallet"
 )

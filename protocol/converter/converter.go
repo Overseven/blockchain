@@ -2,13 +2,16 @@ package converter
 
 import (
 	"errors"
-	"google.golang.org/protobuf/types/known/timestamppb"
 	"strconv"
+
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/overseven/blockchain/block"
 	"github.com/overseven/blockchain/interfaces"
 	pb "github.com/overseven/blockchain/protocol"
 	"github.com/overseven/blockchain/transaction"
+	"github.com/overseven/blockchain/transaction/airdrop"
+	"github.com/overseven/blockchain/transaction/transfer"
 )
 
 func BlockProto2Local(b *pb.Block) (interfaces.TransactionsContainer, error) {
@@ -95,4 +98,33 @@ func TransactionLocal2Proto(trans interfaces.BlockElement) (*pb.Transaction, err
 	tr.Fee = data.Fee
 	tr.SenderSign = data.Sign
 	return tr, nil
+}
+
+func TransactionFromBytes(b []byte) (transaction.Transaction, error) {
+	if len(b) < 4 {
+		return nil, errors.New("incorrect size. len < 4")
+	}
+
+	trType := transaction.Type(b[0])
+	switch trType {
+	case transaction.TypeTransfer:
+		return airdropFromBytes(b[1:])
+
+	case transaction.TypeAirdrop:
+		return transferFromBytes(b[1:])
+	default:
+		return nil, errors.New("incorrect transaction type")
+	}
+}
+
+func transferFromBytes(b []byte) (*transfer.Transfer, error) {
+	tr := transfer.Transfer{}
+	err := tr.FromBytes(b)
+	return &tr, err
+}
+
+func airdropFromBytes(b []byte) (*airdrop.Airdrop, error) {
+	a := airdrop.Airdrop{}
+	err := a.FromBytes(b)
+	return &a, err
 }

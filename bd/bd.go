@@ -3,7 +3,7 @@ package bd
 import (
 	"errors"
 
-	"github.com/overseven/blockchain/interfaces"
+	"github.com/overseven/blockchain/protocol/converter"
 	"github.com/overseven/blockchain/transaction"
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/opt"
@@ -41,15 +41,43 @@ func Get(prefix string, key []byte) ([]byte, error) {
 	return db.Get(bKey, nil)
 }
 
-func PutTransaction(tr interfaces.BlockElement) error {
+func PutTransaction(tr transaction.Transaction) error {
 	if err := IsOpen(); err != nil {
 		return err
 	}
 
 	bKey := []byte("t")
-	bKey = append(bKey, transaction.GetHash(tr.GetData())...)
-	bData := transaction.Bytes(tr)
+	bKey = append(bKey, tr.Hash()...)
+	bData, err := tr.Bytes()
+	if err != nil {
+		return err
+	}
 	return db.Put(bKey, bData, nil)
+}
+
+func GetTransaction(hash []byte) (transaction.Transaction, error) {
+	if err := IsOpen(); err != nil {
+		return nil, err
+	}
+
+	if len(hash) != 32 {
+		return nil, errors.New("incorrect hash len")
+	}
+
+	bKey := []byte("t")
+	bKey = append(bKey, hash...)
+	bValue, err := db.Get(bKey, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	tr, err := converter.TransactionFromBytes(bValue)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return tr, nil
 }
 
 func PutBlock() {

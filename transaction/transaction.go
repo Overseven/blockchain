@@ -14,8 +14,9 @@ const (
 )
 
 type Transaction interface {
-	String() string
-	Bytes() []byte
+	String() (string, error)
+	Bytes() ([]byte, error)
+	FromBytes([]byte) error
 	Hash() []byte
 	Verify() error
 }

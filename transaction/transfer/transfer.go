@@ -1,4 +1,4 @@
-package transaction
+package transfer
 
 import (
 	"crypto/ecdsa"
@@ -7,7 +7,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/overseven/blockchain/interfaces"
 	"github.com/overseven/blockchain/transaction"
 
 	cr "github.com/ethereum/go-ethereum/crypto"
@@ -54,6 +53,12 @@ func (t *Transfer) Bytes() ([]byte, error) {
 	res = append(res, utility.Float64Bytes(t.Fee)...)
 	res = append(res, utility.StringToBytes(t.Message)...)
 
+	// TODO: timestamp
+	if len(t.Node) != transaction.ByteLenPubKey {
+		return nil, errors.New("incorrect node field size")
+	}
+	res = append(res, t.Node...)
+
 	if len(t.Sign) != transaction.ByteLenSign {
 		return nil, errors.New("incorrect sign field size")
 	}
@@ -61,6 +66,36 @@ func (t *Transfer) Bytes() ([]byte, error) {
 	res = append(res, t.Sign...)
 
 	return res, nil
+}
+
+func (t *Transfer) FromBytes(b []byte) error {
+	if len(b) < 64 { // TODO: define min size
+		return errors.New("incorrect input data len")
+	}
+
+	var err error
+	idx := 0
+	t.Sender = b[idx : idx+transaction.ByteLenPubKey]
+	idx += transaction.ByteLenPubKey
+	t.Receiver = b[idx : idx+transaction.ByteLenPubKey]
+	idx += transaction.ByteLenPubKey
+	t.Pay = utility.Float64FromBytes(b[idx : idx+8])
+	idx += 8
+	t.Fee = utility.Float64FromBytes(b[idx : idx+8])
+	idx += 8
+	t.Message, err = utility.StringFromBytes(b)
+	if err != nil {
+		return err
+	}
+	idx += 1 + len([]byte(t.Message))
+
+	// TODO: timestamp
+
+	t.Node = b[idx : idx+transaction.ByteLenPubKey]
+	idx += transaction.ByteLenPubKey
+	t.Sign = b[idx : idx+transaction.ByteLenSign]
+	idx += transaction.ByteLenSign
+	return nil
 }
 
 func (t *Transfer) Hash() []byte {
@@ -75,7 +110,7 @@ func (t *Transfer) Hash() []byte {
 	return cr.Keccak256(temp)
 }
 
-func (t *Transfer) Verify(balance interfaces.Balancer) error {
+func (t *Transfer) Verify() error {
 	hash := t.Hash()
 	if len(t.Sign) < 64 {
 		return errors.New("incorrect signature len: " + strconv.FormatInt(int64(len(t.Sign)), 10))
@@ -84,13 +119,13 @@ func (t *Transfer) Verify(balance interfaces.Balancer) error {
 		return errors.New("incorrect signature")
 	}
 
-	senderWallet, err := balance.Info(t.Sender)
-	if err != nil {
-		return err
-	}
-	if senderWallet.CurrentBalance < (t.Pay + t.Fee) {
-		return errors.New("sender wallet not enough tokens")
-	}
+	// senderWallet, err := balance.Info(t.Sender)
+	// if err != nil {
+	// 	return err
+	// }
+	// if senderWallet.CurrentBalance < (t.Pay + t.Fee) {
+	// 	return errors.New("sender wallet not enough tokens")
+	// }
 
 	return nil
 }

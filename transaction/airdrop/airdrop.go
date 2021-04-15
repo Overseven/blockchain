@@ -1,4 +1,4 @@
-package transaction
+package airdrop
 
 import (
 	"crypto/ecdsa"
@@ -8,7 +8,7 @@ import (
 	"time"
 
 	// "github.com/overseven/blockchain/chain/ichain"
-	"github.com/overseven/blockchain/interfaces"
+
 	"github.com/overseven/blockchain/transaction"
 	"github.com/overseven/blockchain/utility"
 
@@ -60,6 +60,11 @@ func (a *Airdrop) Bytes() ([]byte, error) {
 	return res, nil
 }
 
+func (a *Airdrop) FromBytes([]byte) error {
+	// TODO: finish
+	return nil
+}
+
 func (a *Airdrop) Hash() []byte {
 	temp := make([]byte, 64)
 	temp = append(temp, a.Receiver...)
@@ -70,7 +75,7 @@ func (a *Airdrop) Hash() []byte {
 	return cr.Keccak256(temp)
 }
 
-func (a *Airdrop) Verify(balance interfaces.Balancer) error {
+func (a *Airdrop) Verify() error {
 
 	if len(AirDropModeratorPubKey) == 0 {
 		return errors.New("empty AirDrop moderator public key")
