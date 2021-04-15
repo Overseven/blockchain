@@ -25,11 +25,12 @@ type Airdrop struct {
 	Fee       float64
 	Message   string
 	Timestamp time.Time
+	Node      []byte
 	Sign      []byte
 }
 
-func (t *Airdrop) String() (string, error) {
-	tmp, err := json.Marshal(t)
+func (a *Airdrop) String() (string, error) {
+	tmp, err := json.Marshal(a)
 	if err != nil {
 		return "", err
 	}
@@ -54,7 +55,7 @@ func (a *Airdrop) Bytes() ([]byte, error) {
 	if len(a.Sign) != transaction.ByteLenSign {
 		return nil, errors.New("incorrect sign field size")
 	}
-
+	res = append(res, a.Node...)
 	res = append(res, a.Sign...)
 
 	return res, nil
@@ -93,7 +94,7 @@ func (a *Airdrop) Verify() error {
 	return nil
 }
 
-// Airdrop is sending value from unlimited admin wallet to user wallet
+// NewAirdrop is sending value from unlimited admin wallet to user wallet
 func NewAirdrop(receiver []byte, adminPrivKey *ecdsa.PrivateKey, payment, fee float64) (*Airdrop, error) {
 	// TODO: add check below
 

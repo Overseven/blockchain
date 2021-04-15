@@ -14,6 +14,27 @@ service Noder {
   rpc GetBlocks(GetBlocksRequest) returns (GetBlocksReply) {}
 }
 
+message TransAirDrop{
+  bytes receiver = 1;
+  double pay = 2;
+  double fee = 3;
+  string message = 4;
+  google.protobuf.Timestamp timestamp = 5;
+  bytes node = 6;
+  bytes sign = 7;
+}
+
+message TransTransfer{
+  bytes sender = 1;
+  bytes receiver = 2;
+  double pay = 3;
+  double fee = 4;
+  string message = 5;
+  google.protobuf.Timestamp timestamp = 6;
+  bytes node = 7;
+  bytes sign = 8;
+}
+
 message Transaction{
     enum Type {
         AirDrop = 0;
@@ -21,13 +42,10 @@ message Transaction{
     }
     uint32 protocolVersion = 1;
     Type type = 2;
-    bytes sender = 3;
-    bytes receiver = 4;
-    string message = 5;
-    google.protobuf.Timestamp timestamp = 6;
-    double pay = 7;
-    double fee = 8;
-    bytes senderSign = 9;
+    oneof trans{
+      TransTransfer transfer = 3;
+      TransAirDrop drop = 4;
+    }
 }
 
 message Block{
@@ -44,7 +62,7 @@ message Block{
 
 
 message AddTransactionRequest {
-  Transaction transction = 1;
+  Transaction transaction = 1;
 }
 
 message AddTransactionReply {

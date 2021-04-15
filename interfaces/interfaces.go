@@ -34,16 +34,6 @@ type TransactionsContainer interface {
 	SetNonce([]byte)
 }
 
-type Data struct {
-	Type      Type
-	Sender    []byte
-	Receiver  []byte
-	Message   string
-	Timestamp time.Time
-	Pay       float64
-	Fee       float64
-	Sign      []byte
-}
 
 type Balancer interface {
 	Init()

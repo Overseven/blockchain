@@ -14,13 +14,13 @@ import (
 	"github.com/overseven/blockchain/transaction/transfer"
 )
 
-func BlockProto2Local(b *pb.Block) (interfaces.TransactionsContainer, error) {
-	var bl interfaces.TransactionsContainer = new(block.Block)
+func BlockProto2Local(b *pb.Block) (*block.Block, error) {
+	bl := new(block.Block)
 
 	bl.SetId(b.GetBlockId())
 
 	// transactions
-	var tr []interfaces.BlockElement
+	var tr []transaction.Transaction
 	for i, t := range b.GetTrans() {
 		tran, err := TransactionProto2Local(t)
 		if err != nil {
@@ -40,7 +40,7 @@ func BlockProto2Local(b *pb.Block) (interfaces.TransactionsContainer, error) {
 	return bl, nil
 }
 
-func BlockLocal2Proto(b interfaces.TransactionsContainer) (*pb.Block, error) {
+func BlockLocal2Proto(b block.Block) (*pb.Block, error) {
 	bl := pb.Block{}
 	bl.BlockId = b.GetId()
 
@@ -62,7 +62,8 @@ func BlockLocal2Proto(b interfaces.TransactionsContainer) (*pb.Block, error) {
 	return &bl, nil
 }
 
-func TransactionProto2Local(t *pb.Transaction) (interfaces.BlockElement, error) {
+func TransactionProto2Local(t *pb.Transaction) (*transaction.Transaction, error) {
+
 	data := interfaces.Data{}
 	data.Sender = t.Sender
 	data.Receiver = t.Receiver
@@ -81,7 +82,7 @@ func TransactionProto2Local(t *pb.Transaction) (interfaces.BlockElement, error) 
 	}
 }
 
-func TransactionLocal2Proto(trans interfaces.BlockElement) (*pb.Transaction, error) {
+func TransactionLocal2Proto(trans transaction.Transaction) (*pb.Transaction, error) {
 	data := trans.GetData()
 	tr := new(pb.Transaction)
 	tr.Type = pb.Transaction_Type(data.Type)
