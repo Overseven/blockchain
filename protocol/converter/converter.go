@@ -7,6 +7,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/overseven/blockchain/block"
+	"github.com/overseven/blockchain/protocol/pcommon"
 	"github.com/overseven/blockchain/transaction"
 	"github.com/overseven/blockchain/transaction/airdrop"
 	"github.com/overseven/blockchain/transaction/transfer"
@@ -16,7 +17,7 @@ const (
 	protocolVersion = 1
 )
 
-func BlockProto2Local(b *pb.Block) (*block.Block, error) {
+func BlockProto2Local(b *pcommon.Block) (*block.Block, error) {
 	bl := new(block.Block)
 
 	bl.Id = b.GetBlockId()
@@ -42,11 +43,11 @@ func BlockProto2Local(b *pb.Block) (*block.Block, error) {
 	return bl, nil
 }
 
-func BlockLocal2Proto(b block.Block) (*pb.Block, error) {
-	bl := pb.Block{}
+func BlockLocal2Proto(b block.Block) (*pcommon.Block, error) {
+	bl := pcommon.Block{}
 	bl.BlockId = b.Id
 
-	var tr []*pb.Transaction
+	var tr []*pcommon.Transaction
 	for _, t := range b.Transactions {
 		tran, err := TransactionLocal2Proto(t)
 		if err != nil {
@@ -64,7 +65,7 @@ func BlockLocal2Proto(b block.Block) (*pb.Block, error) {
 	return &bl, nil
 }
 
-func AirdropProto2Local(a *pb.TransAirDrop) (*airdrop.Airdrop, error) {
+func AirdropProto2Local(a *pcommon.TransAirDrop) (*airdrop.Airdrop, error) {
 	local_a := new(airdrop.Airdrop)
 	local_a.Receiver = a.Receiver
 	local_a.Timestamp = a.GetTimestamp().AsTime()
@@ -76,7 +77,7 @@ func AirdropProto2Local(a *pb.TransAirDrop) (*airdrop.Airdrop, error) {
 	return local_a, nil
 }
 
-func TransferProto2Local(t *pb.TransTransfer) (*transfer.Transfer, error) {
+func TransferProto2Local(t *pcommon.TransTransfer) (*transfer.Transfer, error) {
 	local_tr := new(transfer.Transfer)
 	local_tr.Sender = t.Sender
 	local_tr.Receiver = t.Receiver
@@ -89,19 +90,19 @@ func TransferProto2Local(t *pb.TransTransfer) (*transfer.Transfer, error) {
 	return local_tr, nil
 }
 
-func TransactionProto2Local(t *pb.Transaction) (transaction.Transaction, error) {
+func TransactionProto2Local(t *pcommon.Transaction) (transaction.Transaction, error) {
 	switch tmp := t.Trans.(type) {
-	case *pb.Transaction_Drop:
+	case *pcommon.Transaction_Drop:
 		return AirdropProto2Local(tmp.Drop)
-	case *pb.Transaction_Transfer:
+	case *pcommon.Transaction_Transfer:
 		return TransferProto2Local(tmp.Transfer)
 	default:
 		return nil, errors.New("incorrect trans type")
 	}
 }
 
-func TransferLocal2Proto(tr *transfer.Transfer) (*pb.Transaction, error) {
-	t := new(pb.TransTransfer)
+func TransferLocal2Proto(tr *transfer.Transfer) (*pcommon.Transaction, error) {
+	t := new(pcommon.TransTransfer)
 	t.Sender = tr.Sender
 	t.Receiver = tr.Receiver
 	t.Pay = tr.Pay
@@ -110,11 +111,11 @@ func TransferLocal2Proto(tr *transfer.Transfer) (*pb.Transaction, error) {
 	t.Timestamp = timestamppb.New(tr.Timestamp)
 	t.Node = tr.Node
 	t.Sign = tr.Sign
-	return &pb.Transaction{ProtocolVersion: protocolVersion, Trans: &pb.Transaction_Transfer{Transfer: t}}, nil
+	return &pcommon.Transaction{ProtocolVersion: protocolVersion, Trans: &pcommon.Transaction_Transfer{Transfer: t}}, nil
 }
 
-func AirdropLocal2Proto(tr *airdrop.Airdrop) (*pb.Transaction, error) {
-	t := new(pb.TransAirDrop)
+func AirdropLocal2Proto(tr *airdrop.Airdrop) (*pcommon.Transaction, error) {
+	t := new(pcommon.TransAirDrop)
 	t.Receiver = tr.Receiver
 	t.Pay = tr.Pay
 	t.Fee = tr.Fee
@@ -122,9 +123,10 @@ func AirdropLocal2Proto(tr *airdrop.Airdrop) (*pb.Transaction, error) {
 	t.Timestamp = timestamppb.New(tr.Timestamp)
 	t.Node = tr.Node
 	t.Sign = tr.Sign
-	return &pb.Transaction{ProtocolVersion: protocolVersion, Trans: &pb.Transaction_Drop{Drop: t}}, nil
+	return &pcommon.Transaction{ProtocolVersion: protocolVersion, Trans: &pcommon.Transaction_Drop{Drop: t}}, nil
 }
-func TransactionLocal2Proto(tr transaction.Transaction) (*pb.Transaction, error) {
+
+func TransactionLocal2Proto(tr transaction.Transaction) (*pcommon.Transaction, error) {
 	switch tmp := tr.(type) {
 	case *airdrop.Airdrop:
 		return AirdropLocal2Proto(tmp)
@@ -133,33 +135,4 @@ func TransactionLocal2Proto(tr transaction.Transaction) (*pb.Transaction, error)
 	default:
 		return nil, errors.New("incorrect trans type")
 	}
-}
-
-func TransactionFromBytes(b []byte) (transaction.Transaction, error) {
-	if len(b) < 4 {
-		return nil, errors.New("incorrect size. len < 4")
-	}
-
-	trType := transaction.Type(b[0])
-	switch trType {
-	case transaction.TypeTransfer:
-		return airdropFromBytes(b[1:])
-
-	case transaction.TypeAirdrop:
-		return transferFromBytes(b[1:])
-	default:
-		return nil, errors.New("incorrect transaction type")
-	}
-}
-
-func transferFromBytes(b []byte) (*transfer.Transfer, error) {
-	tr := transfer.Transfer{}
-	err := tr.FromBytes(b)
-	return &tr, err
-}
-
-func airdropFromBytes(b []byte) (*airdrop.Airdrop, error) {
-	a := airdrop.Airdrop{}
-	err := a.FromBytes(b)
-	return &a, err
 }

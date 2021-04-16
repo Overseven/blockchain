@@ -4,7 +4,6 @@ import (
 	"sync"
 
 	"github.com/overseven/blockchain/block"
-	"github.com/overseven/blockchain/interfaces"
 )
 
 type Chain struct {

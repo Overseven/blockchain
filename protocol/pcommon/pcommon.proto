@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = "github.com/overseven/blockchain/protocol/common";
+option go_package = "github.com/overseven/blockchain/protocol/pcommon";
 
 package pcommon;
 

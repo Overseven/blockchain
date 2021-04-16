@@ -2,11 +2,13 @@ package transaction_test
 
 import (
 	"bytes"
-	cr "github.com/ethereum/go-ethereum/crypto"
-	"github.com/overseven/blockchain/transaction"
-	"github.com/overseven/blockchain/utility"
 	"strconv"
 	"testing"
+
+	cr "github.com/ethereum/go-ethereum/crypto"
+	"github.com/overseven/blockchain/transaction"
+	"github.com/overseven/blockchain/transaction/transfer"
+	"github.com/overseven/blockchain/utility"
 )
 
 func TestIsEqual(t *testing.T) {
@@ -22,12 +24,12 @@ func TestIsEqual(t *testing.T) {
 	value := 65.32
 	fee := 42.2222
 	message := "test"
-	tr1, err := transaction.NewTransfer(pr1, pub2, value, fee, message)
+	tr1, err := transfer.NewTransfer(pr1, pub2, value, fee, message)
 	if err != nil {
 		t.Error(err)
 	}
 
-	tr2, err := transaction.NewTransfer(pr1, pub2, value, fee, message)
+	tr2, err := transfer.NewTransfer(pr1, pub2, value, fee, message)
 	if err != nil {
 		t.Error(err)
 	}
@@ -37,7 +39,7 @@ func TestIsEqual(t *testing.T) {
 		t.Error("error with compare tr1 and tr2")
 	}
 
-	tr3, err := transaction.NewTransfer(pr2, pub2, value, fee, message)
+	tr3, err := transfer.NewTransfer(pr2, pub2, value, fee, message)
 	if err != nil {
 		t.Error(err)
 	}
@@ -47,7 +49,7 @@ func TestIsEqual(t *testing.T) {
 		t.Error("error with compare tr1 and tr3")
 	}
 
-	tr4, err := transaction.NewTransfer(pr1, pub1, value, fee, message)
+	tr4, err := transfer.NewTransfer(pr1, pub1, value, fee, message)
 	if err != nil {
 		t.Error(err)
 	}
@@ -57,7 +59,7 @@ func TestIsEqual(t *testing.T) {
 		t.Error("error with compare tr1 and tr4")
 	}
 
-	tr5, err := transaction.NewTransfer(pr1, pub2, value+0.0001, fee, message)
+	tr5, err := transfer.NewTransfer(pr1, pub2, value+0.0001, fee, message)
 	if err != nil {
 		t.Error(err)
 	}
@@ -67,7 +69,7 @@ func TestIsEqual(t *testing.T) {
 		t.Error("error with compare tr1 and tr5")
 	}
 
-	tr6, err := transaction.NewTransfer(pr1, pub2, value, fee+0.0001, message)
+	tr6, err := transfer.NewTransfer(pr1, pub2, value, fee+0.0001, message)
 	if err != nil {
 		t.Error(err)
 	}
@@ -77,7 +79,7 @@ func TestIsEqual(t *testing.T) {
 		t.Error("error with compare tr1 and tr6")
 	}
 
-	tr7, err := transaction.NewTransfer(pr1, pub2, value, fee, message+"a")
+	tr7, err := transfer.NewTransfer(pr1, pub2, value, fee, message+"a")
 	if err != nil {
 		t.Error(err)
 	}
@@ -123,7 +125,7 @@ func TestGetHash(t *testing.T) {
 	message := "test"
 	timestamp := utility.NewTimestamp()
 
-	tr1 := transaction.Transfer{}
+	tr1 := transfer.Transfer{}
 	data := tr1.GetData()
 	data.Type = transaction.TypeTransfer
 	data.Sender = pr1Bytes

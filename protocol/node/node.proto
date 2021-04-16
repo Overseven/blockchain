@@ -4,14 +4,15 @@ option go_package = "github.com/overseven/blockchain/protocol/node";
 
 package pnode;
 
-import "protocol/common.proto";
+import "protocol/pcommon/pcommon.proto";
 
 service Noder { 
   rpc Connect(ConnectRequest) returns (ConnectReply){}
   rpc GetListOfNodes(ListOfNodesRequest) returns (ListOfNodesReply) {}
   rpc AddTransaction(AddTransactionRequest) returns (AddTransactionReply) {}
   rpc PushBlock(PushBlockRequest) returns (PushBlockReply){}
-  rpc GetBlocks(GetBlocksRequest) returns (GetBlocksReply) {}
+  rpc GetBlocks(BlocksRequest) returns (BlocksReply) {}
+  rpc GetWalletBalance(WalletBalanceRequest) returns (WalletBalanceReply) {}
 }
 
 message ConnectRequest{
@@ -60,11 +61,22 @@ message PushBlockReply{
   Code reply = 1;
 }
 
-message GetBlocksRequest{
+message BlocksRequest{
   uint64 blockIdBegin = 1;
   uint64 blockIdEnd = 2;
 }
 
-message GetBlocksReply{
+message BlocksReply{
     repeated pcommon.Block blocks = 1;
+}
+
+message WalletBalanceRequest{
+  bytes pubKey = 1;
+}
+
+message WalletBalanceReply{
+  bytes pubKey = 1;
+  double value = 2;
+  
+  // TODO: add something like NFT
 }

@@ -4,7 +4,6 @@ import (
 	"errors"
 
 	"github.com/overseven/blockchain/block"
-	"github.com/overseven/blockchain/protocol/converter"
 	"github.com/overseven/blockchain/transaction"
 	"github.com/overseven/blockchain/utility"
 	"github.com/syndtr/goleveldb/leveldb"
@@ -65,7 +64,7 @@ func GetTransaction(hash []byte) (transaction.Transaction, error) {
 		return nil, err
 	}
 
-	tr, err := converter.TransactionFromBytes(bValue)
+	tr, err := TransactionFromBytes(bValue)
 
 	if err != nil {
 		return nil, err
@@ -86,16 +85,11 @@ func GetBlock(id uint64) (*block.Block, error) {
 		return nil, err
 	}
 
-	b, err := converter.BlockFromBytes(bValue)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return b, nil
+	b, err := BlockFromBytes(bValue)
+	return &b, nil
 }
 
-func PutSnapshot() {
+func CreateSnapshot(id uint8) {
 
 }
 

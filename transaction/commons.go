@@ -1,39 +1,5 @@
 package transaction
 
-import (
-	"bytes"
-	"transaction"
-)
-
-func IsEqual(t1, t2 transaction.Transaction, timestampAndSignCheck bool) bool {
-	if !bytes.Equal(t1.Sender, t2.Sender) {
-		return false
-	}
-	if !bytes.Equal(t1.Receiver, t2.Receiver) {
-		return false
-	}
-	if timestampAndSignCheck {
-		if t1.Timestamp != t2.Timestamp {
-			return false
-		}
-		if !bytes.Equal(t1.Sign, t2.Sign) {
-			return false
-		}
-	}
-
-	if t1.Message != t2.Message {
-		return false
-	}
-	if t1.Pay != t2.Pay {
-		return false
-	}
-	if t1.Fee != t2.Fee {
-		return false
-	}
-
-	return true
-}
-
 // func GetHash(t *interfaces.Data) []byte {
 // 	temp := []byte(strconv.FormatInt(int64(t.Type), 10))
 // 	temp = append(temp, t.Sender...)

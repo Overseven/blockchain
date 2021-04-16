@@ -5,7 +5,6 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/overseven/blockchain/interfaces"
 	"github.com/overseven/blockchain/transaction"
 )
 
