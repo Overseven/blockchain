@@ -36,12 +36,7 @@ message TransTransfer{
 }
 
 message Transaction{
-    enum Type {
-        AirDrop = 0;
-        Transfer = 1;
-    }
     uint32 protocolVersion = 1;
-    Type type = 2;
     oneof trans{
       TransTransfer transfer = 3;
       TransAirDrop drop = 4;
