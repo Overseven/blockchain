@@ -1,10 +1,12 @@
-package bd
+package db
 
 import (
 	"errors"
 
+	"github.com/overseven/blockchain/block"
 	"github.com/overseven/blockchain/protocol/converter"
 	"github.com/overseven/blockchain/transaction"
+	"github.com/overseven/blockchain/utility"
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/opt"
 )
@@ -42,10 +44,6 @@ func Get(prefix string, key []byte) ([]byte, error) {
 }
 
 func PutTransaction(tr transaction.Transaction) error {
-	if err := IsOpen(); err != nil {
-		return err
-	}
-
 	bKey := []byte("t")
 	bKey = append(bKey, tr.Hash()...)
 	bData, err := tr.Bytes()
@@ -56,10 +54,6 @@ func PutTransaction(tr transaction.Transaction) error {
 }
 
 func GetTransaction(hash []byte) (transaction.Transaction, error) {
-	if err := IsOpen(); err != nil {
-		return nil, err
-	}
-
 	if len(hash) != 32 {
 		return nil, errors.New("incorrect hash len")
 	}
@@ -80,10 +74,32 @@ func GetTransaction(hash []byte) (transaction.Transaction, error) {
 	return tr, nil
 }
 
-func PutBlock() {
+func PutBlock(b block.Block) {
 
+}
+
+func GetBlock(id uint64) (*block.Block, error) {
+	bKey := []byte("b")
+	bKey = append(bKey, utility.UInt64Bytes(id)...)
+	bValue, err := db.Get(bKey, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	b, err := converter.BlockFromBytes(bValue)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return b, nil
 }
 
 func PutSnapshot() {
 
+}
+
+func GetLastBlock() block.Block {
+
+	return block.Block{}
 }

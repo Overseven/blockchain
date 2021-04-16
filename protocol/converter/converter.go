@@ -7,7 +7,6 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/overseven/blockchain/block"
-	pb "github.com/overseven/blockchain/protocol"
 	"github.com/overseven/blockchain/transaction"
 	"github.com/overseven/blockchain/transaction/airdrop"
 	"github.com/overseven/blockchain/transaction/transfer"
@@ -20,48 +19,48 @@ const (
 func BlockProto2Local(b *pb.Block) (*block.Block, error) {
 	bl := new(block.Block)
 
-	bl.SetId(b.GetBlockId())
+	bl.Id = b.GetBlockId()
 
 	// transactions
-	var tr []transaction.Transaction
+	tr := map[string]transaction.Transaction{}
 	for i, t := range b.GetTrans() {
 		tran, err := TransactionProto2Local(t)
 		if err != nil {
 			return nil, errors.New("incorrect type at " + strconv.FormatInt(int64(i), 10) + " transaction")
 		}
-		tr = append(tr, tran)
+		tr[string(tran.Hash())] = tran
 
 	}
-	bl.SetTransactions(tr)
+	bl.Transactions = tr
 
-	bl.SetPrevHash(b.PrevBlockHash)
-	bl.SetDifficulty(uint64(b.Difficulty))
-	bl.SetMiner(b.Miner)
+	bl.PrevHash = b.PrevBlockHash
+	bl.Difficulty = uint64(b.Difficulty)
+	bl.Miner = b.Miner
 	bl.GetHash()
-	bl.SetNonce(b.Nonce)
+	bl.Nonce = b.Nonce
 
 	return bl, nil
 }
 
 func BlockLocal2Proto(b block.Block) (*pb.Block, error) {
 	bl := pb.Block{}
-	bl.BlockId = b.GetId()
+	bl.BlockId = b.Id
 
 	var tr []*pb.Transaction
-	for i, t := range b.GetTransactions() {
+	for _, t := range b.Transactions {
 		tran, err := TransactionLocal2Proto(t)
 		if err != nil {
-			return nil, errors.New("incorrect type at " + strconv.FormatInt(int64(i), 10) + " transaction")
+			return nil, errors.New("incorrect transaction type")
 		}
 		tr = append(tr, tran)
 
 	}
 	bl.Trans = tr
-	bl.PrevBlockHash = b.GetPrevHash()
-	bl.Difficulty = uint32(b.GetDifficulty())
-	bl.Miner = b.GetMiner()
+	bl.PrevBlockHash = b.PrevHash
+	bl.Difficulty = uint32(b.Difficulty)
+	bl.Miner = b.Miner
 	bl.BlockHash = b.GetHash()
-	bl.Nonce = b.GetNonce()
+	bl.Nonce = b.Nonce
 	return &bl, nil
 }
 

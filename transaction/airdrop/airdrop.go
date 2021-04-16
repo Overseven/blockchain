@@ -29,6 +29,38 @@ type Airdrop struct {
 	Sign      []byte
 }
 
+// func (a *Airdrop) IsEqual(t transaction.Transaction) bool {
+// 	switch a2 := t.(type) {
+// 	case *Airdrop:
+// 		if !bytes.Equal(a.Receiver, a2.Receiver) {
+// 			return false
+// 		}
+// 		if a.Timestamp != a2.Timestamp {
+// 			return false
+// 		}
+
+// 		if err := a.Verify(); err != nil {
+// 			return false
+// 		}
+// 		if err := a2.Verify(); err != nil {
+// 			return false
+// 		}
+
+// 		if a.Message != a2.Message {
+// 			return false
+// 		}
+// 		if a.Pay != a2.Pay {
+// 			return false
+// 		}
+// 		if a.Fee != a2.Fee {
+// 			return false
+// 		}
+// 		return true
+// 	default:
+// 		return false
+// 	}
+// }
+
 func (a *Airdrop) String() (string, error) {
 	tmp, err := json.Marshal(a)
 	if err != nil {

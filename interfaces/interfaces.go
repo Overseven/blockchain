@@ -2,38 +2,15 @@ package interfaces
 
 import (
 	"crypto/ecdsa"
-	"time"
 )
 
-type BlockConnecter interface {
-	IsValid(startIndx, endIndx uint64) (bool, uint64)
-	GetBlocks() []TransactionsContainer
-	SetBlocks([]TransactionsContainer)
-	NewBlock() TransactionsContainer
-	AppendBlock(TransactionsContainer)
-}
-
-type TransactionsContainer interface {
-	GetId() uint64
-	SetId(uint64)
-	GetBatchHash() (hash []byte)
-	GetHash() (hash []byte)
-	GetPrevHash() []byte
-	SetPrevHash([]byte)
-	IsValid(BlockConnecter, Balancer) error
-	Mining(minerPubKey []byte, stop chan bool) []byte
-	GetTransactions() []BlockElement
-	SetTransactions([]BlockElement)
-	HasTransaction(BlockElement) (index int, has bool)
-	AddTransaction(BlockElement) error
-	GetDifficulty() uint64
-	SetDifficulty(uint64)
-	GetMiner() []byte
-	SetMiner([]byte)
-	GetNonce() []byte
-	SetNonce([]byte)
-}
-
+// type BlockConnecter interface {
+// 	IsValid(startIndx, endIndx uint64) (bool, uint64)
+// 	GetBlocks() []TransactionsContainer
+// 	SetBlocks([]TransactionsContainer)
+// 	NewBlock() TransactionsContainer
+// 	AppendBlock(TransactionsContainer)
+// }
 
 type Balancer interface {
 	Init()

@@ -1,0 +1,70 @@
+syntax = "proto3";
+
+option go_package = "github.com/overseven/blockchain/protocol/node";
+
+package pnode;
+
+import "protocol/common.proto";
+
+service Noder { 
+  rpc Connect(ConnectRequest) returns (ConnectReply){}
+  rpc GetListOfNodes(ListOfNodesRequest) returns (ListOfNodesReply) {}
+  rpc AddTransaction(AddTransactionRequest) returns (AddTransactionReply) {}
+  rpc PushBlock(PushBlockRequest) returns (PushBlockReply){}
+  rpc GetBlocks(GetBlocksRequest) returns (GetBlocksReply) {}
+}
+
+message ConnectRequest{
+  bytes requesterAddress = 1;
+
+}
+
+message ConnectReply{
+  bytes replyerAddress = 1;
+}
+
+message ListOfNodesRequest{
+
+}
+
+message ListOfNodesReply{
+  repeated string address = 1;
+}
+
+
+message AddTransactionRequest {
+  pcommon.Transaction transaction = 1;
+}
+
+message AddTransactionReply {
+  enum Code {
+    TR_Ok = 0;
+    TR_Error = 1;
+  }
+  Code reply = 1;
+  string message = 2;
+  string additional = 3;
+}
+
+message PushBlockRequest {
+  pcommon.Block newBlock = 1;
+}
+
+message PushBlockReply{
+  enum Code {
+    PBR_Ok = 0;
+    PBR_AlreadyHave = 1;
+    PBR_TooOld = 2;
+    PBR_Incorrect = 3;
+  }
+  Code reply = 1;
+}
+
+message GetBlocksRequest{
+  uint64 blockIdBegin = 1;
+  uint64 blockIdEnd = 2;
+}
+
+message GetBlocksReply{
+    repeated pcommon.Block blocks = 1;
+}

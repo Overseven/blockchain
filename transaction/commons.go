@@ -2,13 +2,10 @@ package transaction
 
 import (
 	"bytes"
-	"strconv"
-
-	cr "github.com/ethereum/go-ethereum/crypto"
-	"github.com/overseven/blockchain/interfaces"
+	"transaction"
 )
 
-func IsEqual(t1, t2 *interfaces.Data, timestampAndSignCheck bool) bool {
+func IsEqual(t1, t2 transaction.Transaction, timestampAndSignCheck bool) bool {
 	if !bytes.Equal(t1.Sender, t2.Sender) {
 		return false
 	}
@@ -37,13 +34,13 @@ func IsEqual(t1, t2 *interfaces.Data, timestampAndSignCheck bool) bool {
 	return true
 }
 
-func GetHash(t *interfaces.Data) []byte {
-	temp := []byte(strconv.FormatInt(int64(t.Type), 10))
-	temp = append(temp, t.Sender...)
-	temp = append(temp, t.Receiver...)
-	temp = append(temp, t.Message...)
-	temp = append(temp, strconv.FormatFloat(t.Pay, 'e', 8, 64)...)
-	temp = append(temp, strconv.FormatFloat(t.Fee, 'e', 8, 64)...)
-	temp = append(temp, t.Timestamp.String()...)
-	return cr.Keccak256(temp)
-}
+// func GetHash(t *interfaces.Data) []byte {
+// 	temp := []byte(strconv.FormatInt(int64(t.Type), 10))
+// 	temp = append(temp, t.Sender...)
+// 	temp = append(temp, t.Receiver...)
+// 	temp = append(temp, t.Message...)
+// 	temp = append(temp, strconv.FormatFloat(t.Pay, 'e', 8, 64)...)
+// 	temp = append(temp, strconv.FormatFloat(t.Fee, 'e', 8, 64)...)
+// 	temp = append(temp, t.Timestamp.String()...)
+// 	return cr.Keccak256(temp)
+// }

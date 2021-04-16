@@ -16,7 +16,7 @@ import (
 
 type Block struct {
 	Id           uint64
-	Transactions []transaction.Transaction
+	Transactions map[string]transaction.Transaction
 	PrevHash     []byte
 	//WalletsStats map[string]WalletStats
 
@@ -121,14 +121,6 @@ func (block *Block) Mining(minerPubKey []byte, stop chan bool) []byte {
 	return []byte{}
 }
 
-func (block *Block) GetTransactions() []transaction.Transaction {
-	return block.Transactions
-}
-
-func (block *Block) SetTransactions(tr []transaction.Transaction) {
-	block.Transactions = tr
-}
-
 func (block *Block) HasTransaction(transact transaction.Transaction) (index int, has bool) {
 	for i, tran := range block.Transactions {
 		if transaction.IsEqual(transact.GetData(), tran.GetData(), true) {
@@ -142,44 +134,4 @@ func (block *Block) AddTransaction(tr transaction.Transaction) error {
 	block.Transactions = append(block.Transactions, tr)
 
 	return nil
-}
-
-func (block *Block) GetId() uint64 {
-	return block.Id
-}
-
-func (block *Block) SetId(id uint64) {
-	block.Id = id
-}
-
-func (block *Block) GetMiner() []byte {
-	return block.Miner
-}
-
-func (block *Block) SetMiner(m []byte) {
-	block.Miner = m
-}
-
-func (block *Block) GetPrevHash() []byte {
-	return block.PrevHash
-}
-
-func (block *Block) SetPrevHash(ph []byte) {
-	block.PrevHash = ph
-}
-
-func (block *Block) GetDifficulty() uint64 {
-	return block.Difficulty
-}
-
-func (block *Block) SetDifficulty(d uint64) {
-	block.Difficulty = d
-}
-
-func (block *Block) GetNonce() []byte {
-	return block.Nonce
-}
-
-func (block *Block) SetNonce(n []byte) {
-	block.Nonce = n
 }

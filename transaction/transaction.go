@@ -14,6 +14,7 @@ const (
 )
 
 type Transaction interface {
+	// IsEqual(Transaction) bool
 	String() (string, error)
 	Bytes() ([]byte, error)
 	FromBytes([]byte) error
