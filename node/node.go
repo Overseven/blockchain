@@ -1,13 +1,13 @@
-package node
+package main
 
 import (
 	"context"
 	"crypto/ecdsa"
+	"fmt"
 	"net"
 	"strconv"
 	"sync"
 
-	"github.com/overseven/blockchain/balance"
 	"github.com/overseven/blockchain/node/trlists"
 	"github.com/overseven/blockchain/protocol/converter"
 	pnode "github.com/overseven/blockchain/protocol/node"
@@ -16,13 +16,18 @@ import (
 	"google.golang.org/grpc"
 )
 
+var node Node
+
 type Node struct {
 	pnode.UnimplementedNoderServer
 	ListeningPort uint32
-	UsersBalance  balance.Balance
+	//UsersBalance  balance.Balance
 	PrivKey       *ecdsa.PrivateKey
 	PubKey        []byte
 	mutex         sync.Mutex
+	coordinator   net.IP
+	nodeToConnect net.IP
+
 	Connected     []Connection
 }
 
@@ -99,4 +104,13 @@ func (n *Node) PushBlock(ctx context.Context, req *pnode.PushBlockRequest) (*pno
 func (n *Node) GetBlocks(ctx context.Context, req *pnode.GetBlocksRequest) (*pnode.GetBlocksReply, error) {
 	// TODO: finish
 	return &pnode.GetBlocksReply{}, nil
+}
+
+func main(){
+	err := flagParse()
+	if err != nil {
+		fmt.Println("Error!", err)
+		return
+	}
+
 }

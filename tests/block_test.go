@@ -40,7 +40,7 @@ func TestBlockIsValid(t *testing.T) {
 	//t.Log("Count of wallets: " + strconv.FormatInt(int64(usersBalance.CountOfWallets()), 10))
 	//trans := generateTransaction(sndrPrivKey, rcvrPubKey, 14, 0.5, "trans1")
 
-	airdropPubKey, airdropPrKey, err := wallet.LoadFromFile(airdropModeratorConfigFile)
+	airdropPubKey, airdropPrKey, err := config.LoadFromFile(airdropModeratorConfigFile)
 	if err != nil {
 		t.Error(err)
 	}
@@ -150,7 +150,7 @@ func Test3Airdrop1Block(t *testing.T) {
 	//t.Log("Count of wallets: " + strconv.FormatInt(int64(usersBalance.CountOfWallets()), 10))
 	//trans := generateTransaction(sndrPrivKey, rcvrPubKey, 14, 0.5, "trans1")
 
-	airdropPubKey, airdropPrKey, err := wallet.LoadFromFile(airdropModeratorConfigFile)
+	airdropPubKey, airdropPrKey, err := config.LoadFromFile(airdropModeratorConfigFile)
 	if err != nil {
 		t.Error(err)
 	}
@@ -278,7 +278,7 @@ func TestNetworkBlockGeneration(t *testing.T) {
 	fee1, fee2 := 0.0004, 1.32
 	//message := "network test"
 
-	airdropPubKey, airdropPrKey, err := wallet.LoadFromFile(airdropModeratorConfigFile)
+	airdropPubKey, airdropPrKey, err := config.LoadFromFile(airdropModeratorConfigFile)
 	if err != nil {
 		t.Error(err)
 	}

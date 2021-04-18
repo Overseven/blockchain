@@ -7,7 +7,6 @@ import (
 	"math"
 	"strconv"
 
-	"github.com/overseven/blockchain/interfaces"
 	"github.com/overseven/blockchain/transaction"
 
 	cr "github.com/ethereum/go-ethereum/crypto"
@@ -54,44 +53,13 @@ func (block *Block) GetHash() (hash []byte) {
 	return hash
 }
 
-func (block *Block) IsValid(blockchain interfaces.BlockConnecter, balance interfaces.Balancer) error {
-	// TODO: add test
-	var blocks []interfaces.TransactionsContainer = blockchain.GetBlocks()
-
-	if uint64(len(blockchain.GetBlocks())) < block.Id+1 {
-		return errors.New("incorrect block Id: " + strconv.FormatUint(block.Id, 10))
-	}
-
-	if block.Id != 0 {
-		if blocks[block.Id-1].GetId()+1 != block.Id {
-			return errors.New("conflicting block Id with prev. block Id: " + strconv.FormatUint(block.Id, 10))
-		}
-	}
-	// if uint64(len(blocks)) > block.Id+1 {
-	// 	if blocks[block.Id+1].GetId() != block.Id+1 {
-	// 		return errors.New("conflicting block Id with next block Id: " + strconv.FormatUint(block.Id, 10))
-	// 	}
-	// }
-
-	// if block is the first in chain
-	for _, t := range block.Transactions {
-		data := t.GetData()
-		if block.Id == 0 && data.Type != transaction.TypeAirdrop {
-			return errors.New("first block must have only airdrop transactions")
-		}
-		if err := t.Verify(balance); err != nil {
-			return errors.New("not valid transaction: " + err.Error())
-		}
-	}
-
+func (block *Block) IsValid() error {
 	// check hash
 	hash := cr.Keccak256(append(block.GetHash(), block.Nonce...))
 	mask := make([]byte, block.Difficulty)
-	if !bytes.HasPrefix(hash, mask) {
+	if !bytes.HasPrefix(hash, mask) { // TODO: add hash difficult logic
 		return errors.New("incorrect resulting hash, not have required zeroes")
 	}
-
-	//block.WalletsStats
 	return nil
 }
 
@@ -121,17 +89,13 @@ func (block *Block) Mining(minerPubKey []byte, stop chan bool) []byte {
 	return []byte{}
 }
 
-func (block *Block) HasTransaction(transact transaction.Transaction) (index int, has bool) {
-	for i, tran := range block.Transactions {
-		if transaction.IsEqual(transact.GetData(), tran.GetData(), true) {
-			return i, true
-		}
-	}
-	return 0, false
+func (block *Block) HasTransaction(tr transaction.Transaction) bool {
+	_, ok := block.Transactions[string(tr.Hash())]
+	return ok
 }
 
 func (block *Block) AddTransaction(tr transaction.Transaction) error {
-	block.Transactions = append(block.Transactions, tr)
+	block.Transactions[string(tr.Hash())] = tr
 
 	return nil
 }

@@ -1,5 +1,5 @@
 package chain
-
+/*
 import (
 	"sync"
 
@@ -46,3 +46,5 @@ func (c *Chain) AppendBlock(b interfaces.TransactionsContainer) {
 	defer c.mutex.Unlock()
 	c.Blocks = append(c.Blocks, b)
 }
+
+*/
