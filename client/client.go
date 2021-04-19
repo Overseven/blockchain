@@ -1,12 +1,13 @@
-package client
+package main
 
 import (
 	"context"
 	"crypto/ecdsa"
-	"github.com/overseven/blockchain/transaction"
 	"log"
 	"sync"
 	"time"
+
+	"github.com/overseven/blockchain/transaction"
 
 	"github.com/overseven/blockchain/balance"
 	"github.com/overseven/blockchain/protocol/converter"
@@ -18,8 +19,8 @@ type Client struct {
 	ListeningPort uint32
 	usersBalance  balance.Balance
 	//localChain    chain.Chain
-	privateKey    *ecdsa.PrivateKey
-	publicKey     []byte
+	privateKey *ecdsa.PrivateKey
+	publicKey  []byte
 }
 
 func (c *Client) init() {
