@@ -4,20 +4,21 @@ import (
 	"encoding/base64"
 	"errors"
 	"flag"
+	"net"
+
 	cr "github.com/ethereum/go-ethereum/crypto"
 	"github.com/overseven/blockchain/utility/config"
-	"net"
 )
 
-func flagParse() error{
+func flagParse() error {
 	flagPubKey := flag.String("pubKey", "", "public node key")
 	flagPrivKey := flag.String("privKey", "", "private node key")
 	flagPort := flag.Uint("port", 9000, "listening port")
-	flagCoordinatorIP := flag.String("coordinator", "", "coordinator address. \n" +
-		"Format: ip:port \n" +
+	flagCoordinatorIP := flag.String("coordinator", "", "coordinator address. \n"+
+		"Format: ip:port \n"+
 		"Example: 127.0.0.1:5000")
-	flagNodeToConnectIP := flag.String("nodeToConnect", "", "another node address. \n" +
-		"Format: ip:port \n" +
+	flagNodeToConnectIP := flag.String("nodeToConnect", "", "another node address. \n"+
+		"Format: ip:port \n"+
 		"Example: 127.0.0.1:5001")
 	flagCfgFile := flag.String("config", "", "config filename")
 	flag.Parse()
@@ -31,7 +32,6 @@ func flagParse() error{
 			return nil
 		}
 		node.PubKey = res
-
 
 		if *flagPrivKey == "" {
 			return errors.New("node private key must be presented with flag '-pubKey' or in config file")
@@ -48,7 +48,7 @@ func flagParse() error{
 		node.PrivKey = privKey
 
 		if *flagPort != 9000 {
-			node.ListeningPort = uint32(*flagPort)
+			node.ListeningPort = uint64(*flagPort)
 		}
 		if *flagCoordinatorIP == "" && *flagNodeToConnectIP == "" {
 			return errors.New("coordinator or nodeToConnect must be presented")
@@ -58,16 +58,16 @@ func flagParse() error{
 			if ip == nil {
 				return errors.New("incorrect coordinator ip")
 			}
-			node.coordinator = ip
-		}else {
+			node.coordinatorIP = ip
+		} else {
 			ip := net.ParseIP(*flagNodeToConnectIP)
 			if ip == nil {
 				return errors.New("incorrect nodeToConnect ip")
 			}
-			node.nodeToConnect = ip
+			node.nodeToConnectIP = ip
 		}
 
-	}else{
+	} else {
 		params, err := config.LoadFromFile(*flagCfgFile)
 		if err != nil {
 			return err
@@ -75,8 +75,11 @@ func flagParse() error{
 
 		node.PrivKey = params.PrivKey
 		node.PubKey = params.PubKey
-		node.coordinator = params.CoordinatorIP
-		node.nodeToConnect = params.NodeToConnectIP
+		node.ListeningPort = params.ListeningPort
+		node.coordinatorIP = params.CoordinatorIP
+		node.coordinatorPort = params.CoordinatorPort
+		node.nodeToConnectIP = params.NodeToConnectIP
+		node.nodeToConnectPort = params.NodeToConnectPort
 	}
 	return nil
 }

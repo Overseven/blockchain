@@ -4,25 +4,30 @@ import (
 	"crypto/ecdsa"
 	"encoding/base64"
 	"errors"
-	cr "github.com/ethereum/go-ethereum/crypto"
 	"io/ioutil"
 	"net"
+	"strconv"
 	"strings"
+
+	cr "github.com/ethereum/go-ethereum/crypto"
 )
 
 const (
-	fieldPubKey  = "pubKey"
-	fieldPrivKey = "privkey"
-	fieldCoordinator = "coordinator"
+	fieldPubKey        = "pubKey"
+	fieldPrivKey       = "privkey"
+	fieldPort          = "port"
+	fieldCoordinator   = "coordinator"
 	fieldNodeToConnect = "nodeToConnect"
-
 )
 
 type Params struct {
-	PubKey []byte
-	PrivKey  *ecdsa.PrivateKey
-	CoordinatorIP net.IP
-	NodeToConnectIP net.IP
+	PubKey            []byte
+	PrivKey           *ecdsa.PrivateKey
+	ListeningPort     uint64
+	CoordinatorIP     net.IP
+	CoordinatorPort   uint64
+	NodeToConnectIP   net.IP
+	NodeToConnectPort uint64
 }
 
 func LoadFromFile(file string) (*Params, error) {
@@ -34,11 +39,11 @@ func LoadFromFile(file string) (*Params, error) {
 		//fmt.Println("Error read wallet cfg file.")
 		return nil, err
 	}
-	lines := strings.Split(string(data), "\r\n")
+	lines := strings.Split(strings.ReplaceAll(string(data), " ", ""), "\r\n")
 
 	//fmt.Println("Data in config file:")
 	for _, val := range lines {
-		pair := strings.Split(val, ":")
+		pair := strings.SplitN(val, "=", 2)
 		//fmt.Println(pair)
 		if len(pair) != 2 {
 			continue
@@ -50,6 +55,7 @@ func LoadFromFile(file string) (*Params, error) {
 			if err != nil {
 				return nil, err
 			}
+
 		case fieldPrivKey:
 			pKey, err := base64.StdEncoding.DecodeString(pair[1])
 			if err != nil {
@@ -57,21 +63,49 @@ func LoadFromFile(file string) (*Params, error) {
 			}
 			privKey, err := cr.ToECDSA(pKey[:32])
 			if err != nil {
-				panic(err)
+				return nil, err
 			}
 			p.PrivKey = privKey
+
+		case fieldPort:
+			port, err := strconv.ParseUint(pair[1], 10, 64)
+			if err != nil {
+				return nil, err
+			}
+			p.ListeningPort = port
+
 		case fieldCoordinator:
-			ip := net.ParseIP(pair[1])
+			addr := strings.Split(pair[1], ":")
+			if len(addr) != 2 {
+				return nil, errors.New("incorrect coordinator address format. Wanted: x.x.x.x:x")
+			}
+			ip := net.ParseIP(addr[0])
 			if ip == nil {
 				return nil, errors.New("incorrect coordinator ip")
 			}
+
 			p.CoordinatorIP = ip
+			p.CoordinatorPort, err = strconv.ParseUint(addr[1], 10, 64)
+			if err != nil {
+				return nil, errors.New("incorrect coordinator address format. Wanted: x.x.x.x:x")
+			}
+
 		case fieldNodeToConnect:
-			ip := net.ParseIP(pair[1])
+			addr := strings.Split(pair[1], ":")
+			if len(addr) != 2 {
+				return nil, errors.New("incorrect nodeToConnect address format. Wanted: x.x.x.x:x")
+			}
+			ip := net.ParseIP(addr[0])
 			if ip == nil {
 				return nil, errors.New("incorrect nodeToConnect ip")
 			}
+
 			p.NodeToConnectIP = ip
+			p.NodeToConnectPort, err = strconv.ParseUint(addr[1], 10, 64)
+			if err != nil {
+				return nil, errors.New("incorrect nodeToConnect address format. Wanted: x.x.x.x:x")
+			}
+		default:
 		}
 
 	}

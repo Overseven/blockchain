@@ -10,6 +10,7 @@ import (
 
 	"github.com/overseven/blockchain/node/trlists"
 	"github.com/overseven/blockchain/protocol/converter"
+	pcoord "github.com/overseven/blockchain/protocol/coordinator"
 	pnode "github.com/overseven/blockchain/protocol/node"
 	"github.com/overseven/blockchain/transaction"
 	"github.com/overseven/blockchain/utility"
@@ -20,20 +21,27 @@ var node Node
 
 type Node struct {
 	pnode.UnimplementedNoderServer
-	ListeningPort uint32
+	ListeningPort uint64
 	//UsersBalance  balance.Balance
-	PrivKey       *ecdsa.PrivateKey
-	PubKey        []byte
-	mutex         sync.Mutex
-	coordinator   net.IP
-	nodeToConnect net.IP
+	OwnAddress          net.Addr
+	PrivKey             *ecdsa.PrivateKey
+	PubKey              []byte
+	mutex               sync.Mutex
+	coordinatorIP       net.IP
+	coordinatorPort     uint64
+	coordinatorClient   pcoord.CoordinatorClient
+	nodeToConnectIP     net.IP
+	nodeToConnectPort   uint64
+	nodeToConnectClient pnode.NoderClient
 
-	Connected     []Connection
+	Connected []Connection
 }
 
 type Connection struct {
-	ipAddress string
-	pubKey    []byte
+	con    *grpc.ClientConn
+	ip     net.IP
+	port   uint64
+	pubKey []byte
 }
 
 func (n *Node) SetPrivateKey(key *ecdsa.PrivateKey) {
@@ -41,14 +49,15 @@ func (n *Node) SetPrivateKey(key *ecdsa.PrivateKey) {
 	n.PubKey = utility.PrivToPubKey(key)
 }
 
-func (n *Node) StartListening(stop chan bool) error {
+func (n *Node) StartListening(stop chan interface{}) error {
 	// TODO: stop signal handling
 	// TODO: goroutine ?
-	lis, err := net.Listen("tcp", "localhost:"+strconv.FormatUint(uint64(n.ListeningPort), 10))
+	lis, err := net.Listen("tcp", "localhost:"+strconv.FormatUint(n.ListeningPort, 10))
 	if err != nil {
 		return err
 	}
 	s := grpc.NewServer()
+	n.OwnAddress = lis.Addr()
 	pnode.RegisterNoderServer(s, n)
 	go s.Serve(lis)
 	go func() {
@@ -77,7 +86,7 @@ func (n *Node) Connect(ctx context.Context, req *pnode.ConnectRequest) (*pnode.C
 func (n *Node) GetListOfNodes(ctx context.Context, req *pnode.ListOfNodesRequest) (*pnode.ListOfNodesReply, error) {
 	nodeList := []string{}
 	for _, c := range n.Connected {
-		nodeList = append(nodeList, c.ipAddress)
+		nodeList = append(nodeList, c.ip.String()+strconv.Itoa(int(c.port)))
 	}
 	return &pnode.ListOfNodesReply{Address: nodeList}, nil
 }
@@ -106,11 +115,29 @@ func (n *Node) GetBlocks(ctx context.Context, req *pnode.GetBlocksRequest) (*pno
 	return &pnode.GetBlocksReply{}, nil
 }
 
-func main(){
+func main() {
 	err := flagParse()
 	if err != nil {
 		fmt.Println("Error!", err)
 		return
+	}
+
+	stopListeningCh := make(chan interface{})
+	err = node.StartListening(stopListeningCh)
+
+	if err != nil {
+		fmt.Println("Error!", err)
+		return
+	}
+
+	err = connectToNodes()
+	if err != nil {
+		fmt.Println("Error!", err)
+		return
+	}
+
+	for true {
+
 	}
 
 }
