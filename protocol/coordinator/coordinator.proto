@@ -12,12 +12,12 @@ service Coordinator{
 }
 
 message ConnectRequest{
-    bytes requesterAddress = 1;
+    string requesterAddress = 1;
   
 }
   
 message ConnectReply{
-    bytes replyerAddress = 1;
+    bool ok = 1;
 }
 
 message ListOfNodesRequest{
