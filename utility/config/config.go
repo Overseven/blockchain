@@ -21,13 +21,11 @@ const (
 )
 
 type Params struct {
-	PubKey            []byte
-	PrivKey           *ecdsa.PrivateKey
-	ListeningPort     uint64
-	CoordinatorIP     net.IP
-	CoordinatorPort   uint64
-	NodeToConnectIP   net.IP
-	NodeToConnectPort uint64
+	PubKey        []byte
+	PrivKey       *ecdsa.PrivateKey
+	ListeningPort uint64
+	Coordinator   string
+	NodeToConnect string
 }
 
 func LoadFromFile(file string) (*Params, error) {
@@ -84,11 +82,11 @@ func LoadFromFile(file string) (*Params, error) {
 				return nil, errors.New("incorrect coordinator ip")
 			}
 
-			p.CoordinatorIP = ip
-			p.CoordinatorPort, err = strconv.ParseUint(addr[1], 10, 64)
+			_, err = strconv.ParseUint(addr[1], 10, 64)
 			if err != nil {
 				return nil, errors.New("incorrect coordinator address format. Wanted: x.x.x.x:x")
 			}
+			p.Coordinator = pair[1]
 
 		case fieldNodeToConnect:
 			addr := strings.Split(pair[1], ":")
@@ -100,11 +98,11 @@ func LoadFromFile(file string) (*Params, error) {
 				return nil, errors.New("incorrect nodeToConnect ip")
 			}
 
-			p.NodeToConnectIP = ip
-			p.NodeToConnectPort, err = strconv.ParseUint(addr[1], 10, 64)
+			_, err = strconv.ParseUint(addr[1], 10, 64)
 			if err != nil {
 				return nil, errors.New("incorrect nodeToConnect address format. Wanted: x.x.x.x:x")
 			}
+			p.NodeToConnect = pair[1]
 		default:
 		}
 

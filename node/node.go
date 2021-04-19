@@ -10,11 +10,11 @@ import (
 
 	"github.com/overseven/blockchain/node/trlists"
 	"github.com/overseven/blockchain/protocol/converter"
-	pcoord "github.com/overseven/blockchain/protocol/coordinator"
 	pnode "github.com/overseven/blockchain/protocol/node"
 	"github.com/overseven/blockchain/transaction"
 	"github.com/overseven/blockchain/utility"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/peer"
 )
 
 var node Node
@@ -23,25 +23,23 @@ type Node struct {
 	pnode.UnimplementedNoderServer
 	ListeningPort uint64
 	//UsersBalance  balance.Balance
-	OwnAddress          net.Addr
-	PrivKey             *ecdsa.PrivateKey
-	PubKey              []byte
-	mutex               sync.Mutex
-	coordinatorIP       net.IP
-	coordinatorPort     uint64
-	coordinatorClient   pcoord.CoordinatorClient
-	nodeToConnectIP     net.IP
-	nodeToConnectPort   uint64
-	nodeToConnectClient pnode.NoderClient
+	OwnAddress  net.Addr
+	PrivKey     *ecdsa.PrivateKey
+	PubKey      []byte
+	mutex       sync.Mutex
+	coordinator string
 
-	Connected []Connection
+	Nodes map[string]interface{}
+	// ConnectedNod []Connection
 }
 
 type Connection struct {
-	con    *grpc.ClientConn
-	ip     net.IP
-	port   uint64
-	pubKey []byte
+	address string
+	pubKey  []byte
+}
+
+func init() {
+	node.Nodes = map[string]interface{}{}
 }
 
 func (n *Node) SetPrivateKey(key *ecdsa.PrivateKey) {
@@ -79,14 +77,18 @@ func (n *Node) StartListening(stop chan interface{}) error {
 
 func (n *Node) Connect(ctx context.Context, req *pnode.ConnectRequest) (*pnode.ConnectReply, error) {
 	// TODO: finish
-
+	fmt.Println("Connection request received!")
+	p, _ := peer.FromContext(ctx)
+	addr := p.Addr.String()
+	fmt.Println("Address:", addr)
+	n.Nodes[addr] = struct{}{}
 	return &pnode.ConnectReply{ReplyerAddress: n.PubKey}, nil
 }
 
 func (n *Node) GetListOfNodes(ctx context.Context, req *pnode.ListOfNodesRequest) (*pnode.ListOfNodesReply, error) {
 	nodeList := []string{}
-	for _, c := range n.Connected {
-		nodeList = append(nodeList, c.ip.String()+strconv.Itoa(int(c.port)))
+	for key := range n.Nodes {
+		nodeList = append(nodeList, key)
 	}
 	return &pnode.ListOfNodesReply{Address: nodeList}, nil
 }

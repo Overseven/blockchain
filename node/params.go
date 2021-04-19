@@ -4,7 +4,6 @@ import (
 	"encoding/base64"
 	"errors"
 	"flag"
-	"net"
 
 	cr "github.com/ethereum/go-ethereum/crypto"
 	"github.com/overseven/blockchain/utility/config"
@@ -54,17 +53,19 @@ func flagParse() error {
 			return errors.New("coordinator or nodeToConnect must be presented")
 		}
 		if *flagCoordinatorIP != "" {
-			ip := net.ParseIP(*flagCoordinatorIP)
-			if ip == nil {
-				return errors.New("incorrect coordinator ip")
-			}
-			node.coordinatorIP = ip
+			// TODO: add check
+			// ip := net.ParseIP(*flagCoordinatorIP)
+			// if ip == nil {
+			// 	return errors.New("incorrect coordinator ip")
+			// }
+			node.coordinator = *flagCoordinatorIP
 		} else {
-			ip := net.ParseIP(*flagNodeToConnectIP)
-			if ip == nil {
-				return errors.New("incorrect nodeToConnect ip")
-			}
-			node.nodeToConnectIP = ip
+			// TODO: add check
+			// ip := net.ParseIP(*flagNodeToConnectIP)
+			// if ip == nil {
+			// 	return errors.New("incorrect nodeToConnect ip")
+			// }
+			node.Nodes[*flagNodeToConnectIP] = struct{}{}
 		}
 
 	} else {
@@ -76,10 +77,8 @@ func flagParse() error {
 		node.PrivKey = params.PrivKey
 		node.PubKey = params.PubKey
 		node.ListeningPort = params.ListeningPort
-		node.coordinatorIP = params.CoordinatorIP
-		node.coordinatorPort = params.CoordinatorPort
-		node.nodeToConnectIP = params.NodeToConnectIP
-		node.nodeToConnectPort = params.NodeToConnectPort
+		node.coordinator = params.Coordinator
+		node.Nodes[params.NodeToConnect] = struct{}{}
 	}
 	return nil
 }
