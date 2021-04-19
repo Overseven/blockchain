@@ -90,3 +90,18 @@ func NewTimestamp() time.Time {
 	t := time.Now()
 	return time.Date(t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), t.Second(), t.Nanosecond(), time.UTC)
 }
+
+func MapDifference(first, second map[string]interface{}) map[string]interface{} {
+	if first == nil || second == nil {
+		return nil
+	}
+
+	diff := map[string]interface{}{}
+	for k := range first {
+		if _, ok := second[k]; !ok {
+			diff[k] = struct{}{}
+		}
+	}
+
+	return diff
+}

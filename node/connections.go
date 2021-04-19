@@ -4,10 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sync"
 	"time"
 
 	pcoord "github.com/overseven/blockchain/protocol/coordinator"
 	pnode "github.com/overseven/blockchain/protocol/node"
+	"github.com/overseven/blockchain/utility"
 	"google.golang.org/grpc"
 )
 
@@ -21,13 +23,9 @@ func connectToNodes() error {
 		if err != nil {
 			return err
 		}
+		getNodesFromCoordinator()
 
-	} else if len(node.Nodes) != 0 {
-		err := connectToFirstNode()
-		if err != nil {
-			return err
-		}
-	} else {
+	} else if len(node.Nodes) == 0 {
 		return errors.New("coordinator or nodeToConnect must be presented.")
 	}
 
@@ -74,36 +72,113 @@ func connectToCoordinator() error {
 	return nil
 }
 
-func connectToFirstNode() error {
+func getNodesFromCoordinator() (map[string]interface{}, error) {
+	if node.coordinator == "" {
+		return nil, errors.New("empty coordinator address")
+	}
+	coordClient, _, err := newCoordinatorClient(node.coordinator)
+	if err != nil {
+		return nil, err
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	reply, err := coordClient.GetListOfNodes(ctx, &pcoord.ListOfNodesRequest{})
+
+	if err != nil {
+		return nil, err
+	}
+
+	nodes := map[string]interface{}{}
+	for _, n := range reply.Address {
+		nodes[n] = struct{}{}
+	}
+
+	return nodes, nil
+}
+
+func getNodesFromNode(address string) (map[string]interface{}, error) {
+	if address == "" {
+		return nil, errors.New("empty node address")
+	}
+	nodeClient, _, err := newNodeClient(address)
+	if err != nil {
+		return nil, err
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	reply, err := nodeClient.GetListOfNodes(ctx, &pnode.ListOfNodesRequest{})
+
+	if err != nil {
+		return nil, err
+	}
+
+	nodes := map[string]interface{}{}
+	for _, n := range reply.Address {
+		nodes[n] = struct{}{}
+	}
+
+	return nodes, nil
+}
+
+func getNodesFromNodes(nodes map[string]interface{}) error {
 	// TODO: finish
+	if len(nodes) == 0 {
+		return errors.New("empty input params")
+	}
+	nodesForConnect := []string{}
+
+	for n := range nodes {
+		nodesForConnect = append(nodesForConnect, n)
+	}
+
+	wg := sync.WaitGroup{}
+
+	wg.Add(len(nodesForConnect))
+
+	for _, n := range nodesForConnect {
+		addr := n
+		go func() {
+			ns, err := getNodesFromNode(addr)
+			if err == nil {
+				for nFromN := range ns {
+					nodes[nFromN] = struct{}{}
+				}
+			}
+			wg.Done()
+		}()
+	}
+
+	wg.Wait()
+
+	return nil
+}
+
+
+
+func fractalNodeFinder(nodes map[string]interface{}) error {
+	// TODO: finish
+	used := map[string]interface{}{}
+
+	diff := utility.MapDifference(nodes, used)
+	
+	if _, ok := diff[node.OwnAddress.String()]
+
+	getNodesFromNodes(diff)
+	
 	return nil
 }
 
 func updateListOfNodes() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	nodes := []string{}
+	nodes := map[string]interface{}{}
 
-	if node.coordinator != "" {
-		coordClient, _, err := newCoordinatorClient(node.coordinator)
-		if err == nil {
-			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-			defer cancel()
-
-			reply, err := coordClient.GetListOfNodes(ctx, &pcoord.ListOfNodesRequest{})
-
-			if err == nil {
-				nodes = append(nodes, reply.Address...)
-				fmt.Println("List of nodes ip from coordinator:")
-				for _, n := range reply.Address {
-					fmt.Println(n)
-				}
-				fmt.Printf("(%d elems)\n", len(reply.Address))
-			} else {
-				fmt.Println("Warning: coordinator connection error")
-			}
-		} else {
-			fmt.Println("Warning: create coordinator client error")
+	nCoord, err := getNodesFromCoordinator()
+	if err == nil {
+		for n := range nCoord {
+			nodes[n] = struct{}{}
 		}
 	}
 

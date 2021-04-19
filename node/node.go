@@ -22,15 +22,13 @@ var node Node
 type Node struct {
 	pnode.UnimplementedNoderServer
 	ListeningPort uint64
-	//UsersBalance  balance.Balance
-	OwnAddress  net.Addr
-	PrivKey     *ecdsa.PrivateKey
-	PubKey      []byte
-	mutex       sync.Mutex
-	coordinator string
+	OwnAddress    net.Addr
+	PrivKey       *ecdsa.PrivateKey
+	PubKey        []byte
+	mutex         sync.Mutex
+	coordinator   string
 
 	Nodes map[string]interface{}
-	// ConnectedNod []Connection
 }
 
 type Connection struct {

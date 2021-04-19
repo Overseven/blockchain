@@ -17,7 +17,7 @@ service Noder {
 
 message ConnectRequest{
   bytes requesterAddress = 1;
-
+  
 }
 
 message ConnectReply{
