@@ -1,4 +1,4 @@
-package client
+package main
 
 import (
 	"context"
@@ -7,43 +7,24 @@ import (
 	"sync"
 	"time"
 
+	"github.com/overseven/blockchain/transaction"
+
 	"github.com/overseven/blockchain/balance"
-	"github.com/overseven/blockchain/chain"
-	"github.com/overseven/blockchain/interfaces"
-	pb "github.com/overseven/blockchain/protocol"
 	"github.com/overseven/blockchain/protocol/converter"
-	"github.com/overseven/blockchain/utility"
+	pnode "github.com/overseven/blockchain/protocol/node"
 	"google.golang.org/grpc"
 )
 
 type Client struct {
-	Mode          interfaces.ClientMode
 	ListeningPort uint32
 	usersBalance  balance.Balance
-	localChain    chain.Chain
-	privateKey    *ecdsa.PrivateKey
-	publicKey     []byte
+	//localChain    chain.Chain
+	privateKey *ecdsa.PrivateKey
+	publicKey  []byte
 }
 
-func (c *Client) Init() {
+func (c *Client) init() {
 	c.usersBalance.Init()
-}
-
-func (c *Client) SetMode(mode interfaces.ClientMode) {
-	c.Mode = mode
-}
-
-func (c *Client) GetMode() interfaces.ClientMode {
-	return c.Mode
-}
-
-func (c *Client) SetPrivateKey(key *ecdsa.PrivateKey) {
-	c.privateKey = key
-	c.publicKey = utility.PrivToPubKey(key)
-}
-
-func (c *Client) GetPrivateKey() *ecdsa.PrivateKey {
-	return c.privateKey
 }
 
 func (c *Client) SetPublicKey(key []byte) {
@@ -62,18 +43,18 @@ func (c *Client) GetPort() uint32 {
 	return c.ListeningPort
 }
 
-func (c *Client) SendTransactions(element interfaces.BlockElement, nodes []string) ([]pb.AddTransactionReply_Code, error) {
+func (c *Client) SendTransactions(element transaction.Transaction, nodes []string) ([]pnode.AddTransactionReply_Code, error) {
 	// TODO: test this
 	wg := sync.WaitGroup{}
 	wg.Add(len(nodes))
 
-	returnCodes := []pb.AddTransactionReply_Code{}
+	returnCodes := []pnode.AddTransactionReply_Code{}
 	for i, n := range nodes {
 		f := func(index int, nodeAddress string) {
 			defer wg.Done()
 			code, err := c.SendTransaction(element, n)
 			if err != nil {
-				returnCodes[index] = pb.AddTransactionReply_TR_Error
+				returnCodes[index] = pnode.AddTransactionReply_TR_Error
 			} else {
 				returnCodes[index] = code
 			}
@@ -84,7 +65,7 @@ func (c *Client) SendTransactions(element interfaces.BlockElement, nodes []strin
 	return returnCodes, nil
 }
 
-func (c *Client) SendTransaction(element interfaces.BlockElement, nodeAddress string) (pb.AddTransactionReply_Code, error) {
+func (c *Client) SendTransaction(element transaction.Transaction, nodeAddress string) (pnode.AddTransactionReply_Code, error) {
 	// TODO: finish
 	// Set up a connection to the server.
 	conn, err := grpc.Dial(nodeAddress, grpc.WithInsecure(), grpc.WithBlock())
@@ -92,13 +73,13 @@ func (c *Client) SendTransaction(element interfaces.BlockElement, nodeAddress st
 		log.Fatalf("did not connect: %v", err)
 	}
 	defer conn.Close()
-	con := pb.NewNoderClient(conn)
+	con := pnode.NewNoderClient(conn)
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
 	transPb, err := converter.TransactionLocal2Proto(element)
-	r, err := con.AddTransaction(ctx, &pb.AddTransactionRequest{Transction: transPb})
+	r, err := con.AddTransaction(ctx, &pnode.AddTransactionRequest{Transaction: transPb})
 
 	return r.Reply, err
 }

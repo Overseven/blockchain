@@ -1,10 +1,9 @@
 package chain
-
+/*
 import (
 	"sync"
 
 	"github.com/overseven/blockchain/block"
-	"github.com/overseven/blockchain/interfaces"
 )
 
 type Chain struct {
@@ -47,3 +46,5 @@ func (c *Chain) AppendBlock(b interfaces.TransactionsContainer) {
 	defer c.mutex.Unlock()
 	c.Blocks = append(c.Blocks, b)
 }
+
+*/

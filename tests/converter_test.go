@@ -91,7 +91,7 @@ func TestTransLocal2ProtoAirdrop(t *testing.T) {
 		t.Error(err)
 	}
 
-	airdropPubKey, airdropPrKey, err := wallet.LoadFromFile(airdropModeratorConfigFile)
+	airdropPubKey, airdropPrKey, err := config.LoadFromFile(airdropModeratorConfigFile)
 	if err != nil {
 		t.Error(err)
 	}
@@ -225,7 +225,7 @@ func TestBlockLocal2Proto(t *testing.T) {
 		t.Error(err)
 	}
 
-	airdropPubKey, airdropPrKey, err := wallet.LoadFromFile(airdropModeratorConfigFile)
+	airdropPubKey, airdropPrKey, err := config.LoadFromFile(airdropModeratorConfigFile)
 	if err != nil {
 		t.Error(err)
 	}

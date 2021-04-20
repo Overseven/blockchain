@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+option go_package = "github.com/overseven/blockchain/protocol/protocol";
+
+package protocol;
+
+//import "google/protobuf/timestamp.proto";
+
+service Coordinator{
+    rpc Connect(ConnectRequest) returns (ConnectReply){}
+    rpc GetListOfNodes(ListOfNodesRequest) returns (ListOfNodesReply) {}
+}
+
+message ConnectRequest{
+    string requesterAddress = 1;
+  
+}
+  
+message ConnectReply{
+    bool ok = 1;
+}
+
+message ListOfNodesRequest{
+
+}
+
+message ListOfNodesReply{
+    repeated string address = 1;
+}

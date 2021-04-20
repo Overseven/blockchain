@@ -7,7 +7,6 @@ import (
 	"math"
 	"strconv"
 
-	"github.com/overseven/blockchain/interfaces"
 	"github.com/overseven/blockchain/transaction"
 
 	cr "github.com/ethereum/go-ethereum/crypto"
@@ -16,7 +15,7 @@ import (
 
 type Block struct {
 	Id           uint64
-	Transactions []interfaces.BlockElement
+	Transactions map[string]transaction.Transaction
 	PrevHash     []byte
 	//WalletsStats map[string]WalletStats
 
@@ -36,7 +35,7 @@ type WalletStats struct {
 func (block *Block) GetBatchHash() (hash []byte) {
 	var toHashBytes []byte
 	for _, tran := range block.Transactions {
-		toHashBytes = append(toHashBytes, transaction.GetHash(tran.GetData())...)
+		toHashBytes = append(toHashBytes, tran.Hash()...)
 	}
 	hash = cr.Keccak256(toHashBytes)
 	return
@@ -54,44 +53,13 @@ func (block *Block) GetHash() (hash []byte) {
 	return hash
 }
 
-func (block *Block) IsValid(blockchain interfaces.BlockConnecter, balance interfaces.Balancer) error {
-	// TODO: add test
-	var blocks []interfaces.TransactionsContainer = blockchain.GetBlocks()
-
-	if uint64(len(blockchain.GetBlocks())) < block.Id+1 {
-		return errors.New("incorrect block Id: " + strconv.FormatUint(block.Id, 10))
-	}
-
-	if block.Id != 0 {
-		if blocks[block.Id-1].GetId()+1 != block.Id {
-			return errors.New("conflicting block Id with prev. block Id: " + strconv.FormatUint(block.Id, 10))
-		}
-	}
-	// if uint64(len(blocks)) > block.Id+1 {
-	// 	if blocks[block.Id+1].GetId() != block.Id+1 {
-	// 		return errors.New("conflicting block Id with next block Id: " + strconv.FormatUint(block.Id, 10))
-	// 	}
-	// }
-
-	// if block is the first in chain
-	for _, t := range block.Transactions {
-		data := t.GetData()
-		if block.Id == 0 && data.Type != transaction.TypeAirdrop {
-			return errors.New("first block must have only airdrop transactions")
-		}
-		if err := t.Verify(balance); err != nil {
-			return errors.New("not valid transaction: " + err.Error())
-		}
-	}
-
+func (block *Block) IsValid() error {
 	// check hash
 	hash := cr.Keccak256(append(block.GetHash(), block.Nonce...))
 	mask := make([]byte, block.Difficulty)
-	if !bytes.HasPrefix(hash, mask) {
+	if !bytes.HasPrefix(hash, mask) { // TODO: add hash difficult logic
 		return errors.New("incorrect resulting hash, not have required zeroes")
 	}
-
-	//block.WalletsStats
 	return nil
 }
 
@@ -121,65 +89,13 @@ func (block *Block) Mining(minerPubKey []byte, stop chan bool) []byte {
 	return []byte{}
 }
 
-func (block *Block) GetTransactions() []interfaces.BlockElement {
-	return block.Transactions
+func (block *Block) HasTransaction(tr transaction.Transaction) bool {
+	_, ok := block.Transactions[string(tr.Hash())]
+	return ok
 }
 
-func (block *Block) SetTransactions(tr []interfaces.BlockElement) {
-	block.Transactions = tr
-}
-
-func (block *Block) HasTransaction(transact interfaces.BlockElement) (index int, has bool) {
-	for i, tran := range block.Transactions {
-		if transaction.IsEqual(transact.GetData(), tran.GetData()) {
-			return i, true
-		}
-	}
-	return 0, false
-}
-
-func (block *Block) AddTransaction(tr interfaces.BlockElement) error {
-	block.Transactions = append(block.Transactions, tr)
+func (block *Block) AddTransaction(tr transaction.Transaction) error {
+	block.Transactions[string(tr.Hash())] = tr
 
 	return nil
-}
-
-func (block *Block) GetId() uint64 {
-	return block.Id
-}
-
-func (block *Block) SetId(id uint64) {
-	block.Id = id
-}
-
-func (block *Block) GetMiner() []byte {
-	return block.Miner
-}
-
-func (block *Block) SetMiner(m []byte) {
-	block.Miner = m
-}
-
-func (block *Block) GetPrevHash() []byte {
-	return block.PrevHash
-}
-
-func (block *Block) SetPrevHash(ph []byte) {
-	block.PrevHash = ph
-}
-
-func (block *Block) GetDifficulty() uint64 {
-	return block.Difficulty
-}
-
-func (block *Block) SetDifficulty(d uint64) {
-	block.Difficulty = d
-}
-
-func (block *Block) GetNonce() []byte {
-	return block.Nonce
-}
-
-func (block *Block) SetNonce(n []byte) {
-	block.Nonce = n
 }

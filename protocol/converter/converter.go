@@ -2,97 +2,137 @@ package converter
 
 import (
 	"errors"
-	"google.golang.org/protobuf/types/known/timestamppb"
 	"strconv"
 
+	"google.golang.org/protobuf/types/known/timestamppb"
+
 	"github.com/overseven/blockchain/block"
-	"github.com/overseven/blockchain/interfaces"
-	pb "github.com/overseven/blockchain/protocol"
+	"github.com/overseven/blockchain/protocol/pcommon"
 	"github.com/overseven/blockchain/transaction"
+	"github.com/overseven/blockchain/transaction/airdrop"
+	"github.com/overseven/blockchain/transaction/transfer"
 )
 
-func BlockProto2Local(b *pb.Block) (interfaces.TransactionsContainer, error) {
-	var bl interfaces.TransactionsContainer = new(block.Block)
+const (
+	protocolVersion = 1
+)
 
-	bl.SetId(b.GetBlockId())
+func BlockProto2Local(b *pcommon.Block) (*block.Block, error) {
+	bl := new(block.Block)
+
+	bl.Id = b.GetBlockId()
 
 	// transactions
-	var tr []interfaces.BlockElement
+	tr := map[string]transaction.Transaction{}
 	for i, t := range b.GetTrans() {
 		tran, err := TransactionProto2Local(t)
 		if err != nil {
 			return nil, errors.New("incorrect type at " + strconv.FormatInt(int64(i), 10) + " transaction")
 		}
-		tr = append(tr, tran)
+		tr[string(tran.Hash())] = tran
 
 	}
-	bl.SetTransactions(tr)
+	bl.Transactions = tr
 
-	bl.SetPrevHash(b.PrevBlockHash)
-	bl.SetDifficulty(uint64(b.Difficulty))
-	bl.SetMiner(b.Miner)
+	bl.PrevHash = b.PrevBlockHash
+	bl.Difficulty = uint64(b.Difficulty)
+	bl.Miner = b.Miner
 	bl.GetHash()
-	bl.SetNonce(b.Nonce)
+	bl.Nonce = b.Nonce
 
 	return bl, nil
 }
 
-func BlockLocal2Proto(b interfaces.TransactionsContainer) (*pb.Block, error) {
-	bl := pb.Block{}
-	bl.BlockId = b.GetId()
+func BlockLocal2Proto(b block.Block) (*pcommon.Block, error) {
+	bl := pcommon.Block{}
+	bl.BlockId = b.Id
 
-	var tr []*pb.Transaction
-	for i, t := range b.GetTransactions() {
+	var tr []*pcommon.Transaction
+	for _, t := range b.Transactions {
 		tran, err := TransactionLocal2Proto(t)
 		if err != nil {
-			return nil, errors.New("incorrect type at " + strconv.FormatInt(int64(i), 10) + " transaction")
+			return nil, errors.New("incorrect transaction type")
 		}
 		tr = append(tr, tran)
 
 	}
 	bl.Trans = tr
-	bl.PrevBlockHash = b.GetPrevHash()
-	bl.Difficulty = uint32(b.GetDifficulty())
-	bl.Miner = b.GetMiner()
+	bl.PrevBlockHash = b.PrevHash
+	bl.Difficulty = uint32(b.Difficulty)
+	bl.Miner = b.Miner
 	bl.BlockHash = b.GetHash()
-	bl.Nonce = b.GetNonce()
+	bl.Nonce = b.Nonce
 	return &bl, nil
 }
 
-func TransactionProto2Local(t *pb.Transaction) (interfaces.BlockElement, error) {
-	data := interfaces.Data{}
-	data.Sender = t.Sender
-	data.Receiver = t.Receiver
-	data.Message = t.Message
-	data.Timestamp = t.GetTimestamp().AsTime()
-	data.Pay = t.Pay
-	data.Fee = t.Fee
-	data.Sign = t.GetSenderSign()
+func AirdropProto2Local(a *pcommon.TransAirDrop) (*airdrop.Airdrop, error) {
+	local_a := new(airdrop.Airdrop)
+	local_a.Receiver = a.Receiver
+	local_a.Timestamp = a.GetTimestamp().AsTime()
+	local_a.Pay = a.Pay
+	local_a.Fee = a.Fee
+	local_a.Message = a.Message
+	local_a.Node = a.Node
+	local_a.Sign = a.Sign
+	return local_a, nil
+}
 
-	if t.GetType() == transaction.TypeAirdrop {
-		return &transaction.Airdrop{Data: data}, nil
-	} else if t.GetType() == transaction.TypeTransfer {
-		return &transaction.Transfer{Data: data}, nil
-	} else {
-		return nil, errors.New("incorrect type of transaction")
+func TransferProto2Local(t *pcommon.TransTransfer) (*transfer.Transfer, error) {
+	local_tr := new(transfer.Transfer)
+	local_tr.Sender = t.Sender
+	local_tr.Receiver = t.Receiver
+	local_tr.Message = t.Message
+	local_tr.Timestamp = t.GetTimestamp().AsTime()
+	local_tr.Pay = t.Pay
+	local_tr.Fee = t.Fee
+	local_tr.Node = t.Node
+	local_tr.Sign = t.Sign
+	return local_tr, nil
+}
+
+func TransactionProto2Local(t *pcommon.Transaction) (transaction.Transaction, error) {
+	switch tmp := t.Trans.(type) {
+	case *pcommon.Transaction_Drop:
+		return AirdropProto2Local(tmp.Drop)
+	case *pcommon.Transaction_Transfer:
+		return TransferProto2Local(tmp.Transfer)
+	default:
+		return nil, errors.New("incorrect trans type")
 	}
 }
 
-func TransactionLocal2Proto(trans interfaces.BlockElement) (*pb.Transaction, error) {
-	data := trans.GetData()
-	tr := new(pb.Transaction)
-	tr.Type = pb.Transaction_Type(data.Type)
-	tr.Sender = data.Sender
-	tr.Receiver = data.Receiver
-	tr.Message = data.Message
+func TransferLocal2Proto(tr *transfer.Transfer) (*pcommon.Transaction, error) {
+	t := new(pcommon.TransTransfer)
+	t.Sender = tr.Sender
+	t.Receiver = tr.Receiver
+	t.Pay = tr.Pay
+	t.Fee = tr.Fee
+	t.Message = tr.Message
+	t.Timestamp = timestamppb.New(tr.Timestamp)
+	t.Node = tr.Node
+	t.Sign = tr.Sign
+	return &pcommon.Transaction{ProtocolVersion: protocolVersion, Trans: &pcommon.Transaction_Transfer{Transfer: t}}, nil
+}
 
-	var err error
-	tr.Timestamp = timestamppb.New(data.Timestamp)
-	if err != nil {
-		return nil, err
+func AirdropLocal2Proto(tr *airdrop.Airdrop) (*pcommon.Transaction, error) {
+	t := new(pcommon.TransAirDrop)
+	t.Receiver = tr.Receiver
+	t.Pay = tr.Pay
+	t.Fee = tr.Fee
+	t.Message = tr.Message
+	t.Timestamp = timestamppb.New(tr.Timestamp)
+	t.Node = tr.Node
+	t.Sign = tr.Sign
+	return &pcommon.Transaction{ProtocolVersion: protocolVersion, Trans: &pcommon.Transaction_Drop{Drop: t}}, nil
+}
+
+func TransactionLocal2Proto(tr transaction.Transaction) (*pcommon.Transaction, error) {
+	switch tmp := tr.(type) {
+	case *airdrop.Airdrop:
+		return AirdropLocal2Proto(tmp)
+	case *transfer.Transfer:
+		return TransferLocal2Proto(tmp)
+	default:
+		return nil, errors.New("incorrect trans type")
 	}
-	tr.Pay = data.Pay
-	tr.Fee = data.Fee
-	tr.SenderSign = data.Sign
-	return tr, nil
 }
