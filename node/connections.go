@@ -18,22 +18,21 @@ const (
 )
 
 func connectToNodes() error {
-	if len(node.coordinator) != 0 {
+	if node.coordinator != "" {
 		err := connectToCoordinator()
 		if err != nil {
 			return err
 		}
-		getNodesFromCoordinator()
 
 	} else if len(node.Nodes) == 0 {
-		return errors.New("coordinator or nodeToConnect must be presented.")
+		return errors.New("coordinator or nodeToConnect must be presented")
 	}
 
 	return updateListOfNodes()
 }
 
 func newCoordinatorClient(address string) (pcoord.CoordinatorClient, *grpc.ClientConn, error) {
-	con, err := grpc.Dial(node.coordinator, grpc.WithInsecure())
+	con, err := grpc.Dial(address, grpc.WithInsecure())
 	if err != nil {
 		return nil, nil, err
 	}
@@ -73,6 +72,7 @@ func connectToCoordinator() error {
 }
 
 func getNodesFromCoordinator() (map[string]interface{}, error) {
+	fmt.Println("getNodesFromCoordinator()")
 	if node.coordinator == "" {
 		return nil, errors.New("empty coordinator address")
 	}
@@ -98,6 +98,7 @@ func getNodesFromCoordinator() (map[string]interface{}, error) {
 }
 
 func getNodesFromNode(address string) (map[string]interface{}, error) {
+	fmt.Println("getNodesFromNode()")
 	if address == "" {
 		return nil, errors.New("empty node address")
 	}
@@ -122,13 +123,14 @@ func getNodesFromNode(address string) (map[string]interface{}, error) {
 	return nodes, nil
 }
 
-func getNodesFromNodes(nodes map[string]interface{}) error {
+func getNodesFromNodes(nodes map[string]interface{}) (map[string]interface{}, error) {
+	fmt.Println("getNodesFromNodes()")
 	// TODO: finish
 	if len(nodes) == 0 {
-		return errors.New("empty input params")
+		return nil, errors.New("empty input params")
 	}
-	nodesForConnect := []string{}
-
+	var nodesForConnect []string
+	result := map[string]interface{}{}
 	for n := range nodes {
 		nodesForConnect = append(nodesForConnect, n)
 	}
@@ -143,7 +145,7 @@ func getNodesFromNodes(nodes map[string]interface{}) error {
 			ns, err := getNodesFromNode(addr)
 			if err == nil {
 				for nFromN := range ns {
-					nodes[nFromN] = struct{}{}
+					result[nFromN] = struct{}{}
 				}
 			}
 			wg.Done()
@@ -152,28 +154,51 @@ func getNodesFromNodes(nodes map[string]interface{}) error {
 
 	wg.Wait()
 
-	return nil
+	return result, nil
 }
 
 
 
-func fractalNodeFinder(nodes map[string]interface{}) error {
-	// TODO: finish
+func fractalNodeFinder(nodes map[string]interface{}, max int) error {
+	fmt.Println("fractalNodeFinder()")
 	used := map[string]interface{}{}
 
-	diff := utility.MapDifference(nodes, used)
-	
-	if _, ok := diff[node.OwnAddress.String()]
+	for count:= len(nodes); count < max; count = len(nodes) {
+		diff := utility.MapDifference(nodes, used)
+		if _, ok := diff[node.OwnAddress.String()]; !ok {
+			delete(diff, node.OwnAddress.String())
+		}
 
-	getNodesFromNodes(diff)
+		if len(diff) == 0 {
+			return nil
+		}
+		fmt.Printf("Nodes: ")
+		fmt.Println(diff)
+		res, err := getNodesFromNodes(diff) // FIXME: infinity cycle
+		if err != nil {
+			continue
+		}
+		for key := range res {
+			nodes[key] = struct{}{}
+		}
+	}
+
 	
 	return nil
 }
 
 func updateListOfNodes() error {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
+	//ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	//defer cancel()
+	fmt.Println("updateListOfNodes()")
 	nodes := map[string]interface{}{}
+
+	node.mutex.Lock()
+	defer node.mutex.Unlock()
+
+	for key := range node.Nodes {
+		nodes[key] = struct{}{}
+	}
 
 	nCoord, err := getNodesFromCoordinator()
 	if err == nil {
@@ -182,49 +207,21 @@ func updateListOfNodes() error {
 		}
 	}
 
-	if len(node.Nodes) != 0 {
-		// wg := sync.WaitGroup{}
-		// wg.Add(len(node.Nodes))
-		for n := range node.Nodes {
-			nodeClient, _, err := newNodeClient(n)
-			if err != nil {
-				// TODO: remove node
-				continue
-			}
-			reply, err := nodeClient.GetListOfNodes(ctx, &pnode.ListOfNodesRequest{})
-			if err == nil {
-				fmt.Println("List of nodes ip from coordinator:")
-				for _, n := range reply.Address {
-					fmt.Println(n)
-				}
-				fmt.Printf("(%d elems)\n", len(reply.Address))
-				nodes = append(nodes, reply.Address...)
-			} else {
-				fmt.Println("Warning: nodeToConnect connection error")
-			}
-		}
-
-	}
-
-	if len(node.Nodes) > 0 {
-		if len(nodes) < maxCountOfNodes {
-			// TODO: finish request other nodes ip
-		}
-
+	err = fractalNodeFinder(nodes, maxCountOfNodes)
+	if err != nil {
+		// TODO: finish
 	}
 
 	if len(nodes) == 0 {
 		return errors.New("empty list of nodes")
 	}
 
-	for _, n := range nodes {
-		if n == node.OwnAddress.String() {
-			continue
-		}
-		if _, ok := node.Nodes[n]; ok {
-			continue
-		}
-		node.Nodes[n] = struct{}{}
+	if _, ok := nodes[node.OwnAddress.String()]; ok {
+		delete(nodes, node.OwnAddress.String())
+	}
+
+	for key := range nodes {
+		node.Nodes[key] = struct{}{}
 	}
 
 	return nil

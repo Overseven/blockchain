@@ -84,11 +84,11 @@ func (c *Coordinator) Connect(ctx context.Context, req *pcoord.ConnectRequest) (
 		return &pcoord.ConnectReply{Ok: false}, nil
 	}
 	c.nodes[str] = NodeInfo{}
-	fmt.Println("Connect done")
+	fmt.Printf("Connect done\n\n")
 	return &pcoord.ConnectReply{Ok: true}, nil
 }
 func (c *Coordinator) GetListOfNodes(ctx context.Context, req *pcoord.ListOfNodesRequest) (*pcoord.ListOfNodesReply, error) {
-	nodes := []string{}
+	var nodes []string
 
 	coord.lock.Lock()
 	defer coord.lock.Unlock()
@@ -146,7 +146,7 @@ func infinityPing() {
 	}()
 
 	for true {
-
+		time.Sleep(time.Second)
 	}
 }
 

@@ -7,6 +7,7 @@ import (
 	"net"
 	"strconv"
 	"sync"
+	"time"
 
 	"github.com/overseven/blockchain/node/trlists"
 	"github.com/overseven/blockchain/protocol/converter"
@@ -136,8 +137,23 @@ func main() {
 		return
 	}
 
-	for true {
+	go func(){
+		for true {
+			time.Sleep(5 * time.Second)
+			func(){
+				fmt.Println("Nodes:")
+				node.mutex.Lock()
+				defer node.mutex.Unlock()
+				for key := range node.Nodes {
+					fmt.Println(key)
+				}
+				fmt.Printf("(%d elems)", len(node.Nodes))
+			}()
 
+		}
+	}()
+	for true {
+		time.Sleep(time.Second)
 	}
 
 }
