@@ -42,7 +42,7 @@ func newCoordinatorClient(address string) (pcoord.CoordinatorClient, *grpc.Clien
 }
 
 func newNodeClient(address string) (pnode.NoderClient, *grpc.ClientConn, error) {
-	con, err := grpc.Dial(node.coordinator, grpc.WithInsecure())
+	con, err := grpc.Dial(address, grpc.WithInsecure())
 	if err != nil {
 		return nil, nil, err
 	}
@@ -97,7 +97,7 @@ func getNodesFromCoordinator() (map[string]interface{}, error) {
 	return nodes, nil
 }
 
-func getNodesFromNode(address string) (map[string]interface{}, error) {
+func getNodesFromNode(address string) (result map[string]interface{}, err error) {
 	fmt.Println("getNodesFromNode()")
 	if address == "" {
 		return nil, errors.New("empty node address")
@@ -123,14 +123,15 @@ func getNodesFromNode(address string) (map[string]interface{}, error) {
 	return nodes, nil
 }
 
-func getNodesFromNodes(nodes map[string]interface{}) (map[string]interface{}, error) {
+func getNodesFromNodes(nodes map[string]interface{}) (result, remove map[string]interface{}, err error) {
 	fmt.Println("getNodesFromNodes()")
 	// TODO: finish
 	if len(nodes) == 0 {
-		return nil, errors.New("empty input params")
+		return nil, nil, errors.New("empty input params")
 	}
 	var nodesForConnect []string
-	result := map[string]interface{}{}
+	result = map[string]interface{}{}
+	remove = map[string]interface{}{}
 	for n := range nodes {
 		nodesForConnect = append(nodesForConnect, n)
 	}
@@ -143,7 +144,9 @@ func getNodesFromNodes(nodes map[string]interface{}) (map[string]interface{}, er
 		addr := n
 		go func() {
 			ns, err := getNodesFromNode(addr)
-			if err == nil {
+			if err != nil {
+				remove[addr] = struct{}{}
+			} else {
 				for nFromN := range ns {
 					result[nFromN] = struct{}{}
 				}
@@ -154,7 +157,7 @@ func getNodesFromNodes(nodes map[string]interface{}) (map[string]interface{}, er
 
 	wg.Wait()
 
-	return result, nil
+	return result, remove, nil
 }
 
 
@@ -165,16 +168,20 @@ func fractalNodeFinder(nodes map[string]interface{}, max int) error {
 
 	for count:= len(nodes); count < max; count = len(nodes) {
 		diff := utility.MapDifference(nodes, used)
-		if _, ok := diff[node.OwnAddress.String()]; !ok {
+		if _, ok := diff[node.OwnAddress.String()]; ok {
 			delete(diff, node.OwnAddress.String())
 		}
 
 		if len(diff) == 0 {
 			return nil
 		}
-		fmt.Printf("Nodes: ")
+		fmt.Printf("fractalNodeFinder. Nodes: ")
 		fmt.Println(diff)
-		res, err := getNodesFromNodes(diff) // FIXME: infinity cycle
+		res, remove, err := getNodesFromNodes(diff) // FIXME: infinity cycle
+		for key := range remove {
+			fmt.Println("remove:", key)
+			delete(nodes, key)
+		}
 		if err != nil {
 			continue
 		}
@@ -220,6 +227,7 @@ func updateListOfNodes() error {
 		delete(nodes, node.OwnAddress.String())
 	}
 
+	fmt.Println(nodes)
 	for key := range nodes {
 		node.Nodes[key] = struct{}{}
 	}

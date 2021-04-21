@@ -134,20 +134,21 @@ func main() {
 	err = connectToNodes()
 	if err != nil {
 		fmt.Println("Error!", err)
-		return
+		//return
 	}
 
 	go func(){
 		for true {
 			time.Sleep(5 * time.Second)
 			func(){
-				fmt.Println("Nodes:")
+				fmt.Println("Cycle. Nodes:")
 				node.mutex.Lock()
 				defer node.mutex.Unlock()
-				for key := range node.Nodes {
-					fmt.Println(key)
-				}
-				fmt.Printf("(%d elems)", len(node.Nodes))
+				fmt.Println(node.Nodes)
+				//for key := range node.Nodes {
+				//	fmt.Printf("'%s'\n", key)
+				//}
+				fmt.Printf("(%d elems)\n\n", len(node.Nodes))
 			}()
 
 		}
