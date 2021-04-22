@@ -235,9 +235,7 @@ func updateListOfNodes() error {
 	}
 
 	// fmt.Println(nodes)
-	for key := range nodes {
-		node.Nodes[key] = struct{}{}
-	}
+	node.Nodes = nodes
 
 	return nil
 }

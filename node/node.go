@@ -141,6 +141,7 @@ func main() {
 		for true {
 			time.Sleep(5 * time.Second)
 			func() {
+				updateListOfNodes()
 				fmt.Println("Cycle. Nodes:")
 				node.mutex.Lock()
 				defer node.mutex.Unlock()
