@@ -30,7 +30,7 @@ func flagParse() error {
 		if err != nil {
 			return nil
 		}
-		node.PubKey = res
+		node.NetParams.PubKey = res
 
 		if *flagPrivKey == "" {
 			return errors.New("node private key must be presented with flag '-pubKey' or in config file")
@@ -44,10 +44,10 @@ func flagParse() error {
 		if err != nil {
 			panic(err)
 		}
-		node.PrivKey = privKey
+		node.NetParams.PrivKey = privKey
 
 		if *flagPort != 9000 {
-			node.ListeningPort = uint64(*flagPort)
+			node.ServParams.ListeningPort = uint64(*flagPort)
 		}
 		if *flagCoordinatorIP == "" && *flagNodeToConnectIP == "" {
 			return errors.New("coordinator or nodeToConnect must be presented")
@@ -58,14 +58,14 @@ func flagParse() error {
 			// if ip == nil {
 			// 	return errors.New("incorrect coordinator ip")
 			// }
-			node.coordinator = *flagCoordinatorIP
+			node.NetParams.Coordinator = *flagCoordinatorIP
 		} else {
 			// TODO: add check
 			// ip := net.ParseIP(*flagNodeToConnectIP)
 			// if ip == nil {
 			// 	return errors.New("incorrect nodeToConnect ip")
 			// }
-			node.Nodes[*flagNodeToConnectIP] = struct{}{}
+			node.NetParams.Nodes[*flagNodeToConnectIP] = struct{}{}
 		}
 
 	} else {
@@ -74,12 +74,12 @@ func flagParse() error {
 			return err
 		}
 
-		node.PrivKey = params.PrivKey
-		node.PubKey = params.PubKey
-		node.ListeningPort = params.ListeningPort
-		node.coordinator = params.Coordinator
+		node.NetParams.PrivKey = params.PrivKey
+		node.NetParams.PubKey = params.PubKey
+		node.ServParams.ListeningPort = params.ListeningPort
+		node.NetParams.Coordinator = params.Coordinator
 		if params.NodeToConnect != "" {
-			node.Nodes[params.NodeToConnect] = struct{}{}
+			node.NetParams.Nodes[params.NodeToConnect] = struct{}{}
 		}
 	}
 	return nil

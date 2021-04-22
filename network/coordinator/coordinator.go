@@ -151,6 +151,7 @@ func infinityPing() {
 }
 
 func main() {
+	// TODO: add port param
 	fillRandomData()
 	coord.ListeningPort = 9004
 	stopCh := make(chan interface{})

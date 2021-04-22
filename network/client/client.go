@@ -9,22 +9,22 @@ import (
 
 	"github.com/overseven/blockchain/transaction"
 
-	"github.com/overseven/blockchain/balance"
 	"github.com/overseven/blockchain/protocol/converter"
 	pnode "github.com/overseven/blockchain/protocol/node"
 	"google.golang.org/grpc"
 )
 
+var (
+	client Client
+)
+
+// TODO: create struct wich contains coordinator and nodes address
+
 type Client struct {
 	ListeningPort uint32
-	usersBalance  balance.Balance
 	//localChain    chain.Chain
 	privateKey *ecdsa.PrivateKey
 	publicKey  []byte
-}
-
-func (c *Client) init() {
-	c.usersBalance.Init()
 }
 
 func (c *Client) SetPublicKey(key []byte) {
@@ -82,6 +82,10 @@ func (c *Client) SendTransaction(element transaction.Transaction, nodeAddress st
 	r, err := con.AddTransaction(ctx, &pnode.AddTransactionRequest{Transaction: transPb})
 
 	return r.Reply, err
+}
+
+func main() {
+
 }
 
 //func Run(configFile string) {

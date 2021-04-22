@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"net"
 	"strconv"
-	"sync"
 	"time"
 
+	"github.com/overseven/blockchain/network"
 	"github.com/overseven/blockchain/node/trlists"
 	"github.com/overseven/blockchain/protocol/converter"
 	pnode "github.com/overseven/blockchain/protocol/node"
@@ -22,14 +22,8 @@ var node Node
 
 type Node struct {
 	pnode.UnimplementedNoderServer
-	ListeningPort uint64
-	OwnAddress    net.Addr
-	PrivKey       *ecdsa.PrivateKey
-	PubKey        []byte
-	mutex         sync.Mutex
-	coordinator   string
-
-	Nodes map[string]interface{}
+	ServParams network.ServerParams
+	NetParams  network.NetParams
 }
 
 type Connection struct {
@@ -38,23 +32,23 @@ type Connection struct {
 }
 
 func init() {
-	node.Nodes = map[string]interface{}{}
+	node.NetParams.Nodes = map[string]interface{}{}
 }
 
 func (n *Node) SetPrivateKey(key *ecdsa.PrivateKey) {
-	n.PrivKey = key
-	n.PubKey = utility.PrivToPubKey(key)
+	n.NetParams.PrivKey = key
+	n.NetParams.PubKey = utility.PrivToPubKey(key)
 }
 
 func (n *Node) StartListening(stop chan interface{}) error {
 	// TODO: stop signal handling
 	// TODO: goroutine ?
-	lis, err := net.Listen("tcp", "localhost:"+strconv.FormatUint(n.ListeningPort, 10))
+	lis, err := net.Listen("tcp", "localhost:"+strconv.FormatUint(n.ServParams.ListeningPort, 10))
 	if err != nil {
 		return err
 	}
 	s := grpc.NewServer()
-	n.OwnAddress = lis.Addr()
+	n.ServParams.OwnAddress = lis.Addr()
 	pnode.RegisterNoderServer(s, n)
 	go s.Serve(lis)
 	go func() {
@@ -80,13 +74,13 @@ func (n *Node) Connect(ctx context.Context, req *pnode.ConnectRequest) (*pnode.C
 	p, _ := peer.FromContext(ctx)
 	addr := p.Addr.String()
 	fmt.Println("Address:", addr)
-	n.Nodes[addr] = struct{}{}
-	return &pnode.ConnectReply{ReplyerAddress: n.PubKey}, nil
+	n.NetParams.Nodes[addr] = struct{}{}
+	return &pnode.ConnectReply{ReplyerAddress: n.NetParams.PubKey}, nil
 }
 
 func (n *Node) GetListOfNodes(ctx context.Context, req *pnode.ListOfNodesRequest) (*pnode.ListOfNodesReply, error) {
 	nodeList := []string{}
-	for key := range n.Nodes {
+	for key := range n.NetParams.Nodes {
 		nodeList = append(nodeList, key)
 	}
 	return &pnode.ListOfNodesReply{Address: nodeList}, nil
@@ -143,13 +137,13 @@ func main() {
 			func() {
 				updateListOfNodes()
 				fmt.Println("Cycle. Nodes:")
-				node.mutex.Lock()
-				defer node.mutex.Unlock()
-				fmt.Println(node.Nodes)
+				node.NetParams.Mutex.Lock()
+				defer node.NetParams.Mutex.Unlock()
+				fmt.Println(node.NetParams.Nodes)
 				//for key := range node.Nodes {
 				//	fmt.Printf("'%s'\n", key)
 				//}
-				fmt.Printf("(%d elems)\n\n", len(node.Nodes))
+				fmt.Printf("(%d elems)\n\n", len(node.NetParams.Nodes))
 			}()
 
 		}
