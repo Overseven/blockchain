@@ -137,10 +137,10 @@ func main() {
 		//return
 	}
 
-	go func(){
+	go func() {
 		for true {
 			time.Sleep(5 * time.Second)
-			func(){
+			func() {
 				fmt.Println("Cycle. Nodes:")
 				node.mutex.Lock()
 				defer node.mutex.Unlock()

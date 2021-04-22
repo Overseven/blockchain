@@ -78,7 +78,9 @@ func flagParse() error {
 		node.PubKey = params.PubKey
 		node.ListeningPort = params.ListeningPort
 		node.coordinator = params.Coordinator
-		node.Nodes[params.NodeToConnect] = struct{}{}
+		if params.NodeToConnect != "" {
+			node.Nodes[params.NodeToConnect] = struct{}{}
+		}
 	}
 	return nil
 }
