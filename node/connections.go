@@ -72,7 +72,7 @@ func connectToCoordinator() error {
 }
 
 func getNodesFromCoordinator() (map[string]interface{}, error) {
-	// fmt.Println("getNodesFromCoordinator()")
+	fmt.Println("getNodesFromCoordinator()")
 	if node.coordinator == "" {
 		return nil, errors.New("empty coordinator address")
 	}
@@ -98,7 +98,7 @@ func getNodesFromCoordinator() (map[string]interface{}, error) {
 }
 
 func getNodesFromNode(address string) (result map[string]interface{}, err error) {
-	// fmt.Println("getNodesFromNode()")
+	fmt.Println("getNodesFromNode()")
 	if address == "" {
 		return nil, errors.New("empty node address")
 	}
@@ -124,7 +124,7 @@ func getNodesFromNode(address string) (result map[string]interface{}, err error)
 }
 
 func getNodesFromNodes(nodes map[string]interface{}) (result, remove map[string]interface{}, err error) {
-	// fmt.Println("getNodesFromNodes()")
+	fmt.Println("getNodesFromNodes()")
 	// TODO: finish
 	if len(nodes) == 0 {
 		return nil, nil, errors.New("empty input params")
@@ -161,7 +161,7 @@ func getNodesFromNodes(nodes map[string]interface{}) (result, remove map[string]
 }
 
 func fractalNodeFinder(nodes map[string]interface{}, max int) error {
-	// fmt.Println("fractalNodeFinder()")
+	fmt.Println("fractalNodeFinder()")
 	used := map[string]interface{}{}
 
 	for count := len(nodes); count < max; count = len(nodes) {
@@ -186,6 +186,9 @@ func fractalNodeFinder(nodes map[string]interface{}, max int) error {
 				delete(nodes, key)
 			}
 		}
+		for key := range diff {
+			used[key] = struct{}{}
+		}
 		if err != nil {
 			continue
 		}
@@ -200,7 +203,7 @@ func fractalNodeFinder(nodes map[string]interface{}, max int) error {
 func updateListOfNodes() error {
 	//ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	//defer cancel()
-	// fmt.Println("updateListOfNodes()")
+	fmt.Println("updateListOfNodes()")
 	nodes := map[string]interface{}{}
 
 	node.mutex.Lock()
@@ -210,7 +213,7 @@ func updateListOfNodes() error {
 		// fmt.Println("key: ", key)
 		nodes[key] = struct{}{}
 	}
-	// fmt.Println("node.Nodes: ", node.Nodes)
+	fmt.Println("node.Nodes: ", node.Nodes)
 	nCoord, err := getNodesFromCoordinator()
 	if err == nil {
 		for n := range nCoord {
