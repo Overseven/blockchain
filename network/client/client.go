@@ -9,8 +9,8 @@ import (
 
 	"github.com/overseven/blockchain/transaction"
 
-	"github.com/overseven/blockchain/protocol/converter"
-	pnode "github.com/overseven/blockchain/protocol/node"
+	"github.com/overseven/blockchain/network/protocol/converter"
+	pnode "github.com/overseven/blockchain/network/protocol/node"
 	"google.golang.org/grpc"
 )
 

@@ -7,7 +7,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/overseven/blockchain/block"
-	"github.com/overseven/blockchain/protocol/pcommon"
+	"github.com/overseven/blockchain/network/protocol/pcommon"
 	"github.com/overseven/blockchain/transaction"
 	"github.com/overseven/blockchain/transaction/airdrop"
 	"github.com/overseven/blockchain/transaction/transfer"

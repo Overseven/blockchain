@@ -1,4 +1,4 @@
-package main
+package node
 
 import (
 	"context"
@@ -6,38 +6,33 @@ import (
 	"fmt"
 	"net"
 	"strconv"
-	"time"
 
 	"github.com/overseven/blockchain/network"
-	"github.com/overseven/blockchain/node/trlists"
-	"github.com/overseven/blockchain/protocol/converter"
-	pnode "github.com/overseven/blockchain/protocol/node"
+	"github.com/overseven/blockchain/network/node/trlists"
+	"github.com/overseven/blockchain/network/protocol/converter"
+	pnode "github.com/overseven/blockchain/network/protocol/node"
 	"github.com/overseven/blockchain/transaction"
 	"github.com/overseven/blockchain/utility"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/peer"
 )
 
-var node Node
-
 type Node struct {
 	pnode.UnimplementedNoderServer
-	ServParams network.ServerParams
-	NetParams  network.NetParams
+	ServParams  network.ServerParams
+	ActiveNodes network.NodesContainer
+	Wallet      network.Wallet
 }
 
-type Connection struct {
-	address string
-	pubKey  []byte
-}
-
-func init() {
-	node.NetParams.Nodes = map[string]interface{}{}
+func NewNode() *Node {
+	node := new(Node)
+	node.ActiveNodes.Nodes = map[string]interface{}{}
+	return node
 }
 
 func (n *Node) SetPrivateKey(key *ecdsa.PrivateKey) {
-	n.NetParams.PrivKey = key
-	n.NetParams.PubKey = utility.PrivToPubKey(key)
+	n.Wallet.PrivKey = key
+	n.Wallet.PubKey = utility.PrivToPubKey(key)
 }
 
 func (n *Node) StartListening(stop chan interface{}) error {
@@ -74,13 +69,13 @@ func (n *Node) Connect(ctx context.Context, req *pnode.ConnectRequest) (*pnode.C
 	p, _ := peer.FromContext(ctx)
 	addr := p.Addr.String()
 	fmt.Println("Address:", addr)
-	n.NetParams.Nodes[addr] = struct{}{}
-	return &pnode.ConnectReply{ReplyerAddress: n.NetParams.PubKey}, nil
+	n.ActiveNodes.Nodes[addr] = struct{}{}
+	return &pnode.ConnectReply{ReplyerAddress: n.Wallet.PubKey}, nil
 }
 
 func (n *Node) GetListOfNodes(ctx context.Context, req *pnode.ListOfNodesRequest) (*pnode.ListOfNodesReply, error) {
 	nodeList := []string{}
-	for key := range n.NetParams.Nodes {
+	for key := range n.ActiveNodes.Nodes {
 		nodeList = append(nodeList, key)
 	}
 	return &pnode.ListOfNodesReply{Address: nodeList}, nil
@@ -105,51 +100,7 @@ func (n *Node) PushBlock(ctx context.Context, req *pnode.PushBlockRequest) (*pno
 	return &pnode.PushBlockReply{Reply: pnode.PushBlockReply_PBR_Ok}, nil
 }
 
-func (n *Node) GetBlocks(ctx context.Context, req *pnode.GetBlocksRequest) (*pnode.GetBlocksReply, error) {
+func (n *Node) GetBlocks(ctx context.Context, req *pnode.BlocksRequest) (*pnode.BlocksReply, error) {
 	// TODO: finish
-	return &pnode.GetBlocksReply{}, nil
-}
-
-func main() {
-	err := flagParse()
-	if err != nil {
-		fmt.Println("Error!", err)
-		return
-	}
-
-	stopListeningCh := make(chan interface{})
-	err = node.StartListening(stopListeningCh)
-
-	if err != nil {
-		fmt.Println("Error!", err)
-		return
-	}
-
-	err = connectToNodes()
-	if err != nil {
-		fmt.Println("Error!", err)
-		//return
-	}
-
-	go func() {
-		for true {
-			time.Sleep(5 * time.Second)
-			func() {
-				updateListOfNodes()
-				fmt.Println("Cycle. Nodes:")
-				node.NetParams.Mutex.Lock()
-				defer node.NetParams.Mutex.Unlock()
-				fmt.Println(node.NetParams.Nodes)
-				//for key := range node.Nodes {
-				//	fmt.Printf("'%s'\n", key)
-				//}
-				fmt.Printf("(%d elems)\n\n", len(node.NetParams.Nodes))
-			}()
-
-		}
-	}()
-	for true {
-		time.Sleep(time.Second)
-	}
-
+	return &pnode.BlocksReply{}, nil
 }

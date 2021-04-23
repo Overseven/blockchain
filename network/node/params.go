@@ -1,4 +1,4 @@
-package main
+package node
 
 import (
 	"encoding/base64"
@@ -9,7 +9,7 @@ import (
 	"github.com/overseven/blockchain/utility/config"
 )
 
-func flagParse() error {
+func FlagParse(node *Node) error {
 	flagPubKey := flag.String("pubKey", "", "public node key")
 	flagPrivKey := flag.String("privKey", "", "private node key")
 	flagPort := flag.Uint("port", 9000, "listening port")
@@ -30,7 +30,7 @@ func flagParse() error {
 		if err != nil {
 			return nil
 		}
-		node.NetParams.PubKey = res
+		node.Wallet.PubKey = res
 
 		if *flagPrivKey == "" {
 			return errors.New("node private key must be presented with flag '-pubKey' or in config file")
@@ -44,7 +44,7 @@ func flagParse() error {
 		if err != nil {
 			panic(err)
 		}
-		node.NetParams.PrivKey = privKey
+		node.Wallet.PrivKey = privKey
 
 		if *flagPort != 9000 {
 			node.ServParams.ListeningPort = uint64(*flagPort)
@@ -58,14 +58,14 @@ func flagParse() error {
 			// if ip == nil {
 			// 	return errors.New("incorrect coordinator ip")
 			// }
-			node.NetParams.Coordinator = *flagCoordinatorIP
+			node.ActiveNodes.Coordinator = *flagCoordinatorIP
 		} else {
 			// TODO: add check
 			// ip := net.ParseIP(*flagNodeToConnectIP)
 			// if ip == nil {
 			// 	return errors.New("incorrect nodeToConnect ip")
 			// }
-			node.NetParams.Nodes[*flagNodeToConnectIP] = struct{}{}
+			node.ActiveNodes.Nodes[*flagNodeToConnectIP] = struct{}{}
 		}
 
 	} else {
@@ -74,12 +74,12 @@ func flagParse() error {
 			return err
 		}
 
-		node.NetParams.PrivKey = params.PrivKey
-		node.NetParams.PubKey = params.PubKey
+		node.Wallet.PrivKey = params.PrivKey
+		node.Wallet.PubKey = params.PubKey
 		node.ServParams.ListeningPort = params.ListeningPort
-		node.NetParams.Coordinator = params.Coordinator
+		node.ActiveNodes.Coordinator = params.Coordinator
 		if params.NodeToConnect != "" {
-			node.NetParams.Nodes[params.NodeToConnect] = struct{}{}
+			node.ActiveNodes.Nodes[params.NodeToConnect] = struct{}{}
 		}
 	}
 	return nil

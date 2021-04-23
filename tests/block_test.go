@@ -6,8 +6,8 @@ import (
 
 	cr "github.com/ethereum/go-ethereum/crypto"
 	"github.com/overseven/blockchain/balance"
-	pb "github.com/overseven/blockchain/protocol"
-	"github.com/overseven/blockchain/wallet"
+	pb "github.com/overseven/blockchain/network/protocol"
+	"github.com/overseven/blockchain/utility/config"
 
 	"github.com/overseven/blockchain/chain"
 	"github.com/overseven/blockchain/interfaces"
@@ -15,7 +15,6 @@ import (
 
 	"github.com/overseven/blockchain/utility"
 )
-
 
 func TestBlockIsValid(t *testing.T) {
 	var bchain interfaces.BlockConnecter = &chain.Chain{}

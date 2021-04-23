@@ -4,7 +4,7 @@ option go_package = "github.com/overseven/blockchain/protocol/node";
 
 package pnode;
 
-import "protocol/pcommon/pcommon.proto";
+import "network/protocol/pcommon/pcommon.proto";
 
 service Noder { 
   rpc Connect(ConnectRequest) returns (ConnectReply){}
@@ -16,7 +16,7 @@ service Noder {
 }
 
 message ConnectRequest{
-  bytes requesterAddress = 1;
+  string requesterAddress = 1;
   
 }
 

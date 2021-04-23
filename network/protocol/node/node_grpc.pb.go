@@ -22,7 +22,8 @@ type NoderClient interface {
 	GetListOfNodes(ctx context.Context, in *ListOfNodesRequest, opts ...grpc.CallOption) (*ListOfNodesReply, error)
 	AddTransaction(ctx context.Context, in *AddTransactionRequest, opts ...grpc.CallOption) (*AddTransactionReply, error)
 	PushBlock(ctx context.Context, in *PushBlockRequest, opts ...grpc.CallOption) (*PushBlockReply, error)
-	GetBlocks(ctx context.Context, in *GetBlocksRequest, opts ...grpc.CallOption) (*GetBlocksReply, error)
+	GetBlocks(ctx context.Context, in *BlocksRequest, opts ...grpc.CallOption) (*BlocksReply, error)
+	GetWalletBalance(ctx context.Context, in *WalletBalanceRequest, opts ...grpc.CallOption) (*WalletBalanceReply, error)
 }
 
 type noderClient struct {
@@ -69,9 +70,18 @@ func (c *noderClient) PushBlock(ctx context.Context, in *PushBlockRequest, opts 
 	return out, nil
 }
 
-func (c *noderClient) GetBlocks(ctx context.Context, in *GetBlocksRequest, opts ...grpc.CallOption) (*GetBlocksReply, error) {
-	out := new(GetBlocksReply)
+func (c *noderClient) GetBlocks(ctx context.Context, in *BlocksRequest, opts ...grpc.CallOption) (*BlocksReply, error) {
+	out := new(BlocksReply)
 	err := c.cc.Invoke(ctx, "/pnode.Noder/GetBlocks", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *noderClient) GetWalletBalance(ctx context.Context, in *WalletBalanceRequest, opts ...grpc.CallOption) (*WalletBalanceReply, error) {
+	out := new(WalletBalanceReply)
+	err := c.cc.Invoke(ctx, "/pnode.Noder/GetWalletBalance", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -86,7 +96,8 @@ type NoderServer interface {
 	GetListOfNodes(context.Context, *ListOfNodesRequest) (*ListOfNodesReply, error)
 	AddTransaction(context.Context, *AddTransactionRequest) (*AddTransactionReply, error)
 	PushBlock(context.Context, *PushBlockRequest) (*PushBlockReply, error)
-	GetBlocks(context.Context, *GetBlocksRequest) (*GetBlocksReply, error)
+	GetBlocks(context.Context, *BlocksRequest) (*BlocksReply, error)
+	GetWalletBalance(context.Context, *WalletBalanceRequest) (*WalletBalanceReply, error)
 	mustEmbedUnimplementedNoderServer()
 }
 
@@ -106,8 +117,11 @@ func (UnimplementedNoderServer) AddTransaction(context.Context, *AddTransactionR
 func (UnimplementedNoderServer) PushBlock(context.Context, *PushBlockRequest) (*PushBlockReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PushBlock not implemented")
 }
-func (UnimplementedNoderServer) GetBlocks(context.Context, *GetBlocksRequest) (*GetBlocksReply, error) {
+func (UnimplementedNoderServer) GetBlocks(context.Context, *BlocksRequest) (*BlocksReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetBlocks not implemented")
+}
+func (UnimplementedNoderServer) GetWalletBalance(context.Context, *WalletBalanceRequest) (*WalletBalanceReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetWalletBalance not implemented")
 }
 func (UnimplementedNoderServer) mustEmbedUnimplementedNoderServer() {}
 
@@ -195,7 +209,7 @@ func _Noder_PushBlock_Handler(srv interface{}, ctx context.Context, dec func(int
 }
 
 func _Noder_GetBlocks_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetBlocksRequest)
+	in := new(BlocksRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -207,7 +221,25 @@ func _Noder_GetBlocks_Handler(srv interface{}, ctx context.Context, dec func(int
 		FullMethod: "/pnode.Noder/GetBlocks",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(NoderServer).GetBlocks(ctx, req.(*GetBlocksRequest))
+		return srv.(NoderServer).GetBlocks(ctx, req.(*BlocksRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Noder_GetWalletBalance_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(WalletBalanceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NoderServer).GetWalletBalance(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pnode.Noder/GetWalletBalance",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NoderServer).GetWalletBalance(ctx, req.(*WalletBalanceRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -239,7 +271,11 @@ var Noder_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "GetBlocks",
 			Handler:    _Noder_GetBlocks_Handler,
 		},
+		{
+			MethodName: "GetWalletBalance",
+			Handler:    _Noder_GetWalletBalance_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "protocol/node/node.proto",
+	Metadata: "network/protocol/node/node.proto",
 }

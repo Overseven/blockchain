@@ -5,9 +5,9 @@ import (
 	"testing"
 
 	"github.com/overseven/blockchain/balance"
-	"github.com/overseven/blockchain/client"
 	"github.com/overseven/blockchain/interfaces"
-	"github.com/overseven/blockchain/node"
+	"github.com/overseven/blockchain/network/client"
+	"github.com/overseven/blockchain/network/node"
 	pb "github.com/overseven/blockchain/protocol"
 	"github.com/overseven/blockchain/transaction"
 )

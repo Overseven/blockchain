@@ -133,5 +133,5 @@ var Coordinator_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "protocol/coordinator/coordinator.proto",
+	Metadata: "network/protocol/coordinator/coordinator.proto",
 }
