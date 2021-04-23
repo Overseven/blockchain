@@ -30,7 +30,7 @@ func main() {
 		//return
 	}
 
-	newNodes, err := connections.UpdateNodesList(&node.ActiveNodes, 50, node.ServParams)
+	newNodes, remNodes, err := connections.UpdateNodesList(&node.ActiveNodes, 50, node.ServParams)
 	if err != nil {
 		fmt.Println("Error!", err)
 
@@ -45,10 +45,13 @@ func main() {
 	func() {
 		node.ActiveNodes.Mutex.Lock()
 		defer node.ActiveNodes.Mutex.Unlock()
-		if newNodes != nil {
-			node.ActiveNodes.Nodes = newNodes.Nodes
-		} else {
-			node.ActiveNodes.Nodes = map[string]interface{}{}
+		for _, nd := range newNodes {
+			node.ActiveNodes.Nodes[nd] = struct{}{}
+		}
+		for _, nd := range remNodes {
+			if _, ok := node.ActiveNodes.Nodes[nd]; ok {
+				delete(node.ActiveNodes.Nodes, nd)
+			}
 		}
 	}()
 
@@ -56,22 +59,35 @@ func main() {
 		for true {
 			time.Sleep(5 * time.Second)
 			func() {
-				newNodes, err := connections.UpdateNodesList(&node.ActiveNodes, 50, node.ServParams)
+				newNodes, removeNodes, err := connections.UpdateNodesList(&node.ActiveNodes, 50, node.ServParams)
 				if err != nil {
 					fmt.Println("Update list of nodes error:", err.Error())
+				}else {
+
+					fmt.Println("Cycle. Nodes:")
+					node.ActiveNodes.Mutex.Lock()
+					defer node.ActiveNodes.Mutex.Unlock()
+					for _, nd := range newNodes {
+						node.ActiveNodes.Nodes[nd] = struct{}{}
+					}
+					for _, nd := range removeNodes {
+						if _, ok := node.ActiveNodes.Nodes[nd]; ok {
+							delete(node.ActiveNodes.Nodes, nd)
+						}
+					}
+
+					fmt.Println(node.ActiveNodes.Nodes)
+					//for key := range node.Nodes {
+					//	fmt.Printf("'%s'\n", key)
+					//}
+					fmt.Printf("(%d elems)\n\n", len(node.ActiveNodes.Nodes))
 				}
-
-				fmt.Println("Cycle. Nodes:")
-				node.ActiveNodes.Mutex.Lock()
-				defer node.ActiveNodes.Mutex.Unlock()
-				node.ActiveNodes.Nodes = newNodes.Nodes
-				fmt.Println(node.ActiveNodes.Nodes)
-				//for key := range node.Nodes {
-				//	fmt.Printf("'%s'\n", key)
-				//}
-				fmt.Printf("(%d elems)\n\n", len(node.ActiveNodes.Nodes))
-
-				//go chnode.RegisterNodeOnNodes(node.ActiveNodes.ToStrings(), node.ServParams.OwnAddress.String())
+				go func() {
+					err := chnode.RegisterNodeOnNodes(node.ActiveNodes.ToStrings(), node.ServParams.OwnAddress.String())
+					if err != nil {
+						fmt.Println("Register node on nodes err:", err.Error())
+					}
+				}()
 
 			}()
 
@@ -81,4 +97,7 @@ func main() {
 		time.Sleep(time.Second)
 	}
 
+	b := 5
+	b = 23
+	fmt.Println(b)
 }

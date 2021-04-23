@@ -27,7 +27,7 @@ func copyNodes(input *network.NodesContainer) *network.NodesContainer {
 	return res
 }
 
-func UpdateNodesList(nodes *network.NodesContainer, maxCount int, params network.ServerParams) (*network.NodesContainer, error) {
+func UpdateNodesList(nodes *network.NodesContainer, maxCount int, params network.ServerParams) (newNode, removeNodes []string, err error) {
 	tmpNodes := copyNodes(nodes)
 	return updateList(tmpNodes, maxCount, params)
 }
@@ -53,7 +53,7 @@ func NewNodeClient(address string) (pnode.NoderClient, *grpc.ClientConn, error) 
 }
 
 func getNodesFromCoordinator(address string) (map[string]interface{}, error) {
-	fmt.Println("getNodesFromCoordinator()")
+	//fmt.Println("getNodesFromCoordinator()")
 	if address == "" {
 		return nil, errors.New("empty coordinator address")
 	}
@@ -79,7 +79,7 @@ func getNodesFromCoordinator(address string) (map[string]interface{}, error) {
 }
 
 func getNodesFromNode(address string) (result map[string]interface{}, err error) {
-	fmt.Println("getNodesFromNode()")
+	//fmt.Println("getNodesFromNode()")
 	if address == "" {
 		return nil, errors.New("empty node address")
 	}
@@ -105,12 +105,13 @@ func getNodesFromNode(address string) (result map[string]interface{}, err error)
 }
 
 func getNodesFromNodes(nodes map[string]interface{}) (result, remove map[string]interface{}, err error) {
-	fmt.Println("getNodesFromNodes()")
+	//fmt.Println("getNodesFromNodes()")
 	// TODO: finish
 	if len(nodes) == 0 {
 		return nil, nil, errors.New("empty input params")
 	}
 	var nodesForConnect []string
+	var resMutex, remMutex sync.Mutex
 	result = map[string]interface{}{}
 	remove = map[string]interface{}{}
 	for n := range nodes {
@@ -126,8 +127,12 @@ func getNodesFromNodes(nodes map[string]interface{}) (result, remove map[string]
 		go func() {
 			ns, err := getNodesFromNode(addr)
 			if err != nil {
+				remMutex.Lock()
+				defer remMutex.Unlock()
 				remove[addr] = struct{}{}
 			} else {
+				resMutex.Lock()
+				defer resMutex.Unlock()
 				for nFromN := range ns {
 					result[nFromN] = struct{}{}
 				}
@@ -141,10 +146,10 @@ func getNodesFromNodes(nodes map[string]interface{}) (result, remove map[string]
 	return result, remove, nil
 }
 
-func fractalNodeFinder(nodes map[string]interface{}, max int, ownAddress string) error {
-	fmt.Println("fractalNodeFinder()")
+func fractalNodeFinder(nodes map[string]interface{}, max int, ownAddress string) (removeNodes map[string]interface{}, err error) {
+	//fmt.Println("fractalNodeFinder()")
 	used := map[string]interface{}{}
-
+	removeNodes = map[string]interface{}{}
 	for count := len(nodes); count < max; count = len(nodes) {
 		// fmt.Println("Nodes: ", nodes)
 		// fmt.Println("Used: ", used)
@@ -156,14 +161,15 @@ func fractalNodeFinder(nodes map[string]interface{}, max int, ownAddress string)
 		// fmt.Println("diff after: ", diff)
 
 		if len(diff) == 0 {
-			return nil
+			return removeNodes, nil
 		}
 		// fmt.Printf("fractalNodeFinder. Nodes: ")
 		// fmt.Println(diff)
-		res, remove, err := getNodesFromNodes(diff) // FIXME: infinity cycle
+		res, remove, err := getNodesFromNodes(diff)
 		for key := range remove {
 			if _, ok := nodes[key]; ok {
 				// fmt.Println("remove:", key)
+				removeNodes[key] = struct{}{}
 				delete(nodes, key)
 			}
 		}
@@ -178,13 +184,13 @@ func fractalNodeFinder(nodes map[string]interface{}, max int, ownAddress string)
 		}
 	}
 
-	return nil
+	return removeNodes, nil
 }
 
-func updateList(nds *network.NodesContainer, maxCount int, params network.ServerParams) (*network.NodesContainer, error) {
+func updateList(nds *network.NodesContainer, maxCount int, params network.ServerParams) (newNodes, removeNodes []string, err error) {
 	//ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	//defer cancel()
-	fmt.Println("updateListOfNodes()")
+	//fmt.Println("updateListOfNodes()")
 	nodes := map[string]interface{}{}
 
 	nds.Mutex.Lock()
@@ -203,14 +209,14 @@ func updateList(nds *network.NodesContainer, maxCount int, params network.Server
 	} else {
 		fmt.Println("Err nodes from coord! ", err.Error())
 	}
-	fmt.Println("Nodes from coord: ", nodes)
-	err = fractalNodeFinder(nodes, maxCount, params.OwnAddress.String())
+	//fmt.Println("Nodes from coord: ", nodes)
+	rmNodes, err := fractalNodeFinder(nodes, maxCount, params.OwnAddress.String())
 	if err != nil {
 		fmt.Println("Err  fractalNodeFinder! ", err.Error())
 	}
 
 	if len(nodes) == 0 {
-		return nil, errors.New("empty list of nodes")
+		return nil, nil, errors.New("empty list of nodes")
 	}
 
 	if _, ok := nodes[params.OwnAddress.String()]; ok {
@@ -218,7 +224,13 @@ func updateList(nds *network.NodesContainer, maxCount int, params network.Server
 	}
 
 	// fmt.Println(nodes)
-	nds.Nodes = nodes
 
-	return nds, nil
+	for nd := range nodes {
+		newNodes = append(newNodes, nd)
+	}
+	for nd := range rmNodes {
+		removeNodes = append(removeNodes, nd)
+	}
+
+	return newNodes, removeNodes, nil
 }

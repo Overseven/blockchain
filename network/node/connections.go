@@ -38,7 +38,7 @@ func RegisterNodeOnCoordinator(coordAddress, ownAddress string) error {
 
 // TODO: check - deep copy?
 func RegisterNodeOnNodes(nodesAddress []string, ownAddress string) error {
-
+	//fmt.Println("RegisterNodeOnNodes. ownAddress = ", ownAddress)
 	i, ok := utility.Find(nodesAddress, ownAddress)
 	for ok {
 		nodesAddress = utility.RemoveIndex(nodesAddress, i)
@@ -53,19 +53,24 @@ func RegisterNodeOnNodes(nodesAddress []string, ownAddress string) error {
 	wg.Add(len(nodesAddress))
 
 	for _, n := range nodesAddress {
-		nodeClient, _, err := connections.NewNodeClient(n)
-		if err != nil {
-			return err
-		}
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		defer cancel()
+		tmp := n
+		go func() {
+			defer wg.Done()
+			nodeClient, _, err := connections.NewNodeClient(tmp)
+			if err != nil {
+				return
+			}
+			ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+			defer cancel()
 
-		reply, err := nodeClient.Connect(ctx, &pnode.ConnectRequest{RequesterAddress: ownAddress})
-		if err != nil {
-			return err
-		}
-		fmt.Println("Register. Replyer address:", reply.ReplyerAddress)
+			_, err = nodeClient.Connect(ctx, &pnode.ConnectRequest{RequesterAddress: ownAddress})
+			if err != nil {
+				return
+			}
+			//fmt.Println("Register. Replyer address:", string(reply.ReplyerAddress))
+		}()
 	}
 	wg.Wait()
+	//fmt.Println("RegisterNodeOnNodes finish")
 	return nil
 }

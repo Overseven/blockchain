@@ -14,7 +14,6 @@ import (
 	"github.com/overseven/blockchain/transaction"
 	"github.com/overseven/blockchain/utility"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/peer"
 )
 
 type Node struct {
@@ -45,7 +44,12 @@ func (n *Node) StartListening(stop chan interface{}) error {
 	s := grpc.NewServer()
 	n.ServParams.OwnAddress = lis.Addr()
 	pnode.RegisterNoderServer(s, n)
-	go s.Serve(lis)
+	go func() {
+		err := s.Serve(lis)
+		if err != nil {
+			fmt.Println("Serve err!", err.Error())
+		}
+	}()
 	go func() {
 		<-stop
 		s.Stop()
@@ -65,16 +69,20 @@ func (n *Node) StartListening(stop chan interface{}) error {
 
 func (n *Node) Connect(ctx context.Context, req *pnode.ConnectRequest) (*pnode.ConnectReply, error) {
 	// TODO: finish
-	fmt.Println("Connection request received!")
-	p, _ := peer.FromContext(ctx)
-	addr := p.Addr.String()
-	fmt.Println("Address:", addr)
+	//fmt.Println("Connection request received!")
+	addr := req.RequesterAddress
+
+	//fmt.Println("Address:", addr)
+	n.ActiveNodes.Mutex.Lock()
+	defer n.ActiveNodes.Mutex.Unlock()
 	n.ActiveNodes.Nodes[addr] = struct{}{}
 	return &pnode.ConnectReply{ReplyerAddress: n.Wallet.PubKey}, nil
 }
 
 func (n *Node) GetListOfNodes(ctx context.Context, req *pnode.ListOfNodesRequest) (*pnode.ListOfNodesReply, error) {
-	nodeList := []string{}
+	var nodeList []string
+	n.ActiveNodes.Mutex.Lock()
+	defer n.ActiveNodes.Mutex.Unlock()
 	for key := range n.ActiveNodes.Nodes {
 		nodeList = append(nodeList, key)
 	}
