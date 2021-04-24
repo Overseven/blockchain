@@ -76,16 +76,6 @@ func StringFromBytes(b []byte) (string, error) {
 	return res, nil
 }
 
-func GenerateWallet() (privKey *ecdsa.PrivateKey, pubKey []byte, err error) {
-	privKey, err = cr.GenerateKey()
-	if err != nil {
-		return nil, nil, err
-	}
-
-	pubKey = PrivToPubKey(privKey)
-	return
-}
-
 func NewTimestamp() time.Time {
 	t := time.Now()
 	return time.Date(t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), t.Second(), t.Nanosecond(), time.UTC)
