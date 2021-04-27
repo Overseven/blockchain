@@ -2,7 +2,7 @@ package config
 
 import (
 	"crypto/ecdsa"
-	"encoding/base64"
+	"encoding/hex"
 	"errors"
 	"io/ioutil"
 	"net"
@@ -49,17 +49,13 @@ func LoadFromFile(file string) (*Params, error) {
 		switch pair[0] {
 
 		case fieldPubKey:
-			p.PubKey, err = base64.StdEncoding.DecodeString(pair[1])
+			p.PubKey, err = hex.DecodeString(pair[1])
 			if err != nil {
 				return nil, err
 			}
 
 		case fieldPrivKey:
-			pKey, err := base64.StdEncoding.DecodeString(pair[1])
-			if err != nil {
-				return nil, err
-			}
-			privKey, err := cr.ToECDSA(pKey[:32])
+			privKey, err := cr.HexToECDSA(pair[1])
 			if err != nil {
 				return nil, err
 			}
