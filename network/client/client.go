@@ -1,4 +1,4 @@
-package main
+package client
 
 import (
 	"context"
@@ -7,6 +7,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/overseven/blockchain/network"
 	"github.com/overseven/blockchain/transaction"
 
 	"github.com/overseven/blockchain/network/protocol/converter"
@@ -21,26 +22,16 @@ var (
 // TODO: create struct wich contains coordinator and nodes address
 
 type Client struct {
-	ListeningPort uint32
+	// ListeningPort uint32
 	//localChain    chain.Chain
-	privateKey *ecdsa.PrivateKey
-	publicKey  []byte
+	PrivateKey  *ecdsa.PrivateKey
+	PublicKey   []byte
+	ActiveNodes network.NodesContainer
+	Wallet      network.Wallet
 }
 
-func (c *Client) SetPublicKey(key []byte) {
-	c.publicKey = key
-}
-
-func (c *Client) GetPublicKey() []byte {
-	return c.publicKey
-}
-
-func (c *Client) SetPort(port uint32) {
-	c.ListeningPort = port
-}
-
-func (c *Client) GetPort() uint32 {
-	return c.ListeningPort
+func NewClient() *Client {
+	return new(Client)
 }
 
 func (c *Client) SendTransactions(element transaction.Transaction, nodes []string) ([]pnode.AddTransactionReply_Code, error) {
