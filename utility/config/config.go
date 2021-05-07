@@ -3,9 +3,9 @@ package config
 import (
 	"crypto/ecdsa"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"net"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -33,14 +33,19 @@ func LoadFromFile(file string) (*Params, error) {
 
 	p := new(Params)
 	//fmt.Println(path + "\\" + file)
-	data, err := ioutil.ReadFile(file)
+	absPath, err := filepath.Abs(file)
+	if err != nil {
+		//fmt.Println("Error read wallet cfg file.")
+		return nil, err
+	}
+	data, err := ioutil.ReadFile(absPath)
 	if err != nil {
 		//fmt.Println("Error read wallet cfg file.")
 		return nil, err
 	}
 	lines := strings.Split(strings.ReplaceAll(string(data), " ", ""), "\r\n")
 
-	fmt.Println("lines: ", lines)
+	// fmt.Println("lines: ", lines)
 	var privKeyHex string
 	//fmt.Println("Data in config file:")
 	for _, val := range lines {

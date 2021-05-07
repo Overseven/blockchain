@@ -34,8 +34,8 @@ func ParseKeys(hexPriv, hexPubCompressed string) (privateKey *ecdsa.PrivateKey, 
 		return nil, errors.New("empty public key")
 	}
 
-	fmt.Println("hexPriv len: ", len(hexPriv))
-	fmt.Println("hexPubCompressed len: ", len(hexPubCompressed))
+	//fmt.Println("hexPriv len: ", len(hexPriv))
+	//fmt.Println("hexPubCompressed len: ", len(hexPubCompressed))
 
 	priv, err := cr.HexToECDSA(hexPriv)
 	if err != nil {

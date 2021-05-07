@@ -81,7 +81,7 @@ func StringFromBytes(b []byte) (string, uint32, error) {
 	}
 	res := string(b[4 : 4+messageLen])
 
-	return res, 4 + messageLen + 1, nil
+	return res, 4 + messageLen , nil
 }
 
 func NewTimestamp() time.Time {
@@ -100,7 +100,7 @@ func TimestampFromBytes(b []byte) (time.Time, uint8, error) {
 	if len(b) == 0 {
 		return time.Time{}, 0, errors.New("empty bytes")
 	}
-	length := uint8(b[0])
+	length := b[0]
 
 	if length == 0 {
 		return time.Time{}, 0, errors.New("empty timestamp")
