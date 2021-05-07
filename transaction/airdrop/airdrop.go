@@ -106,8 +106,6 @@ func (a *Airdrop) Bytes() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	res = append(res, uint8(len(timestamp)))
 	res = append(res, timestamp...)
 
 	if len(a.Signature) != transaction.ByteLenSign {

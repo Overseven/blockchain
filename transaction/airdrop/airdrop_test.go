@@ -2,8 +2,6 @@ package airdrop_test
 
 import (
 	"bytes"
-	"errors"
-	"fmt"
 	"testing"
 
 	"github.com/overseven/blockchain/transaction"
@@ -12,7 +10,7 @@ import (
 	"github.com/overseven/blockchain/utility/config"
 )
 
-const airdropModeratorConfigFile = "D:\\go\\src\\github.com\\overseven\\blockchain\\wallet.cfg"
+const airdropModeratorConfigFile = "..\\..\\wallet.cfg"
 
 func TestHash(t *testing.T) {
 	// TODO: finish
@@ -50,7 +48,7 @@ func TestNewAirdrop(t *testing.T) {
 		t.Error(err)
 	}
 
-	tr1.Sign(params.PrivKey)
+	err = tr1.Sign(params.PrivKey)
 	if err != nil {
 		t.Error(err)
 	}
@@ -95,7 +93,7 @@ func TestNewAirdrop2(t *testing.T) {
 		t.Error(err)
 	}
 
-	tr1.Sign(params.PrivKey)
+	err = tr1.Sign(params.PrivKey)
 	if err != nil {
 		t.Error(err)
 	}
@@ -141,7 +139,7 @@ func TestByteConversation(t *testing.T) {
 		t.Error(err)
 	}
 
-	tr1.Sign(params.PrivKey)
+	err = tr1.Sign(params.PrivKey)
 	if err != nil {
 		t.Error(err)
 	}
@@ -161,18 +159,18 @@ func TestByteConversation(t *testing.T) {
 		t.Error(err)
 	}
 
-	s1, err := tr1.String()
-	if err != nil {
-		t.Error(err)
-	}
+	//s1, err := tr1.String()
+	//if err != nil {
+	//	t.Error(err)
+	//}
+	//
+	//s2, err := aReverse.String()
+	//if err != nil {
+	//	t.Error(err)
+	//}
 
-	s2, err := aReverse.String()
-	if err != nil {
-		t.Error(err)
-	}
-
-	fmt.Println("orig Airdrop:", s1)
-	fmt.Println("Reverse Airdrop:", s2)
+	//fmt.Println("orig Airdrop:", s1)
+	//fmt.Println("Reverse Airdrop:", s2)
 	h1, err := tr1.Hash(map[transaction.TransFlag]bool{})
 	if err != nil {
 		t.Error(err)
@@ -183,6 +181,6 @@ func TestByteConversation(t *testing.T) {
 	}
 
 	if !bytes.Equal(h1, h2) {
-		t.Error(errors.New("incorrect hash"))
+		t.Error("incorrect hash")
 	}
 }

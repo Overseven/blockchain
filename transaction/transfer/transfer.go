@@ -59,7 +59,6 @@ func (t *Transfer) Bytes() ([]byte, error) {
 		return nil, err
 	}
 
-	res = append(res, uint8(len(timestamp)))
 	res = append(res, timestamp...)
 
 	if len(t.Node) != transaction.ByteLenPubKey {
@@ -82,8 +81,13 @@ func FromBytes(b []byte) (*Transfer, error) {
 	}
 	t := new(Transfer)
 
-	var err error
-	idx := 0
+
+	idx := int64(0)
+	typeTr := transaction.Type(b[idx])
+	if typeTr != transaction.TypeTransfer {
+		return nil, errors.New("incorrect transaction type")
+	}
+	idx += 1
 	t.Sender = b[idx : idx+transaction.ByteLenPubKey]
 	idx += transaction.ByteLenPubKey
 	t.Receiver = b[idx : idx+transaction.ByteLenPubKey]
@@ -92,18 +96,19 @@ func FromBytes(b []byte) (*Transfer, error) {
 	idx += 8
 	t.Fee = utility.Float64FromBytes(b[idx : idx+8])
 	idx += 8
-	t.Message, err = utility.StringFromBytes(b[idx:])
+	message, messageLen, err := utility.StringFromBytes(b[idx:])
 	if err != nil {
 		return nil, err
 	}
-	idx += 1 + len([]byte(t.Message))
+	t.Message = message
+	idx += int64(messageLen)
 
 	timestamp, timestampLen, err := utility.TimestampFromBytes(b[idx:])
 	if err != nil {
 		return nil, err
 	}
 	t.Timestamp = timestamp
-	idx += 1 + int(timestampLen)
+	idx += int64(timestampLen)
 
 	t.Node = b[idx : idx+transaction.ByteLenPubKey]
 	idx += transaction.ByteLenPubKey
@@ -116,7 +121,7 @@ func (t *Transfer) Hash(flags map[transaction.TransFlag]bool) ([]byte, error) {
 	if flags == nil {
 		return nil, errors.New("empty flags")
 	}
-	temp := []byte{}
+	var temp []byte
 	temp = append(temp, t.Sender...)
 	temp = append(temp, t.Receiver...)
 	temp = append(temp, t.Message...)
@@ -157,12 +162,8 @@ func (t *Transfer) Verify() error {
 	return nil
 }
 
-// TODO: finish
-func NewTransfer(sndrPrivKey *ecdsa.PrivateKey, rcvrPubKey []byte, value, fee float64, message string) (*Transfer, error) {
-	sndrPubKey := utility.PrivToPubKey(sndrPrivKey)
-
+func NewTransfer(rcvrPubKey []byte, value, fee float64, message string) (*Transfer, error) {
 	tr := Transfer{
-		Sender:   sndrPubKey,
 		Receiver: rcvrPubKey,
 		Pay:      value,
 		Fee:      fee,
@@ -171,17 +172,17 @@ func NewTransfer(sndrPrivKey *ecdsa.PrivateKey, rcvrPubKey []byte, value, fee fl
 
 	tr.Timestamp = utility.NewTimestamp()
 
-	hashed, err := tr.Hash(map[transaction.TransFlag]bool{})
-	if err != nil {
-		return nil, err
-	}
-
-	sign, err := cr.Sign(hashed, sndrPrivKey)
-	if err != nil {
-		return nil, err
-	}
-
-	tr.Signature = sign
+	//hashed, err := tr.Hash(map[transaction.TransFlag]bool{})
+	//if err != nil {
+	//	return nil, err
+	//}
+	//
+	//sign, err := cr.Sign(hashed, sndrPrivKey)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//
+	//tr.Signature = sign
 
 	return &tr, nil
 }
@@ -239,6 +240,7 @@ func (t *Transfer) IsEqual(tr transaction.Transaction, flags map[transaction.Tra
 
 func Copy(t *Transfer) *Transfer {
 	res := new(Transfer)
+	res.Sender = t.Sender
 	res.Receiver = t.Receiver
 	res.Pay = t.Pay
 	res.Fee = t.Fee
@@ -249,14 +251,17 @@ func Copy(t *Transfer) *Transfer {
 	return res
 }
 
-func (a *Transfer) SetNode(nodePubKey []byte) transaction.Transaction {
-	res := Copy(a)
+func (t *Transfer) SetNode(nodePubKey []byte) transaction.Transaction {
+	res := Copy(t)
 	res.Node = nodePubKey
 	return res
 }
 
-func (a *Transfer) Sign(privKey *ecdsa.PrivateKey) error {
-	hashed, err := a.Hash(map[transaction.TransFlag]bool{})
+func (t *Transfer) Sign(privKey *ecdsa.PrivateKey) error {
+	senderPubKey := utility.PrivToPubKey(privKey)
+	t.Sender = senderPubKey
+
+	hashed, err := t.Hash(map[transaction.TransFlag]bool{})
 	if err != nil {
 		return err
 	}
@@ -266,6 +271,6 @@ func (a *Transfer) Sign(privKey *ecdsa.PrivateKey) error {
 		return err
 	}
 
-	a.Signature = sign
+	t.Signature = sign
 	return nil
 }
