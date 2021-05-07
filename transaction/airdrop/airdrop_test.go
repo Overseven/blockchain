@@ -1,26 +1,36 @@
 package airdrop_test
 
 import (
+	"bytes"
+	"errors"
+	"fmt"
 	"testing"
 
-	cr "github.com/ethereum/go-ethereum/crypto"
-	"github.com/overseven/blockchain/balance"
-	"github.com/overseven/blockchain/interfaces"
 	"github.com/overseven/blockchain/transaction"
-	"github.com/overseven/blockchain/transaction/transfer"
+	"github.com/overseven/blockchain/transaction/airdrop"
 	"github.com/overseven/blockchain/utility"
-	"github.com/overseven/blockchain/wallet"
+	"github.com/overseven/blockchain/utility/config"
 )
 
-const airdropModeratorConfigFile = "..\\wallet.cfg"
+const airdropModeratorConfigFile = "D:\\go\\src\\github.com\\overseven\\blockchain\\wallet.cfg"
 
-func TestAirdrop_GetData(t *testing.T) {
-	data := interfaces.Data{}
-	pr1, _, err := utility.GenerateWallet()
+func TestHash(t *testing.T) {
+	// TODO: finish
+}
+
+func TestNewAirdrop(t *testing.T) {
+	params, err := config.LoadFromFile(airdropModeratorConfigFile)
 	if err != nil {
 		t.Error(err)
 	}
-	pr1Bytes := utility.PrivToPubKey(pr1)
+
+	airdrop.AirDropModeratorPubKey = params.PubKey
+
+	_, nodePubKey, err := utility.GenerateWallet()
+	if err != nil {
+		t.Error(err)
+	}
+	// pr1Bytes := utility.PrivToPubKey(pr1)
 
 	_, pub2, err := utility.GenerateWallet()
 	if err != nil {
@@ -29,61 +39,150 @@ func TestAirdrop_GetData(t *testing.T) {
 	value := 65.32
 	fee := 42.2222
 	message := "test"
-	timestamp := utility.NewTimestamp()
 
-	data.Type = transaction.TypeTransfer
-	data.Sender = pr1Bytes
-	data.Receiver = pub2
-	data.Pay = value
-	data.Fee = fee
-	data.Message = message
-	data.Timestamp = timestamp
-	data.Sign = []byte("eeee sign!")
-
-	tr1 := transfer.Transfer{Data: data}
-
-	if !transaction.IsEqual(&data, tr1.GetData(), true) {
-		t.Error("err: data and tr1.data are not equal!")
+	tr1, err := airdrop.NewAirdrop(pub2, value, fee, message)
+	if err != nil {
+		t.Error(err)
 	}
 
-	data.Message = "Press F"
+	tr1 = tr1.SetNode(nodePubKey).(*airdrop.Airdrop)
+	if err != nil {
+		t.Error(err)
+	}
 
-	if transaction.IsEqual(&data, tr1.GetData(), true) {
-		t.Error("err: modified data and tr1.data are false equal!")
+	tr1.Sign(params.PrivKey)
+	if err != nil {
+		t.Error(err)
+	}
+
+	// fmt.Println(tr1.String())
+
+	err = tr1.Verify()
+	if err != nil {
+		t.Error(err)
 	}
 }
-func TestNewAirdrop(t *testing.T) {
+
+func TestNewAirdrop2(t *testing.T) {
+	params, err := config.LoadFromFile(airdropModeratorConfigFile)
+	if err != nil {
+		t.Error(err)
+	}
+
+	airdrop.AirDropModeratorPubKey = params.PubKey
+
+	_, nodePubKey, err := utility.GenerateWallet()
+	if err != nil {
+		t.Error(err)
+	}
+	// pr1Bytes := utility.PrivToPubKey(pr1)
+
+	_, pub2, err := utility.GenerateWallet()
+	if err != nil {
+		t.Error(err)
+	}
+	value := 65235.32
+	fee := 421.22422
+	message := "test 2"
+
+	tr1, err := airdrop.NewAirdrop(pub2, value, fee, message)
+	if err != nil {
+		t.Error(err)
+	}
+
+	tr1 = tr1.SetNode(nodePubKey).(*airdrop.Airdrop)
+	if err != nil {
+		t.Error(err)
+	}
+
+	tr1.Sign(params.PrivKey)
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = tr1.Verify()
+	if err != nil {
+		t.Error(err)
+	}
 
 }
 
-func TestAirdropVerify(t *testing.T) {
-	var usersBalance interfaces.Balancer = &balance.Balance{}
-	usersBalance.Init()
-
-	_, receiver1, err := utility.GenerateWallet()
+func TestByteConversation(t *testing.T) {
+	params, err := config.LoadFromFile(airdropModeratorConfigFile)
 	if err != nil {
 		t.Error(err)
 	}
 
-	airdropPubKey, airdropPrKey, err := config.LoadFromFile(airdropModeratorConfigFile)
+	// adminPK, err := cr.DecompressPubkey(params.PubKey)
+
+	airdrop.AirDropModeratorPubKey = params.PubKey
+
+	_, nodePubKey, err := utility.GenerateWallet()
+	if err != nil {
+		t.Error(err)
+	}
+	// pr1Bytes := utility.PrivToPubKey(pr1)
+
+	_, pub2, err := utility.GenerateWallet()
+	if err != nil {
+		t.Error(err)
+	}
+	value := 65235.32
+	fee := 421.22422
+	message := "test 2"
+
+	tr1, err := airdrop.NewAirdrop(pub2, value, fee, message)
 	if err != nil {
 		t.Error(err)
 	}
 
-	transaction.AirDropModeratorPubKey = airdropPubKey
-
-	airPrKey, err := cr.ToECDSA(airdropPrKey[:32])
+	tr1 = tr1.SetNode(nodePubKey).(*airdrop.Airdrop)
 	if err != nil {
 		t.Error(err)
 	}
 
-	airdrop, err := transaction.NewAirdrop(receiver1, airPrKey, 110.1, 11.1)
+	tr1.Sign(params.PrivKey)
 	if err != nil {
 		t.Error(err)
 	}
 
-	if err := airdrop.Verify(usersBalance); err != nil {
+	err = tr1.Verify()
+	if err != nil {
 		t.Error(err)
 	}
 
+	b, err := tr1.Bytes()
+	if err != nil {
+		t.Error(err)
+	}
+
+	aReverse, err := airdrop.FromBytes(b)
+	if err != nil {
+		t.Error(err)
+	}
+
+	s1, err := tr1.String()
+	if err != nil {
+		t.Error(err)
+	}
+
+	s2, err := aReverse.String()
+	if err != nil {
+		t.Error(err)
+	}
+
+	fmt.Println("orig Airdrop:", s1)
+	fmt.Println("Reverse Airdrop:", s2)
+	h1, err := tr1.Hash(map[transaction.TransFlag]bool{})
+	if err != nil {
+		t.Error(err)
+	}
+	h2, err := aReverse.Hash(map[transaction.TransFlag]bool{})
+	if err != nil {
+		t.Error(err)
+	}
+
+	if !bytes.Equal(h1, h2) {
+		t.Error(errors.New("incorrect hash"))
+	}
 }

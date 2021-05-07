@@ -9,6 +9,11 @@ import (
 	"time"
 
 	cr "github.com/ethereum/go-ethereum/crypto"
+	"github.com/overseven/blockchain/transaction"
+)
+
+const (
+	TimestampFormat = "02 Jan 06 15:04 MST"
 )
 
 func UInt64FromBytes(bytes []byte) uint64 {
@@ -26,7 +31,7 @@ func UInt32FromBytes(bytes []byte) uint32 {
 }
 
 func UInt32Bytes(value uint32) []byte {
-	bytes := make([]byte, 8)
+	bytes := make([]byte, 4)
 	binary.LittleEndian.PutUint32(bytes, value)
 	return bytes
 }
@@ -62,23 +67,50 @@ func StringToBytes(s string) []byte {
 	return res
 }
 
-func StringFromBytes(b []byte) (string, error) {
+func StringFromBytes(b []byte) (string, uint32, error) {
 	if len(b) < 4 {
-		return "", errors.New("incorrect input data")
+		return "", 0, errors.New("incorrect input data")
 	}
 
 	messageLen := UInt32FromBytes(b[:4])
 	if messageLen == 0 {
-		return "", nil
+		return "", 0, nil
 	}
-	res := string(b[5 : 5+messageLen])
+	if messageLen > transaction.MaxByteLenMessage {
+		return "", 0, errors.New("message is too large")
+	}
+	res := string(b[4 : 4+messageLen])
 
-	return res, nil
+	return res, 4 + messageLen + 1, nil
 }
 
 func NewTimestamp() time.Time {
 	t := time.Now()
 	return time.Date(t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), t.Second(), t.Nanosecond(), time.UTC)
+}
+
+func TimestampToBytes(t time.Time) ([]byte, error) {
+	ts := []byte(t.Format(TimestampFormat))
+	res := []byte{uint8(len(ts))}
+	res = append(res, []byte(t.Format(TimestampFormat))...)
+	return res, nil
+}
+
+func TimestampFromBytes(b []byte) (time.Time, uint8, error) {
+	if len(b) == 0 {
+		return time.Time{}, 0, errors.New("empty bytes")
+	}
+	length := uint8(b[0])
+
+	if length == 0 {
+		return time.Time{}, 0, errors.New("empty timestamp")
+	}
+	if len(b)-1 < int(length) {
+		return time.Time{}, 0, errors.New("length timestamp > len slice")
+	}
+	t, err := time.Parse(TimestampFormat, string(b[1:length+1]))
+
+	return t, length + 1, err
 }
 
 func MapDifference(first, second map[string]interface{}) map[string]interface{} {

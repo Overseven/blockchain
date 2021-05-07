@@ -2,14 +2,15 @@ package config
 
 import (
 	"crypto/ecdsa"
-	"encoding/hex"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net"
 	"strconv"
 	"strings"
 
 	cr "github.com/ethereum/go-ethereum/crypto"
+	"github.com/overseven/blockchain/utility"
 )
 
 const (
@@ -21,7 +22,7 @@ const (
 )
 
 type Params struct {
-	PubKey        []byte
+	PubKey        []byte // compressed public key
 	PrivKey       *ecdsa.PrivateKey
 	ListeningPort uint64
 	Coordinator   string
@@ -39,6 +40,8 @@ func LoadFromFile(file string) (*Params, error) {
 	}
 	lines := strings.Split(strings.ReplaceAll(string(data), " ", ""), "\r\n")
 
+	fmt.Println("lines: ", lines)
+	var privKeyHex string
 	//fmt.Println("Data in config file:")
 	for _, val := range lines {
 		pair := strings.SplitN(val, "=", 2)
@@ -49,17 +52,10 @@ func LoadFromFile(file string) (*Params, error) {
 		switch pair[0] {
 
 		case fieldPubKey:
-			p.PubKey, err = hex.DecodeString(pair[1])
-			if err != nil {
-				return nil, err
-			}
+			p.PubKey = []byte(pair[1])
 
 		case fieldPrivKey:
-			privKey, err := cr.HexToECDSA(pair[1])
-			if err != nil {
-				return nil, err
-			}
-			p.PrivKey = privKey
+			privKeyHex = pair[1]
 
 		case fieldPort:
 			port, err := strconv.ParseUint(pair[1], 10, 64)
@@ -103,6 +99,15 @@ func LoadFromFile(file string) (*Params, error) {
 		}
 
 	}
+
+	priv, err := utility.ParseKeys(privKeyHex, string(p.PubKey))
+	if err != nil {
+		return nil, err
+	}
+	p.PrivKey = priv
+
+	p.PubKey = cr.CompressPubkey(&p.PrivKey.PublicKey)
+
 	//fmt.Println("End data in config file.")
 	return p, nil
 }
