@@ -36,7 +36,6 @@ func RegisterNodeOnCoordinator(coordAddress, ownAddress string) error {
 	return nil
 }
 
-// TODO: check - deep copy?
 func RegisterNodeOnNodes(nodesAddress []string, ownAddress string) error {
 	//fmt.Println("RegisterNodeOnNodes. ownAddress = ", ownAddress)
 	i, ok := utility.Find(nodesAddress, ownAddress)
