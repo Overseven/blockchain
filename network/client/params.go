@@ -1,4 +1,4 @@
-package main
+package client
 
 import (
 	"encoding/base64"
@@ -9,10 +9,10 @@ import (
 	"github.com/overseven/blockchain/utility/config"
 )
 
-func flagParse() error {
+func (c *Client) FlagParse() error {
 	flagPubKey := flag.String("pubKey", "", "public client key")
 	flagPrivKey := flag.String("privKey", "", "private client key")
-	flagPort := flag.Uint("port", 9000, "listening port")
+	// flagPort := flag.Uint("port", 9000, "listening port")
 	flagCoordinatorIP := flag.String("coordinator", "", "coordinator address. \n"+
 		"Format: ip:port \n"+
 		"Example: 127.0.0.1:5000")
@@ -30,7 +30,7 @@ func flagParse() error {
 		if err != nil {
 			return nil
 		}
-		client.SetPublicKey(res)
+		c.PublicKey = res
 
 		if *flagPrivKey == "" {
 			return errors.New("node private key must be presented with flag '-pubKey' or in config file")
@@ -44,11 +44,11 @@ func flagParse() error {
 		if err != nil {
 			panic(err)
 		}
-		client.PrivKey = privKey
+		c.PrivateKey = privKey
 
-		if *flagPort != 9000 {
-			client.ListeningPort = uint64(*flagPort)
-		}
+		// if *flagPort != 9000 {
+		// 	client.ListeningPort = uint64(*flagPort)
+		// }
 		if *flagCoordinatorIP == "" && *flagNodeToConnectIP == "" {
 			return errors.New("coordinator or nodeToConnect must be presented")
 		}
@@ -58,14 +58,14 @@ func flagParse() error {
 			// if ip == nil {
 			// 	return errors.New("incorrect coordinator ip")
 			// }
-			client.coordinator = *flagCoordinatorIP
+			c.ActiveNodes.Coordinator = *flagCoordinatorIP
 		} else {
 			// TODO: add check
 			// ip := net.ParseIP(*flagNodeToConnectIP)
 			// if ip == nil {
 			// 	return errors.New("incorrect nodeToConnect ip")
 			// }
-			client.Nodes[*flagNodeToConnectIP] = struct{}{}
+			c.ActiveNodes.Nodes[*flagNodeToConnectIP] = struct{}{}
 		}
 
 	} else {
@@ -74,12 +74,12 @@ func flagParse() error {
 			return err
 		}
 
-		node.PrivKey = params.PrivKey
-		node.PubKey = params.PubKey
-		node.ListeningPort = params.ListeningPort
-		node.coordinator = params.Coordinator
+		c.PrivateKey = params.PrivKey
+		c.PublicKey = params.PubKey
+		// c.ListeningPort = params.ListeningPort
+		c.ActiveNodes.Coordinator = params.Coordinator
 		if params.NodeToConnect != "" {
-			node.Nodes[params.NodeToConnect] = struct{}{}
+			c.ActiveNodes.Nodes[params.NodeToConnect] = struct{}{}
 		}
 	}
 	return nil

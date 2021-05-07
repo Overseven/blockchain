@@ -3,12 +3,13 @@ package main_test
 import (
 	"encoding/hex"
 	"fmt"
+	"testing"
+
 	cr "github.com/ethereum/go-ethereum/crypto"
 	"github.com/overseven/blockchain/utility"
-	"testing"
 )
 
-func TestGeneration(t *testing.T){
+func TestGeneration(t *testing.T) {
 	privHex, pubHex, err := utility.Generate()
 	if err != nil {
 		t.Error(err)
@@ -52,5 +53,14 @@ func TestGeneration(t *testing.T){
 	verified := cr.VerifySignature(pubComp, dataHash.Bytes(), signatureNoRecoverID)
 	fmt.Println(verified) // true
 
+}
 
+func TestParsing(t *testing.T) {
+	privHex := "eb70805d4fa2ebe2ba199b13abe89f85015a3418932be4abf348218a703dba0c"
+	pubHex := "024c3ba55861c27a3ac4edefd40ec49a7d66f03eb1c4bddfc67776bf1df3bdfeb0"
+
+	_, err := utility.ParseKeys(privHex, pubHex)
+	if err != nil {
+		t.Error(err)
+	}
 }

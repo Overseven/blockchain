@@ -1,11 +1,10 @@
 package node
 
 import (
-	"encoding/base64"
 	"errors"
 	"flag"
 
-	cr "github.com/ethereum/go-ethereum/crypto"
+	"github.com/overseven/blockchain/utility"
 	"github.com/overseven/blockchain/utility/config"
 )
 
@@ -26,25 +25,19 @@ func FlagParse(node *Node) error {
 		if *flagPubKey == "" {
 			return errors.New("node public key must be presented with flag '-pubKey' or in config file")
 		}
-		res, err := base64.StdEncoding.DecodeString(*flagPubKey)
-		if err != nil {
-			return nil
-		}
-		node.Wallet.PubKey = res
-
 		if *flagPrivKey == "" {
 			return errors.New("node private key must be presented with flag '-pubKey' or in config file")
 		}
-
-		res, err = base64.StdEncoding.DecodeString(*flagPrivKey)
+		res, err := utility.ParseKeys(*flagPrivKey, *flagPubKey)
 		if err != nil {
 			return nil
 		}
-		privKey, err := cr.ToECDSA(res[:32])
+		_, pub, err := utility.ToBytes(res)
 		if err != nil {
-			panic(err)
+			return nil
 		}
-		node.Wallet.PrivKey = privKey
+		node.Wallet.PrivKey = res
+		node.Wallet.PubKey = pub
 
 		if *flagPort != 9000 {
 			node.ServParams.ListeningPort = uint64(*flagPort)

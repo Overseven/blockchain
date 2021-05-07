@@ -1,8 +1,12 @@
 package transaction
 
+import (
+	"crypto/ecdsa"
+)
+
 const (
-	ByteLenPubKey     = 8
-	ByteLenSign       = 8
+	ByteLenPubKey     = 33
+	ByteLenSign       = 65
 	MaxByteLenMessage = 64
 )
 
@@ -13,11 +17,21 @@ const (
 	TypeTransfer
 )
 
+// default value = true
+type TransFlag byte
+
+const (
+	FlagNode TransFlag = iota
+	FlagTimestamp
+)
+
 type Transaction interface {
-	// IsEqual(Transaction) bool
+	IsEqual(Transaction, map[TransFlag]bool) bool
 	String() (string, error)
 	Bytes() ([]byte, error)
-	FromBytes([]byte) error
-	Hash() []byte
+	// FromBytes([]byte) error
+	Hash(map[TransFlag]bool) ([]byte, error)
+	SetNode([]byte) Transaction
+	Sign(*ecdsa.PrivateKey) error
 	Verify() error
 }
