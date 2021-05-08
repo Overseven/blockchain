@@ -15,6 +15,8 @@ type Type byte
 const (
 	TypeAirdrop Type = iota
 	TypeTransfer
+	TypeVote
+	TypeVotingInit
 )
 
 // default value = true
@@ -29,7 +31,6 @@ type Transaction interface {
 	IsEqual(Transaction, map[TransFlag]bool) bool
 	String() (string, error)
 	Bytes() ([]byte, error)
-	// FromBytes([]byte) error
 	Hash(map[TransFlag]bool) ([]byte, error)
 	SetNode([]byte) Transaction
 	Sign(*ecdsa.PrivateKey) error

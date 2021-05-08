@@ -17,7 +17,7 @@ const (
 )
 
 func UInt64FromBytes(bytes []byte) uint64 {
-	return uint64(binary.LittleEndian.Uint64(bytes))
+	return binary.LittleEndian.Uint64(bytes)
 }
 
 func UInt64Bytes(value uint64) []byte {
@@ -27,12 +27,21 @@ func UInt64Bytes(value uint64) []byte {
 }
 
 func UInt32FromBytes(bytes []byte) uint32 {
-	return uint32(binary.LittleEndian.Uint32(bytes))
+	return binary.LittleEndian.Uint32(bytes)
 }
 
 func UInt32Bytes(value uint32) []byte {
 	bytes := make([]byte, 4)
 	binary.LittleEndian.PutUint32(bytes, value)
+	return bytes
+}
+func UInt16FromBytes(bytes []byte) uint16 {
+	return binary.LittleEndian.Uint16(bytes)
+}
+
+func UInt16Bytes(value uint16) []byte {
+	bytes := make([]byte, 2)
+	binary.LittleEndian.PutUint16(bytes, value)
 	return bytes
 }
 
