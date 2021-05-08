@@ -98,7 +98,7 @@ func (a *Airdrop) Bytes() ([]byte, error) {
 
 	res = append(res, utility.Float64Bytes(a.Pay)...)
 	res = append(res, utility.Float64Bytes(a.Fee)...)
-	message := utility.StringToBytes(a.Message) // TODO: FIX ME!
+	message := utility.StringToBytes(a.Message)
 	//res = append(res, uint8(len(message)))
 	res = append(res, message...)
 
