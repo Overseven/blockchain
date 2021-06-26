@@ -30,45 +30,75 @@
 
 ## Elements bytes-level structure:
 ### Block
-- Id
-- number of transactions
-- transactions
-- difficulty
-- miner pubKey
-- hash
-- Nonce
+| №   | Field | Size |
+| --- | --- | --- |
+| 1 | Id | __uint64__ |
+| 2 | number of transactions | __uint8__ |
+| 3 | transactions hashes | __uint8__ \[32 * N\] |
+| 4 | difficulty | __uint64__ |
+| 5 | miner pubKey | __uint8__ \[32\] |
+| 6 | hash | __uint8__ \[32\] |
+| 7 | Nonce | __uint64__ |
 
 ### Transaction
 #### Airdrop
-- type
-- receiver
-- pay
-- fee
-- message
-- timestamp
-- node pubKey
-- sign
+| №   | Field | Size |
+| --- | --- | --- |
+| 1 | type | __uint8__ |
+| 2 | receiver | __uint8__ \[32\] |
+| 3 | pay | __float64__ |
+| 4 | fee | __float64__ |
+| 5 | message len | __uint32__ |
+| 6 | message | __uint8__ \[N\] |
+| 7 | timestamp len | __uint8__ |
+| 8 | timestamp | __uint8__ \[N\] |
+| 9 | node pubKey | __uint8__ \[32\] |
+| 10 | sign | __uint8__ \[32\] |
 
 #### Transfer
-- type
-- sender
-- receiver
-- pay
-- fee
-- message
-- timestamp
-- node pubKey
-- sign
+| №   | Field | Size |
+| --- | --- | --- |
+| 1 | type | __uint8__ |
+| 2 | sender | __uint8__ \[32\] |
+| 3 | receiver | __uint8__ \[32\] |
+| 4 | pay | __float64__ |
+| 5 | fee | __float64__ |
+| 6 | message len | __uint32__ |
+| 7 | message | __uint8__ \[N\] |
+| 8 | timestamp len | __uint8__ |
+| 9 | timestamp | __uint8__ \[N\] |
+| 10| node pubKey | __uint8__ \[32\] |
+| 11| sign | __uint8__ \[32\] |
 
 #### Voting transaction
-- type
-- sender
-- voting id
-- vote 
-- fee
-- timestamp
-- node pubKey
-- sign
+| №   | Field | Size |
+| --- | --- | --- |
+| 1 | type |  __uint8__ |
+| 2 | sender | __uint8__ \[32\] |
+| 3 | voting id | __uint64__ |
+| 4 | vote len | __uint32__ |
+| 5 | vote | __uint8__ \[N\] |
+| 6 | fee | __float64__ |
+| 7 | timestamp len | __uint8__ |
+| 8 | timestamp | __uint8__ \[N\] |
+| 9 | node pubKey | __uint8__ \[32\] |
+| 10 |sign | __uint8__ \[32\] |
+
+#### Voting init transaction
+| №   | Field | Size |
+| --- | --- | --- |
+| 1 | type | __uint8__ |
+| 2 | sender | __uint8__ \[32\] |
+| 3 | voting id | __uint64__ |
+| 4 | parameter | __uint16__ |
+| 5 | value len | __uint32__ |
+| 6 | value | __uint8__ \[N\] |
+| 7 | fee | __float64__ |
+| 8 | timestamp len | __uint8__ |
+| 9 | timestamp | __uint8__ \[N\] |
+| 10 | node pubKey | __uint8__ \[32\] |
+| 11 | sign | __uint8__ \[32\] |
+
 
 ### Balance
 - amount of tokens
