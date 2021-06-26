@@ -99,9 +99,19 @@
 | 10 | node pubKey | __uint8__ \[32\] |
 | 11 | sign | __uint8__ \[32\] |
 
+### Voting
+// TODO: check this
+| №   | Field | Size |
+| --- | --- | --- |
+| 1 | id | __uint64__ |
+| 2 | start on block | __uint64__ |
+| 3 | end on block | __uint64__ |
+| 4 | vote trans. hash | __uint8__ \[N*32\]
 
 ### Balance
-- amount of tokens
+| №   | Field | Size |
+| --- | --- | --- |
+| 1 | amount of tokens | __float64__ |
 
 ### Snapshot
 #### Balance
