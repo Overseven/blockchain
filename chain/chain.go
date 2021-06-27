@@ -1,9 +1,10 @@
 package chain
+
 /*
 import (
 	"sync"
 
-	"github.com/overseven/blockchain/block"
+	"github.com/overseven/try-network/block"
 )
 
 type Chain struct {

@@ -6,11 +6,11 @@ import (
 
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"github.com/overseven/blockchain/block"
-	"github.com/overseven/blockchain/network/protocol/pcommon"
-	"github.com/overseven/blockchain/transaction"
-	"github.com/overseven/blockchain/transaction/airdrop"
-	"github.com/overseven/blockchain/transaction/transfer"
+	"github.com/overseven/try-network/block"
+	"github.com/overseven/try-network/network/protocol/pcommon"
+	"github.com/overseven/try-network/transaction"
+	"github.com/overseven/try-network/transaction/airdrop"
+	"github.com/overseven/try-network/transaction/transfer"
 )
 
 const (

@@ -7,10 +7,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/overseven/blockchain/network"
-	pcoord "github.com/overseven/blockchain/network/protocol/coordinator"
-	pnode "github.com/overseven/blockchain/network/protocol/node"
-	"github.com/overseven/blockchain/utility"
+	"github.com/overseven/try-network/network"
+	pcoord "github.com/overseven/try-network/network/protocol/coordinator"
+	pnode "github.com/overseven/try-network/network/protocol/node"
+	"github.com/overseven/try-network/utility"
 	"google.golang.org/grpc"
 )
 

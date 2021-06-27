@@ -7,7 +7,7 @@
 package node
 
 import (
-	pcommon "github.com/overseven/blockchain/network/protocol/pcommon"
+	pcommon "github.com/overseven/try-network/network/protocol/pcommon"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"

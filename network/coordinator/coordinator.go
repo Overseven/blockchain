@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	pcoord "github.com/overseven/blockchain/network/protocol/coordinator"
+	pcoord "github.com/overseven/try-network/network/protocol/coordinator"
 	"google.golang.org/grpc"
 )
 

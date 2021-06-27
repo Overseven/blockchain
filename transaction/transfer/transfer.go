@@ -8,11 +8,11 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/overseven/blockchain/transaction"
+	"github.com/overseven/try-network/transaction"
 
 	cr "github.com/ethereum/go-ethereum/crypto"
-	// "github.com/overseven/blockchain/chain"
-	"github.com/overseven/blockchain/utility"
+	// "github.com/overseven/try-network/chain"
+	"github.com/overseven/try-network/utility"
 )
 
 type Transfer struct {
@@ -80,7 +80,6 @@ func FromBytes(b []byte) (*Transfer, error) {
 		return nil, errors.New("incorrect input data len")
 	}
 	t := new(Transfer)
-
 
 	idx := int64(0)
 	typeTr := transaction.Type(b[idx])

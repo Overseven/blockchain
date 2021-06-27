@@ -8,10 +8,8 @@ import (
 	"strconv"
 	"time"
 
-	// "github.com/overseven/blockchain/chain/ichain"
-
-	"github.com/overseven/blockchain/transaction"
-	"github.com/overseven/blockchain/utility"
+	"github.com/overseven/try-network/transaction"
+	"github.com/overseven/try-network/utility"
 
 	cr "github.com/ethereum/go-ethereum/crypto"
 )

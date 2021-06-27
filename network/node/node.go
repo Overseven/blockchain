@@ -7,12 +7,12 @@ import (
 	"net"
 	"strconv"
 
-	"github.com/overseven/blockchain/network"
-	"github.com/overseven/blockchain/network/node/trlists"
-	"github.com/overseven/blockchain/network/protocol/converter"
-	pnode "github.com/overseven/blockchain/network/protocol/node"
-	"github.com/overseven/blockchain/transaction"
-	"github.com/overseven/blockchain/utility"
+	"github.com/overseven/try-network/network"
+	"github.com/overseven/try-network/network/node/trlists"
+	"github.com/overseven/try-network/network/protocol/converter"
+	pnode "github.com/overseven/try-network/network/protocol/node"
+	"github.com/overseven/try-network/transaction"
+	"github.com/overseven/try-network/utility"
 	"google.golang.org/grpc"
 )
 

@@ -4,8 +4,8 @@ import (
 	"errors"
 	"flag"
 
-	"github.com/overseven/blockchain/utility"
-	"github.com/overseven/blockchain/utility/config"
+	"github.com/overseven/try-network/utility"
+	"github.com/overseven/try-network/utility/config"
 )
 
 func FlagParse(node *Node) error {

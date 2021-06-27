@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/overseven/blockchain/network/connections"
-	chnode "github.com/overseven/blockchain/network/node"
+	"github.com/overseven/try-network/network/connections"
+	chnode "github.com/overseven/try-network/network/node"
 )
 
 func main() {
@@ -62,7 +62,7 @@ func main() {
 				newNodes, removeNodes, err := connections.UpdateNodesList(&node.ActiveNodes, 50, node.ServParams)
 				if err != nil {
 					fmt.Println("Update list of nodes error:", err.Error())
-				}else {
+				} else {
 
 					fmt.Println("Cycle. Nodes:")
 					node.ActiveNodes.Mutex.Lock()

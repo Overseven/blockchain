@@ -6,9 +6,9 @@ import (
 	"testing"
 
 	cr "github.com/ethereum/go-ethereum/crypto"
-	"github.com/overseven/blockchain/transaction"
-	"github.com/overseven/blockchain/transaction/transfer"
-	"github.com/overseven/blockchain/utility"
+	"github.com/overseven/try-network/transaction"
+	"github.com/overseven/try-network/transaction/transfer"
+	"github.com/overseven/try-network/utility"
 )
 
 func TestGetHash(t *testing.T) {

@@ -5,15 +5,15 @@ import (
 	"testing"
 
 	cr "github.com/ethereum/go-ethereum/crypto"
-	"github.com/overseven/blockchain/balance"
-	pb "github.com/overseven/blockchain/network/protocol"
-	"github.com/overseven/blockchain/utility/config"
+	"github.com/overseven/try-network/balance"
+	pb "github.com/overseven/try-network/network/protocol"
+	"github.com/overseven/try-network/utility/config"
 
-	"github.com/overseven/blockchain/chain"
-	"github.com/overseven/blockchain/interfaces"
-	"github.com/overseven/blockchain/transaction"
+	"github.com/overseven/try-network/chain"
+	"github.com/overseven/try-network/interfaces"
+	"github.com/overseven/try-network/transaction"
 
-	"github.com/overseven/blockchain/utility"
+	"github.com/overseven/try-network/utility"
 )
 
 func TestBlockIsValid(t *testing.T) {

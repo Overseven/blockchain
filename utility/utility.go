@@ -9,7 +9,7 @@ import (
 	"time"
 
 	cr "github.com/ethereum/go-ethereum/crypto"
-	"github.com/overseven/blockchain/transaction"
+	"github.com/overseven/try-network/transaction"
 )
 
 const (
@@ -90,7 +90,7 @@ func StringFromBytes(b []byte) (string, uint32, error) {
 	}
 	res := string(b[4 : 4+messageLen])
 
-	return res, 4 + messageLen , nil
+	return res, 4 + messageLen, nil
 }
 
 func NewTimestamp() time.Time {

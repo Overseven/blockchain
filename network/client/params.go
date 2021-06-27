@@ -6,7 +6,7 @@ import (
 	"flag"
 
 	cr "github.com/ethereum/go-ethereum/crypto"
-	"github.com/overseven/blockchain/utility/config"
+	"github.com/overseven/try-network/utility/config"
 )
 
 func (c *Client) FlagParse() error {

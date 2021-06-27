@@ -2,11 +2,10 @@ package main
 
 import (
 	"fmt"
-	"github.com/overseven/blockchain/utility"
+	"github.com/overseven/try-network/utility"
 )
 
-
-func main(){
+func main() {
 	//flagPrefix := flag.String("prefix", "", "generate public key with prefix")
 	//flag.Parse()
 	priv, pub, err := utility.Generate()

@@ -9,8 +9,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/overseven/blockchain/transaction"
-	"github.com/overseven/blockchain/utility"
+	"github.com/overseven/try-network/transaction"
+	"github.com/overseven/try-network/utility"
 )
 
 type Vote struct {
@@ -33,7 +33,6 @@ func NewVote(votingId uint64, opinion string, fee float64) (*Vote, error) {
 	tr.Timestamp = utility.NewTimestamp()
 	return &tr, nil
 }
-
 
 func (v *Vote) IsEqual(tr transaction.Transaction, flags map[transaction.TransFlag]bool) bool {
 	if flags == nil {

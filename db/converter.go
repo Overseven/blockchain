@@ -3,10 +3,10 @@ package db
 import (
 	"errors"
 
-	"github.com/overseven/blockchain/block"
-	"github.com/overseven/blockchain/transaction"
-	"github.com/overseven/blockchain/transaction/airdrop"
-	"github.com/overseven/blockchain/transaction/transfer"
+	"github.com/overseven/try-network/block"
+	"github.com/overseven/try-network/transaction"
+	"github.com/overseven/try-network/transaction/airdrop"
+	"github.com/overseven/try-network/transaction/transfer"
 )
 
 func BlockFromBytes(b []byte) (block.Block, error) {

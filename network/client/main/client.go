@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/overseven/blockchain/network/client"
+	"github.com/overseven/try-network/network/client"
 )
 
 func main() {

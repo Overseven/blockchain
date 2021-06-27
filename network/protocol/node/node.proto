@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = "github.com/overseven/blockchain/protocol/node";
+option go_package = "github.com/overseven/try-network/protocol/node";
 
 package pnode;
 

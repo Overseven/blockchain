@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/overseven/blockchain/transaction"
-	"github.com/overseven/blockchain/transaction/airdrop"
-	"github.com/overseven/blockchain/utility"
-	"github.com/overseven/blockchain/utility/config"
+	"github.com/overseven/try-network/transaction"
+	"github.com/overseven/try-network/transaction/airdrop"
+	"github.com/overseven/try-network/utility"
+	"github.com/overseven/try-network/utility/config"
 )
 
 const airdropModeratorConfigFile = "..\\..\\wallet.cfg"

@@ -4,12 +4,12 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/overseven/blockchain/balance"
-	"github.com/overseven/blockchain/interfaces"
-	"github.com/overseven/blockchain/network/client"
-	"github.com/overseven/blockchain/network/node"
-	pb "github.com/overseven/blockchain/protocol"
-	"github.com/overseven/blockchain/transaction"
+	"github.com/overseven/try-network/balance"
+	"github.com/overseven/try-network/interfaces"
+	"github.com/overseven/try-network/network/client"
+	"github.com/overseven/try-network/network/node"
+	pb "github.com/overseven/try-network/protocol"
+	"github.com/overseven/try-network/transaction"
 )
 
 const (

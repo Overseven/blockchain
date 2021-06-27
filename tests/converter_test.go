@@ -3,19 +3,19 @@ package test
 import (
 	"bytes"
 	"errors"
-	"github.com/overseven/blockchain/balance"
-	"github.com/overseven/blockchain/chain"
+	"github.com/overseven/try-network/balance"
+	"github.com/overseven/try-network/chain"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"strconv"
 	"testing"
 	"time"
 
 	cr "github.com/ethereum/go-ethereum/crypto"
-	"github.com/overseven/blockchain/interfaces"
-	pb "github.com/overseven/blockchain/protocol"
-	"github.com/overseven/blockchain/protocol/converter"
-	"github.com/overseven/blockchain/transaction"
-	"github.com/overseven/blockchain/wallet"
+	"github.com/overseven/try-network/interfaces"
+	pb "github.com/overseven/try-network/protocol"
+	"github.com/overseven/try-network/protocol/converter"
+	"github.com/overseven/try-network/transaction"
+	"github.com/overseven/try-network/wallet"
 )
 
 func compareTransactions(t1 interfaces.BlockElement, t2 *pb.Transaction) error {
@@ -165,15 +165,14 @@ func TestTransProto2LocalTransfer(t *testing.T) {
 	trTimestamp := time.Date(ti.Year(), ti.Month(), ti.Day(), ti.Hour(), ti.Minute(), ti.Second(), ti.Nanosecond(), time.UTC)
 
 	data := interfaces.Data{
-		Type: transaction.TypeTransfer,
-		Sender: sndrPubKey,
-		Receiver: rcvrPubKey,
-		Pay: 156.4,
-		Fee: 13.225,
-		Message: "tr message",
+		Type:      transaction.TypeTransfer,
+		Sender:    sndrPubKey,
+		Receiver:  rcvrPubKey,
+		Pay:       156.4,
+		Fee:       13.225,
+		Message:   "tr message",
 		Timestamp: trTimestamp,
 	}
-
 
 	hashed := transaction.GetHash(&data)
 
