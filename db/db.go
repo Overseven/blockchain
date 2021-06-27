@@ -3,9 +3,9 @@ package db
 import (
 	"errors"
 
-	"github.com/overseven/blockchain/block"
-	"github.com/overseven/blockchain/transaction"
-	"github.com/overseven/blockchain/utility"
+	"github.com/overseven/try-network/block"
+	"github.com/overseven/try-network/transaction"
+	"github.com/overseven/try-network/utility"
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/opt"
 )

@@ -7,10 +7,10 @@ import (
 	"math"
 	"strconv"
 
-	"github.com/overseven/blockchain/transaction"
+	"github.com/overseven/try-network/transaction"
 
 	cr "github.com/ethereum/go-ethereum/crypto"
-	blUtility "github.com/overseven/blockchain/utility"
+	blUtility "github.com/overseven/try-network/utility"
 )
 
 type Block struct {

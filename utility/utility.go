@@ -9,10 +9,15 @@ import (
 	"time"
 
 	cr "github.com/ethereum/go-ethereum/crypto"
+	"github.com/overseven/try-network/transaction"
+)
+
+const (
+	TimestampFormat = "02 Jan 06 15:04 MST"
 )
 
 func UInt64FromBytes(bytes []byte) uint64 {
-	return uint64(binary.LittleEndian.Uint64(bytes))
+	return binary.LittleEndian.Uint64(bytes)
 }
 
 func UInt64Bytes(value uint64) []byte {
@@ -22,12 +27,21 @@ func UInt64Bytes(value uint64) []byte {
 }
 
 func UInt32FromBytes(bytes []byte) uint32 {
-	return uint32(binary.LittleEndian.Uint32(bytes))
+	return binary.LittleEndian.Uint32(bytes)
 }
 
 func UInt32Bytes(value uint32) []byte {
-	bytes := make([]byte, 8)
+	bytes := make([]byte, 4)
 	binary.LittleEndian.PutUint32(bytes, value)
+	return bytes
+}
+func UInt16FromBytes(bytes []byte) uint16 {
+	return binary.LittleEndian.Uint16(bytes)
+}
+
+func UInt16Bytes(value uint16) []byte {
+	bytes := make([]byte, 2)
+	binary.LittleEndian.PutUint16(bytes, value)
 	return bytes
 }
 
@@ -62,33 +76,50 @@ func StringToBytes(s string) []byte {
 	return res
 }
 
-func StringFromBytes(b []byte) (string, error) {
+func StringFromBytes(b []byte) (string, uint32, error) {
 	if len(b) < 4 {
-		return "", errors.New("incorrect input data")
+		return "", 0, errors.New("incorrect input data")
 	}
 
 	messageLen := UInt32FromBytes(b[:4])
 	if messageLen == 0 {
-		return "", nil
+		return "", 0, nil
 	}
-	res := string(b[5 : 5+messageLen])
-
-	return res, nil
-}
-
-func GenerateWallet() (privKey *ecdsa.PrivateKey, pubKey []byte, err error) {
-	privKey, err = cr.GenerateKey()
-	if err != nil {
-		return nil, nil, err
+	if messageLen > transaction.MaxByteLenMessage {
+		return "", 0, errors.New("message is too large")
 	}
+	res := string(b[4 : 4+messageLen])
 
-	pubKey = PrivToPubKey(privKey)
-	return
+	return res, 4 + messageLen, nil
 }
 
 func NewTimestamp() time.Time {
 	t := time.Now()
 	return time.Date(t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), t.Second(), t.Nanosecond(), time.UTC)
+}
+
+func TimestampToBytes(t time.Time) ([]byte, error) {
+	ts := []byte(t.Format(TimestampFormat))
+	res := []byte{uint8(len(ts))}
+	res = append(res, []byte(t.Format(TimestampFormat))...)
+	return res, nil
+}
+
+func TimestampFromBytes(b []byte) (time.Time, uint8, error) {
+	if len(b) == 0 {
+		return time.Time{}, 0, errors.New("empty bytes")
+	}
+	length := b[0]
+
+	if length == 0 {
+		return time.Time{}, 0, errors.New("empty timestamp")
+	}
+	if len(b)-1 < int(length) {
+		return time.Time{}, 0, errors.New("length timestamp > len slice")
+	}
+	t, err := time.Parse(TimestampFormat, string(b[1:length+1]))
+
+	return t, length + 1, err
 }
 
 func MapDifference(first, second map[string]interface{}) map[string]interface{} {
@@ -104,4 +135,19 @@ func MapDifference(first, second map[string]interface{}) map[string]interface{} 
 	}
 
 	return diff
+}
+
+// Find takes a slice and looks for an element in it. If found it will
+// return it's key, otherwise it will return -1 and a bool of false.
+func Find(slice []string, val string) (int, bool) {
+	for i, item := range slice {
+		if item == val {
+			return i, true
+		}
+	}
+	return -1, false
+}
+
+func RemoveIndex(s []string, index int) []string {
+	return append(s[:index], s[index+1:]...)
 }
