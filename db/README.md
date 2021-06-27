@@ -44,22 +44,8 @@
 #### Airdrop
 | №   | Field | Size |
 | --- | --- | --- |
-| 1 | type | __uint8__ |
-| 2 | receiver | __uint8__ \[32\] |
-| 3 | pay | __float64__ |
-| 4 | fee | __float64__ |
-| 5 | message len | __uint32__ |
-| 6 | message | __uint8__ \[N\] |
-| 7 | timestamp len | __uint8__ |
-| 8 | timestamp | __uint8__ \[N\] |
-| 9 | node pubKey | __uint8__ \[32\] |
-| 10 | sign | __uint8__ \[32\] |
-
-#### Transfer
-| №   | Field | Size |
-| --- | --- | --- |
-| 1 | type | __uint8__ |
-| 2 | sender | __uint8__ \[32\] |
+| 1 | block number | __uint64__ |
+| 2 | type | __uint8__ |
 | 3 | receiver | __uint8__ \[32\] |
 | 4 | pay | __float64__ |
 | 5 | fee | __float64__ |
@@ -70,34 +56,52 @@
 | 10| node pubKey | __uint8__ \[32\] |
 | 11| sign | __uint8__ \[32\] |
 
+#### Transfer
+| №   | Field | Size |
+| --- | --- | --- |
+| 1 | block number | __uint64__ |
+| 2 | type | __uint8__ |
+| 3 | sender | __uint8__ \[32\] |
+| 4 | receiver | __uint8__ \[32\] |
+| 5 | pay | __float64__ |
+| 6 | fee | __float64__ |
+| 7 | message len | __uint32__ |
+| 8 | message | __uint8__ \[N\] |
+| 9 | timestamp len | __uint8__ |
+| 10| timestamp | __uint8__ \[N\] |
+| 11| node pubKey | __uint8__ \[32\] |
+| 12| sign | __uint8__ \[32\] |
+
 #### Voting transaction
 | №   | Field | Size |
 | --- | --- | --- |
-| 1 | type |  __uint8__ |
-| 2 | sender | __uint8__ \[32\] |
-| 3 | voting id | __uint64__ |
-| 4 | vote len | __uint32__ |
-| 5 | vote | __uint8__ \[N\] |
-| 6 | fee | __float64__ |
-| 7 | timestamp len | __uint8__ |
-| 8 | timestamp | __uint8__ \[N\] |
-| 9 | node pubKey | __uint8__ \[32\] |
-| 10 |sign | __uint8__ \[32\] |
+| 1 | block number | __uint64__ |
+| 2 | type |  __uint8__ |
+| 3 | sender | __uint8__ \[32\] |
+| 4 | voting id | __uint64__ |
+| 5 | vote len | __uint32__ |
+| 6 | vote | __uint8__ \[N\] |
+| 7 | fee | __float64__ |
+| 8 | timestamp len | __uint8__ |
+| 9 | timestamp | __uint8__ \[N\] |
+| 10| node pubKey | __uint8__ \[32\] |
+| 11|sign | __uint8__ \[32\] |
 
 #### Voting init transaction
 | №   | Field | Size |
 | --- | --- | --- |
-| 1 | type | __uint8__ |
-| 2 | sender | __uint8__ \[32\] |
-| 3 | voting id | __uint64__ |
-| 4 | parameter | __uint16__ |
-| 5 | value len | __uint32__ |
-| 6 | value | __uint8__ \[N\] |
-| 7 | fee | __float64__ |
-| 8 | timestamp len | __uint8__ |
-| 9 | timestamp | __uint8__ \[N\] |
-| 10 | node pubKey | __uint8__ \[32\] |
-| 11 | sign | __uint8__ \[32\] |
+| 1 | block number | __uint64__ |
+| 2 | type | __uint8__ |
+| 3 | sender | __uint8__ \[32\] |
+| 4 | voting id | __uint64__ |
+| 5 | parameter | __uint16__ |
+| 6 | value len | __uint32__ |
+| 7 | value | __uint8__ \[N\] |
+| 8 | fee | __float64__ |
+| 9 | timestamp len | __uint8__ |
+| 10| timestamp | __uint8__ \[N\] |
+| 11| node pubKey | __uint8__ \[32\] |
+| 12| sign | __uint8__ \[32\] |
 
 ### Voting
 // TODO: check this
@@ -113,10 +117,14 @@
 | --- | --- | --- |
 | 1 | amount of tokens | __float64__ |
 
+
+_А оно нам нужно?_
 ### Snapshot
 #### Balance
-- id of last block that was counted
-- amount of tokens
+| №   | Field | Size |
+| --- | --- | --- |
+| 1 | last transaction hash | __uint8__ \[32\] |
+| 2 | amount of tokens | float64 |
 
 #### Parameter
 - id of last block that was counted
