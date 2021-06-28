@@ -3,7 +3,7 @@ package trlists
 import (
 	"sync"
 
-	"github.com/overseven/blockchain/transaction"
+	"github.com/overseven/try-network/transaction"
 )
 
 var (
@@ -24,7 +24,12 @@ func AddToFirst(toSend []transaction.Transaction) {
 	defer first.lock.Unlock()
 
 	for _, t := range toSend {
-		first.trans[string(t.Hash())] = t
+		tHash, err := t.Hash(map[transaction.TransFlag]bool{}) // TODO: need some flags?
+		hash := string(tHash)
+		if err != nil {
+			return
+		}
+		first.trans[hash] = t
 	}
 }
 
@@ -35,12 +40,16 @@ func FirstToSecond(sended []transaction.Transaction) {
 	defer second.lock.Unlock()
 
 	for _, t := range sended {
-		hash := string(t.Hash())
+		tHash, err := t.Hash(map[transaction.TransFlag]bool{}) // TODO: need some flags?
+		hash := string(tHash)
+		if err != nil {
+			return
+		}
 		_, ok := first.trans[hash]
 		if ok {
 			delete(first.trans, hash)
 		}
-		second.trans[string(t.Hash())] = t
+		second.trans[hash] = t
 	}
 }
 
@@ -51,12 +60,16 @@ func SecondToFirst(canceled []transaction.Transaction) {
 	defer second.lock.Unlock()
 
 	for _, t := range canceled {
-		hash := string(t.Hash())
+		tHash, err := t.Hash(map[transaction.TransFlag]bool{}) // TODO: need some flags?
+		hash := string(tHash)
+		if err != nil {
+			return
+		}
 		_, ok := second.trans[hash]
 		if ok {
 			delete(second.trans, hash)
 		}
-		first.trans[string(t.Hash())] = t
+		first.trans[hash] = t
 	}
 }
 
@@ -67,7 +80,11 @@ func Remove(trs []transaction.Transaction) {
 	defer second.lock.Unlock()
 
 	for _, t := range trs {
-		hash := string(t.Hash())
+		tHash, err := t.Hash(map[transaction.TransFlag]bool{}) // TODO: need some flags?
+		if err != nil {
+			return
+		}
+		hash := string(tHash)
 		_, ok := first.trans[hash]
 		if ok {
 			delete(first.trans, hash)

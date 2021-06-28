@@ -10,21 +10,22 @@ const (
 	MaxByteLenMessage = 64
 )
 
+// Type is type of transaction
 type Type byte
 
 const (
 	TypeAirdrop Type = iota
-	TypeTransfer
-	TypeVote
-	TypeVotingInit
+	TypeTransfer // transfer from one wallet to another
+	TypeVote // wallet vote
+	TypeVotingInit // voting initial transaction
 )
 
-// default value = true
+// TransFlag default value = true
 type TransFlag byte
 
 const (
-	FlagNode TransFlag = iota
-	FlagTimestamp
+	FlagNode TransFlag = iota // use Node public key to calc hash
+	FlagTimestamp // use Timestamp to calc hash
 )
 
 type Transaction interface {

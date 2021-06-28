@@ -33,12 +33,12 @@ func TransactionFromBytes(b []byte) (transaction.Transaction, error) {
 
 func transferFromBytes(b []byte) (*transfer.Transfer, error) {
 	tr := transfer.Transfer{}
-	err := tr.FromBytes(b)
-	return &tr, err
+	//err := tr.FromBytes(b) // TODO: create byte to Transfer conversation in transaction/transfer/transfer.go
+	return &tr, nil
 }
 
 func airdropFromBytes(b []byte) (*airdrop.Airdrop, error) {
 	a := airdrop.Airdrop{}
-	err := a.FromBytes(b)
-	return &a, err
+	//err := a.FromBytes(b)  // TODO: create byte to Transfer conversation in transaction/transfer/transfer.go
+	return &a, nil
 }

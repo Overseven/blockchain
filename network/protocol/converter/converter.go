@@ -29,7 +29,11 @@ func BlockProto2Local(b *pcommon.Block) (*block.Block, error) {
 		if err != nil {
 			return nil, errors.New("incorrect type at " + strconv.FormatInt(int64(i), 10) + " transaction")
 		}
-		tr[string(tran.Hash())] = tran
+		tHash, err := tran.Hash(map[transaction.TransFlag]bool{})
+		if err != nil {
+			return nil, err
+		}
+		tr[string(tHash)] = tran
 
 	}
 	bl.Transactions = tr
@@ -60,7 +64,11 @@ func BlockLocal2Proto(b block.Block) (*pcommon.Block, error) {
 	bl.PrevBlockHash = b.PrevHash
 	bl.Difficulty = uint32(b.Difficulty)
 	bl.Miner = b.Miner
-	bl.BlockHash = b.GetHash()
+	var err error
+	bl.BlockHash, err = b.GetHash()
+	if err != nil {
+		return nil, errors.New("incorrect transaction type")
+	}
 	bl.Nonce = b.Nonce
 	return &bl, nil
 }
@@ -73,7 +81,7 @@ func AirdropProto2Local(a *pcommon.TransAirDrop) (*airdrop.Airdrop, error) {
 	local_a.Fee = a.Fee
 	local_a.Message = a.Message
 	local_a.Node = a.Node
-	local_a.Sign = a.Sign
+	local_a.Signature = a.Sign
 	return local_a, nil
 }
 
@@ -86,7 +94,7 @@ func TransferProto2Local(t *pcommon.TransTransfer) (*transfer.Transfer, error) {
 	local_tr.Pay = t.Pay
 	local_tr.Fee = t.Fee
 	local_tr.Node = t.Node
-	local_tr.Sign = t.Sign
+	local_tr.Signature = t.Sign
 	return local_tr, nil
 }
 
@@ -110,7 +118,7 @@ func TransferLocal2Proto(tr *transfer.Transfer) (*pcommon.Transaction, error) {
 	t.Message = tr.Message
 	t.Timestamp = timestamppb.New(tr.Timestamp)
 	t.Node = tr.Node
-	t.Sign = tr.Sign
+	t.Sign = tr.Signature
 	return &pcommon.Transaction{ProtocolVersion: protocolVersion, Trans: &pcommon.Transaction_Transfer{Transfer: t}}, nil
 }
 
@@ -122,7 +130,7 @@ func AirdropLocal2Proto(tr *airdrop.Airdrop) (*pcommon.Transaction, error) {
 	t.Message = tr.Message
 	t.Timestamp = timestamppb.New(tr.Timestamp)
 	t.Node = tr.Node
-	t.Sign = tr.Sign
+	t.Sign = tr.Signature
 	return &pcommon.Transaction{ProtocolVersion: protocolVersion, Trans: &pcommon.Transaction_Drop{Drop: t}}, nil
 }
 
