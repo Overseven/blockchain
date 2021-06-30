@@ -21,11 +21,13 @@
 | latest balance | `lbXXXXXXX` | `XXX` - wallet pubKey | [balance](#balance) |
 | latest param | `lpXXX` | `XXX` - param id | [parameter](#parameter) |
 | latest fee distribution ratio | `lfXXXXXXXX` | `XXX` - node address | [ratio](#fee-distribution-ratio) |
+| number of snapshots | `cs` | | __uint8__|
 
 ### Snapshot dependent
 
 | Name | Key | Description | Value |
 | --- | --- | --- | --- |
+| last block | `sYn` | `Y` - snapshot | __uint64__ |
 | balance |`sYbXXXXXXX` | `Y` - snapshot, `XXX` - wallet pubKey | [balance](#balance) |
 | param | `sYpXXX` | `Y` - snapshot, `XXX` - param | [parameter](#parameter) |
 | fee distribution ratio | `sYfXXXXXXXX` |  `Y` - snapshot, `XXX` - node address | [ratio](#fee-distribution-ratio) |
@@ -42,6 +44,43 @@
 | 5 | miner pubKey | __uint8__ \[32\] |
 | 6 | hash | __uint8__ \[32\] |
 | 7 | Nonce | __uint64__ |
+
+Block keys are always takes 8 byte, the least significant bytes places at the end of the key for correct sort order:
+
+|    Key  | Number of block |
+|   ---   |  --- |
+| 0000000000000001 |    1 |
+| 0000000000000010 |   16 |
+| 0000000000000A00 | 2560 |
+
+Pseudocode with algo when some blocks need to be replaced:
+
+``` python
+last_block = 18  // number of last block in db 
+delete_starting = 11 // id of the block that will be deleted with all next (delete [11; 18])
+delete_ending = 20 // id of new last block
+snapshots = get_number_of_shapshots()
+sn_id = get_most_closely() // id of snapshot with max last block number and lower then delete_starting
+sn_last = get_snapshot_last_block(sn_id) // last block id from snapshot
+
+// deleting blocks in descending order
+for (i = last_block; i >= delete_starting; i-=1){
+    trans = get_transactions_from_block(i) // list of transactions in current block
+    for t in trans {
+        if (t.type = Voting) {
+            delete_vote_from_voting(t.voting_id, get_hash(t)) 
+        } else if (t.type = VotingInit) {
+            delete_voting(t.voting_id)
+        }
+        delete_transaction(t)
+    }
+    delete_block(i)
+}
+
+
+
+last_block = delete_ending
+```
 
 ### Transaction
 #### Airdrop
@@ -115,6 +154,7 @@
 | 2 | start on block | __uint64__ |
 | 3 | end on block | __uint64__ |
 | 4 | vote trans. hash | __uint8__ \[N*32\]
+| 5 | finished | __bool__ |
 
 ### Balance
 | №   | Field | Size |
