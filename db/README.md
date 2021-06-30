@@ -17,10 +17,11 @@
 | --- | --- | --- | --- |
 | block | `bXXXXXXXX` |`XXX` - block id | [block](#block) |
 | transaction | `tXXXXXXXX` | `XXX` - transaction hash | [transaction](#transaction) |
-| voting transaction | `vtXXXZZZZ` | `XXX` - voting id, `ZZZ` - vote id | ??? |
-| voting info | `viXXXXXXX` | `XXX` - voting id | [Voting](#voting) |
+| voting transaction | `vtXXXZZZZ` | `XXX` - voting id, `ZZZ` - vote id | reference to [transaction](#transaction) |
+| voting info | `viXXXXXXX` | `XXX` - voting id | [voting](#voting) |
 | latest balance | `lbXXXXXXX` | `XXX` - wallet pubKey | [balance](#balance) |
 | latest param | `lpXXX` | `XXX` - param id | [parameter](#parameter) |
+| latest fee distribution ratio | `lfXXXXXXXX` | `XXX` - node address | [ratio](#fee-distribution-ratio) |
 
 ### Snapshot dependent
 
@@ -28,7 +29,7 @@
 | --- | --- | --- | --- |
 | balance |`sYbXXXXXXX` | `Y` - snapshot, `XXX` - wallet pubKey | [balance](#balance) |
 | param | `sYpXXX` | `Y` - snapshot, `XXX` - param | [parameter](#parameter) |
-| fee distribution ratio | `fYXXXXXXXX` |  `Y` - snapshot, `XXX` - node address | __TODO__ |
+| fee distribution ratio | `sYfXXXXXXXX` |  `Y` - snapshot, `XXX` - node address | [ratio](#fee-distribution-ratio) |
 
 
 ## Elements bytes-level structure:
@@ -121,14 +122,13 @@
 | 1 | amount of tokens | __float64__ |
 
 
-_А оно нам нужно?_
-### Snapshot
-#### Balance
+### Parameter
 | №   | Field | Size |
-| --- | --- | --- |
-| 1 | last transaction hash | __uint8__ \[32\] |
-| 2 | amount of tokens | float64 |
+| --- | ---   | ---  |
+|  1  | value |  __TODO__ |
 
-#### Parameter
-- id of last block that was counted
-- value
+
+### Fee distribution ratio
+| №   | Field | Size |
+| --- | ---   | ---  |
+|  1  | ratio |  __float64__ |
