@@ -17,7 +17,6 @@
 | --- | --- | --- | --- |
 | block | `bXXXXXXXX` |`XXX` - block id | [block](#block) |
 | transaction | `tXXXXXXXX` | `XXX` - transaction hash | [transaction](#transaction) |
-| voting transaction | `vtXXXZZZZ` | `XXX` - voting id, `ZZZ` - vote id | reference to [transaction](#transaction) |
 | voting info | `viXXXXXXX` | `XXX` - voting id | [voting](#voting) |
 | latest balance | `lbXXXXXXX` | `XXX` - wallet pubKey | [balance](#balance) |
 | latest param | `lpXXX` | `XXX` - param id | [parameter](#parameter) |
@@ -109,6 +108,7 @@
 
 ### Voting
 // TODO: check this
+
 | №   | Field | Size |
 | --- | --- | --- |
 | 1 | id | __uint64__ |
@@ -125,7 +125,8 @@
 ### Parameter
 | №   | Field | Size |
 | --- | ---   | ---  |
-|  1  | value |  __TODO__ |
+|  1  | len   | __uint32__ |
+|  2  | value | __uint8__ \[N\] |
 
 
 ### Fee distribution ratio
