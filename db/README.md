@@ -8,25 +8,28 @@
 4) Balance
 5) Parameter
 6) Voting
-
+7) Node/miner fee distribution ratio
 
 ## Address structure:
-- `bXXXXXXXX` - block, `XXX` - block id
-- `tXXXXXXXX` - transaction, `XXX` - transaction hash
-- `vtXXXZZZZ` - voting transaction, `XXX` - voting id, `ZZZ` - vote id
-- `viXXXXXXX` - voting info, `XXX` - voting id
+### Independent of snapshot 
 
-- `s0bXXXXXXX` - snapshot `0`, `XXX` - wallet pubKey
-- `s1bXXXXXXX` - snapshot `1`, `XXX` - wallet pubKey
-- `s2bXXXXXXX` - snapshot `2`, `XXX` - wallet pubKey
+| Name | Key | Description | Value |
+| --- | --- | --- | --- |
+| block | `bXXXXXXXX` |`XXX` - block id | [block](#block) |
+| transaction | `tXXXXXXXX` | `XXX` - transaction hash | [transaction](#transaction) |
+| voting transaction | `vtXXXZZZZ` | `XXX` - voting id, `ZZZ` - vote id | ??? |
+| voting info | `viXXXXXXX` | `XXX` - voting id | [Voting](#voting) |
+| latest balance | `lbXXXXXXX` | `XXX` - wallet pubKey | [balance](#balance) |
+| latest param | `lpXXX` | `XXX` - param id | [parameter](#parameter) |
 
-- `s0p1`  - snapshot `0`, param `1`
-- `s0p2`  - snapshot `0`, param `2`
-- `s1p0`  - snapshot `1`, param `0`
+### Snapshot dependent
 
-- `lbXXXXXXX` - latest balance, `XXX` - wallet pubKey
-- `lp0` - latest param `0`
-- `lp1` - latest param `1`
+| Name | Key | Description | Value |
+| --- | --- | --- | --- |
+| balance |`sYbXXXXXXX` | `Y` - snapshot, `XXX` - wallet pubKey | [balance](#balance) |
+| param | `sYpXXX` | `Y` - snapshot, `XXX` - param | [parameter](#parameter) |
+| fee distribution ratio | `fYXXXXXXXX` |  `Y` - snapshot, `XXX` - node address | __TODO__ |
+
 
 ## Elements bytes-level structure:
 ### Block
