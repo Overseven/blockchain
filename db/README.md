@@ -93,11 +93,12 @@ for b in new_block {
             add_to_balance(t.sender, -1 * t.pay)
             add_to_balance(t.receiver, t.pay)
         } else if (t.type == VotingInit) {
-            add_voting(t.voting_id, t)
+            new_voting(t.voting_id, t). # write into db new voting
         } if (t.type == Voting) {
             add_vote_to_voting(t.voting_id, get_hash(t)) 
         } else if (t.type == FinishVoting) {
-            if (voting_can_be_finished(t.voting_id)) {  # voting_can_be_finished() return true, if current block id > voting.endBlock && voting.finished == false 
+            if (voting_can_be_finished(t.voting_id, b.id)) {  # voting_can_be_finished() return true, 
+                                                              #  if current block id > voting.endBlock && voting.finished == false 
                 set_voting_finished(t.voting_id, finished=true)
                 reward = calc_reward(t.voting_id, b.id)
                 add_to_balance(t.sender, reward)  # reward for FinishVoting transaction sender
@@ -110,7 +111,7 @@ for b in new_block {
         add_to_balance(t.node, fee_ratio * t.fee + get_emission()/2)
         add_to_balance(t.miner, (1.0 - fee_ratio) * t.fee + get_emission()/2)
         
-        add_transaction(t)
+        add_transaction(t)  # write into db new transaction
     }
 }
 
