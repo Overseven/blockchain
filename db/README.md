@@ -56,16 +56,16 @@ Block keys are always takes 8 byte, the least significant bytes places at the en
 Pseudocode with algo when some blocks need to be replaced:
 
 ``` python
-last_block = 18  // number of last block in db 
-delete_starting = 11 // id of the block that will be deleted with all next (delete [11; 18])
-delete_ending = 20 // id of new last block
+last_block = 18  # number of last block in db 
+delete_starting = 11  # id of the block that will be deleted with all next (delete [11; 18])
+delete_ending = 20  # id of new last block
 snapshots = get_number_of_shapshots()
-sn_id = get_most_closely() // id of snapshot with max last block number and lower then delete_starting
-sn_last = get_snapshot_last_block(sn_id) // last block id from snapshot
+sn_id = get_most_closely()  # id of snapshot with max last block number and lower then delete_starting
+sn_last = get_snapshot_last_block(sn_id)  # last block id from snapshot
 
-// deleting blocks in descending order
+# deleting blocks in descending order
 for (i = last_block; i >= delete_starting; i-=1){
-    trans = get_transactions_from_block(i) // list of transactions in current block
+    trans = get_transactions_from_block(i)  # list of transactions in current block
     for t in trans {
         if (t.type = Voting) {
             delete_vote_from_voting(t.voting_id, get_hash(t)) 
