@@ -87,20 +87,29 @@ copy_snapshot_to_latest(sn_id)  # copy last block number, balances, param, fee r
 # insert new blocks
 for b in new_block {
     for t in b.trans() {
-        if (t.type == Voting) {
-            add_vote_to_voting(t.voting_id, get_hash(t)) 
+        if (t.type == Airdrop) {
+            add_to_balance(t.receiver, t.pay)
+        } else if (t.type == Transfer) {
+            add_to_balance(t.sender, -1 * t.pay)
+            add_to_balance(t.receiver, t.pay)
         } else if (t.type == VotingInit) {
             add_voting(t.voting_id, t)
+        } if (t.type == Voting) {
+            add_vote_to_voting(t.voting_id, get_hash(t)) 
         } else if (t.type == FinishVoting) {
-            if (voting_can_be_finished(t.voting_id)) {
+            if (voting_can_be_finished(t.voting_id)) {  # voting_can_be_finished() return true, if current block id > voting.endBlock && voting.finished == false 
                 set_voting_finished(t.voting_id, finished=true)
                 reward = calc_reward(t.voting_id, b.id)
                 add_to_balance(t.sender, reward)  # reward for FinishVoting transaction sender
             }
-        } else if (t.type == Transfer) {
-            ...
         }
-        add_to_balance(t.sender,  -1 * fee)
+        
+        # distribution of the reward between Node and Miner
+        add_to_balance(t.sender, -1 * t.fee)
+        fee_ratio = get_distr_fee_ratio(t.node)
+        add_to_balance(t.node, fee_ratio * t.fee + get_emission()/2)
+        add_to_balance(t.miner, (1.0 - fee_ratio) * t.fee + get_emission()/2)
+        
         add_transaction(t)
     }
 }
