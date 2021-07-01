@@ -56,6 +56,8 @@ Block keys are always takes 8 byte, the least significant bytes places at the en
 
 Pseudocode with algo when some blocks need to be replaced:
 
+__TODO: ОПИСАНИЕ ПОИСКА БЛОКА, ПОСЛЕ КОТОРОГО НАЧИНАЕТСЯ РАСХОЖДЕНИЕ__
+
 __TODO: CHECK BLOCKS BEFORE INSERT__
 
 ``` python
