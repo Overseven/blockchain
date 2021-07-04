@@ -118,10 +118,6 @@ Block keys are always takes 8 byte, the least significant bytes places at the en
 
 Pseudocode with algo when some blocks need to be replaced:
 
-__TODO: ОПИСАНИЕ ПОИСКА БЛОКА, ПОСЛЕ КОТОРОГО НАЧИНАЕТСЯ РАСХОЖДЕНИЕ__
-
-__TODO: CHECK BLOCKS BEFORE INSERT__
-
 ``` python
 last_block = 18  # number of last block in db 
 delete_starting = 11  # id of the block that will be deleted with all next (delete [11; 18])
