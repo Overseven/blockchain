@@ -1,5 +1,48 @@
 # Database structure
 
+## Алгоритм
+
+**Исходные данные:**
+
+- Локальная версия блокчейна (__ЛБ__), последний блок с номером 12
+
+**Ситуация 1:** из удаленного блокчейна (__УБ__) поступает блок с меньшим номером, 
+чем есть в __ЛБ__, например, 8
+
+Действия:
+
+- возвращаем отправителю сообщение с информацией о номере последнего блока в __ЛБ__ (12)
+
+**Ситуация 2:** из __УБ__ поступает блок с номером, совпадающим с номером последнего блока в __ЛБ__, то есть, 12
+
+Действия:
+
+- возвращаем отправителю сообщение о равенстве номеров последних блоков
+
+**Ситуация 3:** из __УБ__ поступает блок с номером превышающим номер последнего блока в __ЛБ__, например, 20
+
+Действия:
+- запрашиваем недостающие блоки [13; 20] порцией по N блоков (например, по 4 блока), начиная с 13
+  
+- если поле "хэш предыдущего блока" пришедшего блока 13 идентично хэшу блока 12 из __ЛБ__:
+  - нет расхождения, данные о транзакциях и событиях из новых блоков записываем в бд
+  - перед добавлением каждого нового блока проверяем его корректность
+  - если один из новых блоков не корректен (например, 17):
+    - останавливаем запись новых блоков (теперь последний блок - 16)
+    - возвращаем отправителю сообщение об ошибке в блоке
+  - в противном случае завершаем запись, запрашиваем следующую порцию из N блоков
+    
+- в противном случае
+  - запрашиваем по N блоков (только его хэш и хэш предыдущего блока) в обратном порядке, ищем блок, с которого начинается расхождение
+  - например, последний одинаковый блок, после которого начинается расхождение, имеет id 9
+  - ищем снапшот с ближайшим номером последнего блока, чтобы блок расхождением имел более высокий id (например, снапшот с последним блоком 5)
+  - добавляем во временную область бд (temp) балансы, голосования из блоков __ЛБ__ с 5 < id <= 9 
+  - запрашиваем и обрабатываем блоки пачками по __N__ штук, например, по 4:
+    - проверяем каждый новый блок на корректность относительно данных из temp и снапшота 
+    - если новый блок не корректен:
+        - если id <= 12, очищаем temp, возвращаем отправителю сообщение об ошибке в блоке
+        - в противном случае останавливаем запись в temp, заменяем блоки из бд блоками из temp
+
 
 ## Elements:
 1) Block
@@ -33,6 +76,25 @@
 | param | `sYpXXX` | `Y` - snapshot, `XXX` - param | [parameter](#parameter) |
 | fee distribution ratio | `sYfXXXXXXXX` |  `Y` - snapshot, `XXX` - node address | [ratio](#fee-distribution-ratio) |
 
+### Temporary structures
+This section describes temporary data structures that used 
+when trying to replace local blockchain with external. 
+
+Snapshot with the closest **last block** id is head of temporary transactions data. 
+If external blockchain has no errors inside, 
+part of local blockchain with **block** id > snapshot **last block** id
+will be removed and replaced by temporary data
+
+
+| Name | Key | Description | Value |
+| --- | --- | --- | --- |
+| block | `0bXXXXXXXX` |`XXX` - block id | [block](#block) |
+| transaction | `0tXXXXXXXX` | `XXX` - transaction hash | [transaction](#transaction) |
+| voting info | `0viXXXXXXX` | `XXX` - voting id | [voting](#voting) |
+| last block | `0Yn` | `Y` - snapshot | __uint64__ |
+| balance |`0YbXXXXXXX` | `Y` - snapshot, `XXX` - wallet pubKey | [balance](#balance) |
+| param | `0YpXXX` | `Y` - snapshot, `XXX` - param | [parameter](#parameter) |
+| fee distribution ratio | `0YfXXXXXXXX` |  `Y` - snapshot, `XXX` - node address | [ratio](#fee-distribution-ratio) |
 
 ## Elements bytes-level structure:
 ### Block
