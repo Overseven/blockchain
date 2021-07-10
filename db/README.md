@@ -62,7 +62,8 @@
 | Name | Key | Description | Value |
 | --- | --- | --- | --- |
 | block | `bXXXXXXXX` |`XXX` - block id | [block](#block) |
-| transaction | `tXXXXXXXX` | `XXX` - transaction hash | [transaction](#transaction) |
+| transaction info | `tiXXXXXXXX` | `XXX` - transaction hash | [transaction](#transaction) |
+| transaction by counter | `taXXXXYYY` | `XXX` - address, `YYY` - count | [transaction ref](#transaction-by-counter) |
 | voting info | `viXXXXXXX` | `XXX` - voting id | [voting](#voting) |
 | latest balance | `lbXXXXXXX` | `XXX` - wallet pubKey | [balance](#balance) |
 | latest param | `lpXXX` | `XXX` - param id | [parameter](#parameter) |
@@ -92,7 +93,8 @@ will be removed and replaced by temporary data
 | Name | Key | Description | Value |
 | --- | --- | --- | --- |
 | block | `0bXXXXXXXX` |`XXX` - block id | [block](#block) |
-| transaction | `0tXXXXXXXX` | `XXX` - transaction hash | [transaction](#transaction) |
+| transaction info | `0tiXXXXXXXX` | `XXX` - transaction hash | [transaction](#transaction) |
+| transaction by counter | `0taXXXXYYY` | `XXX` - address, `YYY` - count | [transaction ref](#transaction-by-counter) |
 | voting info | `0viXXXXXXX` | `XXX` - voting id | [voting](#voting) |
 | last block | `0Yn` | `Y` - snapshot | __uint64__ |
 | balance |`0YbXXXXXXX` | `Y` - snapshot, `XXX` - wallet pubKey | [balance](#balance) |
@@ -183,27 +185,37 @@ last_block = delete_ending
 ```
 
 ### Transaction
+#### Transaction by counter
+Every address has an individual counter of sent transactions. 
+This counter insert in every transaction from the address.
+
+This structure is using to quick find user transaction with the defined transaction counter value.
+
+| №   | Field | Size |
+| --- | --- | --- |
+| 1 | transaction hash | __uint8__ \[32\] |
+
+Example of usage:
+
+```python
+address = 0x02ca6a856ad061102fa1fecdb566fd6c34df15bc42815015cf7e31974fa6a3fbd6
+trans_counter = 12
+
+trans_hash = get_from_db(key='ta' + address + trans_counter)
+if trans_hash == null:
+  print('transaction with counter = ', trans_counter, " not exist)
+  return
+
+transaction = get_from_db(key='ta' + trans_hash)
+```
+
+
 #### Airdrop
 | №   | Field | Size |
 | --- | --- | --- |
 | 1 | block number | __uint64__ |
 | 2 | type | __uint8__ |
-| 3 | receiver | __uint8__ \[32\] |
-| 4 | pay | __float64__ |
-| 5 | fee | __float64__ |
-| 6 | message len | __uint32__ |
-| 7 | message | __uint8__ \[N\] |
-| 8 | timestamp len | __uint8__ |
-| 9 | timestamp | __uint8__ \[N\] |
-| 10| node pubKey | __uint8__ \[32\] |
-| 11| sign | __uint8__ \[32\] |
-
-#### Transfer
-| №   | Field | Size |
-| --- | --- | --- |
-| 1 | block number | __uint64__ |
-| 2 | type | __uint8__ |
-| 3 | sender | __uint8__ \[32\] |
+| 3 | transaction counter | __uint32__ |
 | 4 | receiver | __uint8__ \[32\] |
 | 5 | pay | __float64__ |
 | 6 | fee | __float64__ |
@@ -214,21 +226,39 @@ last_block = delete_ending
 | 11| node pubKey | __uint8__ \[32\] |
 | 12| sign | __uint8__ \[32\] |
 
+#### Transfer
+| №   | Field | Size |
+| --- | --- | --- |
+| 1 | block number | __uint64__ |
+| 2 | type | __uint8__ |
+| 3 | sender | __uint8__ \[32\] |
+| 4 | transaction counter | __uint32__ |
+| 5 | receiver | __uint8__ \[32\] |
+| 6 | pay | __float64__ |
+| 7 | fee | __float64__ |
+| 8 | message len | __uint32__ |
+| 9 | message | __uint8__ \[N\] |
+| 10| timestamp len | __uint8__ |
+| 11| timestamp | __uint8__ \[N\] |
+| 12| node pubKey | __uint8__ \[32\] |
+| 13| sign | __uint8__ \[32\] |
+
 #### Voting init transaction
 | №   | Field | Size |
 | --- | --- | --- |
 | 1 | block number | __uint64__ |
 | 2 | type | __uint8__ |
 | 3 | sender | __uint8__ \[32\] |
-| 4 | voting id | __uint64__ |
-| 5 | parameter | __uint16__ |
-| 6 | value len | __uint32__ |
-| 7 | value | __uint8__ \[N\] |
-| 8 | fee | __float64__ |
-| 9 | timestamp len | __uint8__ |
-| 10| timestamp | __uint8__ \[N\] |
-| 11| node pubKey | __uint8__ \[32\] |
-| 12| sign | __uint8__ \[32\] |
+| 4 | transaction counter | __uint32__ |
+| 5 | voting id | __uint64__ |
+| 6 | parameter | __uint16__ |
+| 7 | value len | __uint32__ |
+| 8 | value | __uint8__ \[N\] |
+| 9 | fee | __float64__ |
+| 10| timestamp len | __uint8__ |
+| 11| timestamp | __uint8__ \[N\] |
+| 12| node pubKey | __uint8__ \[32\] |
+| 13| sign | __uint8__ \[32\] |
 
 #### Voting transaction
 | №   | Field | Size |
@@ -236,14 +266,15 @@ last_block = delete_ending
 | 1 | block number | __uint64__ |
 | 2 | type |  __uint8__ |
 | 3 | sender | __uint8__ \[32\] |
-| 4 | voting id | __uint64__ |
-| 5 | vote len | __uint32__ |
-| 6 | vote | __uint8__ \[N\] |
-| 7 | fee | __float64__ |
-| 8 | timestamp len | __uint8__ |
-| 9 | timestamp | __uint8__ \[N\] |
-| 10| node pubKey | __uint8__ \[32\] |
-| 11|sign | __uint8__ \[32\] |
+| 4 | transaction counter | __uint32__ |
+| 5 | voting id | __uint64__ |
+| 6 | vote len | __uint32__ |
+| 7 | vote | __uint8__ \[N\] |
+| 8 | fee | __float64__ |
+| 9 | timestamp len | __uint8__ |
+| 10| timestamp | __uint8__ \[N\] |
+| 11| node pubKey | __uint8__ \[32\] |
+| 12|sign | __uint8__ \[32\] |
 
 #### Voting finish transaction
 | №   | Field | Size |
@@ -251,23 +282,23 @@ last_block = delete_ending
 | 1 | block number | __uint64__ |
 | 2 | type | __uint8__ |
 | 3 | sender | __uint8__ \[32\] |
-| 4 | voting id | __uint64__ |
-| 5 | fee | __float64__ |
-| 6 | timestamp len | __uint8__ |
-| 7 | timestamp | __uint8__ \[N\] |
-| 8 | node pubKey | __uint8__ \[32\] |
-| 9 | sign | __uint8__ \[32\] |
+| 4 | transaction counter | __uint32__ |
+| 5 | voting id | __uint64__ |
+| 6 | fee | __float64__ |
+| 7 | timestamp len | __uint8__ |
+| 8 | timestamp | __uint8__ \[N\] |
+| 9 | node pubKey | __uint8__ \[32\] |
+| 10 | sign | __uint8__ \[32\] |
 
 ### Voting
-// TODO: check this
-
 | №   | Field | Size |
 | --- | --- | --- |
 | 1 | id | __uint64__ |
 | 2 | start on block | __uint64__ |
 | 3 | end on block | __uint64__ |
-| 4 | vote trans. hash | __uint8__ \[N*32\]
-| 5 | finished | __bool__ |
+| 4 | finished | __bool__ |
+| 5 | vote trans. hash | __uint8__ \[N*32\]
+
 
 ### Balance
 | №   | Field | Size |
