@@ -63,7 +63,7 @@
 | --- | --- | --- | --- |
 | block | `bXXXXXXXX` |`XXX` - block id | [block](#block) |
 | transaction info | `tiXXXXXXXX` | `XXX` - transaction hash | [transaction](#transaction) |
-| transaction by counter | `taXXXXYYY` | `XXX` - address, `YYY` - count | [transaction ref](#transaction-by-counter) |
+| transaction by counter | `tcXXXXYYY` | `XXX` - address, `YYY` - count | [transaction ref](#transaction-by-counter) |
 | voting info | `viXXXXXXX` | `XXX` - voting id | [voting](#voting) |
 | latest balance | `lbXXXXXXX` | `XXX` - wallet pubKey | [balance](#balance) |
 | latest param | `lpXXX` | `XXX` - param id | [parameter](#parameter) |
@@ -94,7 +94,7 @@ will be removed and replaced by temporary data
 | --- | --- | --- | --- |
 | block | `0bXXXXXXXX` |`XXX` - block id | [block](#block) |
 | transaction info | `0tiXXXXXXXX` | `XXX` - transaction hash | [transaction](#transaction) |
-| transaction by counter | `0taXXXXYYY` | `XXX` - address, `YYY` - count | [transaction ref](#transaction-by-counter) |
+| transaction by counter | `0tcXXXXYYY` | `XXX` - address, `YYY` - count | [transaction ref](#transaction-by-counter) |
 | voting info | `0viXXXXXXX` | `XXX` - voting id | [voting](#voting) |
 | last block | `0Yn` | `Y` - snapshot | __uint64__ |
 | balance |`0YbXXXXXXX` | `Y` - snapshot, `XXX` - wallet pubKey | [balance](#balance) |
@@ -201,12 +201,12 @@ Example of usage:
 address = 0x02ca6a856ad061102fa1fecdb566fd6c34df15bc42815015cf7e31974fa6a3fbd6
 trans_counter = 12
 
-trans_hash = get_from_db(key='ta' + address + trans_counter)
+trans_hash = get_from_db(key='tc' + address + trans_counter)
 if trans_hash == null:
   print('transaction with counter = ', trans_counter, " not exist)
   return
 
-transaction = get_from_db(key='ta' + trans_hash)
+transaction = get_from_db(key='ti' + trans_hash)
 ```
 
 
