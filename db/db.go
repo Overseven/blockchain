@@ -2,6 +2,8 @@ package db
 
 import (
 	"errors"
+	"github.com/syndtr/goleveldb/leveldb/iterator"
+	"github.com/syndtr/goleveldb/leveldb/util"
 
 	"github.com/overseven/try-network/block"
 	"github.com/overseven/try-network/transaction"
@@ -15,11 +17,11 @@ var (
 )
 
 func OpenFile(filepath string, o *opt.Options) error {
-	db_temp, err := leveldb.OpenFile(filepath, o)
+	dbTemp, err := leveldb.OpenFile(filepath, o)
 	if err != nil {
 		return err
 	}
-	db = db_temp
+	db = dbTemp
 
 	return nil
 }
@@ -44,7 +46,11 @@ func Get(prefix string, key []byte) ([]byte, error) {
 
 func PutTransaction(tr transaction.Transaction) error {
 	bKey := []byte("t")
-	bKey = append(bKey, tr.Hash()...)
+	hash, err := tr.Hash(map[transaction.TransFlag]bool{})
+	if err != nil {
+		return err
+	}
+	bKey = append(bKey, hash...)
 	bData, err := tr.Bytes()
 	if err != nil {
 		return err
@@ -96,4 +102,8 @@ func CreateSnapshot(id uint8) {
 func GetLastBlock() block.Block {
 
 	return block.Block{}
+}
+
+func NewIterator(slice *util.Range, ro *opt.ReadOptions) iterator.Iterator {
+	return db.NewIterator(slice, ro)
 }

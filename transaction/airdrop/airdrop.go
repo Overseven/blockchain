@@ -19,13 +19,18 @@ var (
 )
 
 type Airdrop struct {
-	Receiver  []byte // compressed public key
-	Pay       float64
-	Fee       float64
-	Message   string
-	Timestamp time.Time
-	Node      []byte
-	Signature []byte
+	TransCounter uint32
+	Receiver     []byte // compressed public key
+	Pay          float64
+	Fee          float64
+	Message      string
+	Timestamp    time.Time
+	Node         []byte
+	Signature    []byte
+}
+
+func (a *Airdrop) Counter() uint32 {
+	return a.TransCounter
 }
 
 func (a *Airdrop) IsEqual(t transaction.Transaction, flags map[transaction.TransFlag]bool) bool {
@@ -35,6 +40,9 @@ func (a *Airdrop) IsEqual(t transaction.Transaction, flags map[transaction.Trans
 
 	switch a2 := t.(type) {
 	case *Airdrop:
+		if a.TransCounter != a2.TransCounter {
+			return false
+		}
 		if !bytes.Equal(a.Receiver, a2.Receiver) {
 			return false
 		}
@@ -88,7 +96,7 @@ func (a *Airdrop) Bytes() ([]byte, error) {
 	var res []byte
 
 	res = append(res, byte(transaction.TypeAirdrop))
-
+	res = append(res, utility.UInt32Bytes(a.TransCounter)...)
 	if len(a.Receiver) != transaction.ByteLenPubKey {
 		return nil, errors.New("incorrect receiver field size")
 	}
@@ -127,7 +135,8 @@ func FromBytes(b []byte) (*Airdrop, error) {
 		return nil, errors.New("incorrect transaction type")
 	}
 	idx += 1
-
+	a.TransCounter = utility.UInt32FromBytes(b[idx : idx+4])
+	idx += 4
 	a.Receiver = b[idx : idx+transaction.ByteLenPubKey]
 	idx += transaction.ByteLenPubKey
 	a.Pay = utility.Float64FromBytes(b[idx : idx+8])
@@ -160,6 +169,7 @@ func (a *Airdrop) Hash(flags map[transaction.TransFlag]bool) ([]byte, error) {
 		return nil, errors.New("empty flags")
 	}
 	temp := []byte{}
+	temp = append(temp, strconv.FormatUint(uint64(a.TransCounter), 10)...)
 	temp = append(temp, a.Receiver...)
 	temp = append(temp, a.Message...)
 	temp = append(temp, strconv.FormatFloat(a.Pay, 'e', 8, 64)...)
@@ -199,10 +209,11 @@ func (a *Airdrop) Verify() error {
 }
 
 // NewAirdrop is sending value from unlimited admin wallet to user wallet
-func NewAirdrop(receiver []byte, payment, fee float64, message string) (*Airdrop, error) {
+func NewAirdrop(receiver []byte, transCounter uint32, payment, fee float64, message string) (*Airdrop, error) {
 	// TODO: add check below
 
 	a := new(Airdrop)
+	a.TransCounter = transCounter
 	a.Receiver = receiver
 
 	a.Pay = payment
@@ -218,6 +229,7 @@ func NewAirdrop(receiver []byte, payment, fee float64, message string) (*Airdrop
 
 func Copy(a *Airdrop) *Airdrop {
 	res := new(Airdrop)
+	res.TransCounter = a.TransCounter
 	res.Receiver = a.Receiver
 	res.Pay = a.Pay
 	res.Fee = a.Fee

@@ -57,28 +57,16 @@
 7) Node/miner fee distribution ratio
 
 ## Address structure:
-### Independent of snapshot 
 
 | Name | Key | Description | Value |
 | --- | --- | --- | --- |
-| block | `bXXXXXXXX` |`XXX` - block id | [block](#block) |
-| transaction info | `tiXXXXXXXX` | `XXX` - transaction hash | [transaction](#transaction) |
+| block | `blockXXXXXXXX` |`XXX` - block id | [block](#block) |
+| transaction | `trXXXXXXXX` | `XXX` - transaction hash | [transaction](#transaction) |
 | transaction by counter | `tcXXXXYYY` | `XXX` - address, `YYY` - count | [transaction ref](#transaction-by-counter) |
-| voting info | `viXXXXXXX` | `XXX` - voting id | [voting](#voting) |
-| latest balance | `lbXXXXXXX` | `XXX` - wallet pubKey | [balance](#balance) |
-| latest param | `lpXXX` | `XXX` - param id | [parameter](#parameter) |
-| latest fee distribution ratio | `lfXXXXXXXX` | `XXX` - node address | [ratio](#fee-distribution-ratio) |
-| number of snapshots | `cs` | | __uint8__|
-| last block | `cb` | | __uint64__|
-
-### Snapshot dependent
-
-| Name | Key | Description | Value |
-| --- | --- | --- | --- |
-| last block | `sYn` | `Y` - snapshot | __uint64__ |
-| balance |`sYbXXXXXXX` | `Y` - snapshot, `XXX` - wallet pubKey | [balance](#balance) |
-| param | `sYpXXX` | `Y` - snapshot, `XXX` - param | [parameter](#parameter) |
-| fee distribution ratio | `sYfXXXXXXXX` |  `Y` - snapshot, `XXX` - node address | [ratio](#fee-distribution-ratio) |
+| voting info | `votingXXXXXXX` | `XXX` - voting id | [voting](#voting) |
+| balance | `balanceXXXXXXX` | `XXX` - wallet pubKey | [balance](#balance) |
+| param | `paramXXX` | `XXX` - param id | [parameter](#parameter) |
+| fee distribution ratio | `feeXXXXXXXX` | `XXX` - node address | [ratio](#fee-distribution-ratio) |
 
 ### Temporary structures
 This section describes temporary data structures that used 
@@ -296,8 +284,9 @@ transaction = get_from_db(key='ti' + trans_hash)
 | 1 | id | __uint64__ |
 | 2 | start on block | __uint64__ |
 | 3 | end on block | __uint64__ |
-| 4 | finished | __bool__ |
-| 5 | vote trans. hash | __uint8__ \[N*32\]
+| 5 | param | __???__ |
+| 6 | value | __uint8__[N] |
+| 7 | finished | __bool__ |
 
 
 ### Balance

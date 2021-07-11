@@ -1,10 +1,10 @@
 syntax = "proto3";
 
-option go_package = "github.com/overseven/try-network/protocol/node";
+option go_package = "github.com/overseven/try-network/network/protocol/proto_src/node";
 
 package pnode;
 
-import "network/protocol/pcommon/pcommon.proto";
+import "github.com/overseven/try-network/protocol/proto_src/pcommon.proto";
 
 service Noder { 
   rpc Connect(ConnectRequest) returns (ConnectReply){}

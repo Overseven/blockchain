@@ -14,21 +14,22 @@ const (
 type Type byte
 
 const (
-	TypeAirdrop Type = iota
-	TypeTransfer // transfer from one wallet to another
-	TypeVote // wallet vote
-	TypeVotingInit // voting initial transaction
+	TypeAirdrop    Type = iota
+	TypeTransfer        // transfer from one wallet to another
+	TypeVote            // wallet vote
+	TypeVotingInit      // voting initial transaction
 )
 
 // TransFlag default value = true
 type TransFlag byte
 
 const (
-	FlagNode TransFlag = iota // use Node public key to calc hash
-	FlagTimestamp // use Timestamp to calc hash
+	FlagNode      TransFlag = iota // use Node public key to calc hash
+	FlagTimestamp                  // use Timestamp to calc hash
 )
 
 type Transaction interface {
+	Counter() uint32
 	IsEqual(Transaction, map[TransFlag]bool) bool
 	String() (string, error)
 	Bytes() ([]byte, error)
