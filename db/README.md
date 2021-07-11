@@ -80,14 +80,13 @@ will be removed and replaced by temporary data
 
 | Name | Key | Description | Value |
 | --- | --- | --- | --- |
-| block | `0bXXXXXXXX` |`XXX` - block id | [block](#block) |
-| transaction info | `0tiXXXXXXXX` | `XXX` - transaction hash | [transaction](#transaction) |
+| block | `0blockXXXXXXXX` |`XXX` - block id | [block](#block) |
+| transaction info | `0trXXXXXXXX` | `XXX` - transaction hash | [transaction](#transaction) |
 | transaction by counter | `0tcXXXXYYY` | `XXX` - address, `YYY` - count | [transaction ref](#transaction-by-counter) |
 | voting info | `0viXXXXXXX` | `XXX` - voting id | [voting](#voting) |
-| last block | `0Yn` | `Y` - snapshot | __uint64__ |
-| balance |`0YbXXXXXXX` | `Y` - snapshot, `XXX` - wallet pubKey | [balance](#balance) |
-| param | `0YpXXX` | `Y` - snapshot, `XXX` - param | [parameter](#parameter) |
-| fee distribution ratio | `0YfXXXXXXXX` |  `Y` - snapshot, `XXX` - node address | [ratio](#fee-distribution-ratio) |
+| balance |`0balanceXXXXXXX` | `XXX` - wallet pubKey | [balance](#balance) |
+| param | `0paramXXX` | `XXX` - param | [parameter](#parameter) |
+| fee distribution ratio | `0feeXXXXXXXX` |  `XXX` - node address | [ratio](#fee-distribution-ratio) |
 
 ## Elements bytes-level structure:
 ### Block
@@ -284,7 +283,7 @@ transaction = get_from_db(key='ti' + trans_hash)
 | 1 | id | __uint64__ |
 | 2 | start on block | __uint64__ |
 | 3 | end on block | __uint64__ |
-| 5 | param | __???__ |
+| 5 | param | __uint16__ |
 | 6 | value | __uint8__[N] |
 | 7 | finished | __bool__ |
 
