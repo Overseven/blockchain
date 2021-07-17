@@ -7,7 +7,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/overseven/try-network/block"
-	"github.com/overseven/try-network/network/protocol/proto/proto"
+	"github.com/overseven/try-network/network/protocol/proto"
 	"github.com/overseven/try-network/transaction"
 	"github.com/overseven/try-network/transaction/airdrop"
 	"github.com/overseven/try-network/transaction/transfer"
@@ -17,7 +17,7 @@ const (
 	protocolVersion = 1
 )
 
-func BlockProto2Local(b *pcommon.Block) (*block.Block, error) {
+func BlockProto2Local(b *proto.Block) (*block.Block, error) {
 	bl := new(block.Block)
 
 	bl.Id = b.GetBlockId()
@@ -47,11 +47,11 @@ func BlockProto2Local(b *pcommon.Block) (*block.Block, error) {
 	return bl, nil
 }
 
-func BlockLocal2Proto(b block.Block) (*pcommon.Block, error) {
-	bl := pcommon.Block{}
+func BlockLocal2Proto(b block.Block) (*proto.Block, error) {
+	bl := proto.Block{}
 	bl.BlockId = b.Id
 
-	var tr []*pcommon.Transaction
+	var tr []*proto.Transaction
 	for _, t := range b.Transactions {
 		tran, err := TransactionLocal2Proto(t)
 		if err != nil {
@@ -73,7 +73,7 @@ func BlockLocal2Proto(b block.Block) (*pcommon.Block, error) {
 	return &bl, nil
 }
 
-func AirdropProto2Local(a *pcommon.TransAirDrop) (*airdrop.Airdrop, error) {
+func AirdropProto2Local(a *proto.TransAirDrop) (*airdrop.Airdrop, error) {
 	local_a := new(airdrop.Airdrop)
 	local_a.Receiver = a.Receiver
 	local_a.Timestamp = a.GetTimestamp().AsTime()
@@ -85,7 +85,7 @@ func AirdropProto2Local(a *pcommon.TransAirDrop) (*airdrop.Airdrop, error) {
 	return local_a, nil
 }
 
-func TransferProto2Local(t *pcommon.TransTransfer) (*transfer.Transfer, error) {
+func TransferProto2Local(t *proto.TransTransfer) (*transfer.Transfer, error) {
 	local_tr := new(transfer.Transfer)
 	local_tr.Sender = t.Sender
 	local_tr.Receiver = t.Receiver
@@ -98,19 +98,19 @@ func TransferProto2Local(t *pcommon.TransTransfer) (*transfer.Transfer, error) {
 	return local_tr, nil
 }
 
-func TransactionProto2Local(t *pcommon.Transaction) (transaction.Transaction, error) {
+func TransactionProto2Local(t *proto.Transaction) (transaction.Transaction, error) {
 	switch tmp := t.Trans.(type) {
-	case *pcommon.Transaction_Drop:
+	case *proto.Transaction_Drop:
 		return AirdropProto2Local(tmp.Drop)
-	case *pcommon.Transaction_Transfer:
+	case *proto.Transaction_Transfer:
 		return TransferProto2Local(tmp.Transfer)
 	default:
 		return nil, errors.New("incorrect trans type")
 	}
 }
 
-func TransferLocal2Proto(tr *transfer.Transfer) (*pcommon.Transaction, error) {
-	t := new(pcommon.TransTransfer)
+func TransferLocal2Proto(tr *transfer.Transfer) (*proto.Transaction, error) {
+	t := new(proto.TransTransfer)
 	t.Sender = tr.Sender
 	t.Receiver = tr.Receiver
 	t.Pay = tr.Pay
@@ -119,11 +119,11 @@ func TransferLocal2Proto(tr *transfer.Transfer) (*pcommon.Transaction, error) {
 	t.Timestamp = timestamppb.New(tr.Timestamp)
 	t.Node = tr.Node
 	t.Sign = tr.Signature
-	return &pcommon.Transaction{ProtocolVersion: protocolVersion, Trans: &pcommon.Transaction_Transfer{Transfer: t}}, nil
+	return &proto.Transaction{ProtocolVersion: protocolVersion, Trans: &proto.Transaction_Transfer{Transfer: t}}, nil
 }
 
-func AirdropLocal2Proto(tr *airdrop.Airdrop) (*pcommon.Transaction, error) {
-	t := new(pcommon.TransAirDrop)
+func AirdropLocal2Proto(tr *airdrop.Airdrop) (*proto.Transaction, error) {
+	t := new(proto.TransAirDrop)
 	t.Receiver = tr.Receiver
 	t.Pay = tr.Pay
 	t.Fee = tr.Fee
@@ -131,10 +131,10 @@ func AirdropLocal2Proto(tr *airdrop.Airdrop) (*pcommon.Transaction, error) {
 	t.Timestamp = timestamppb.New(tr.Timestamp)
 	t.Node = tr.Node
 	t.Sign = tr.Signature
-	return &pcommon.Transaction{ProtocolVersion: protocolVersion, Trans: &pcommon.Transaction_Drop{Drop: t}}, nil
+	return &proto.Transaction{ProtocolVersion: protocolVersion, Trans: &proto.Transaction_Drop{Drop: t}}, nil
 }
 
-func TransactionLocal2Proto(tr transaction.Transaction) (*pcommon.Transaction, error) {
+func TransactionLocal2Proto(tr transaction.Transaction) (*proto.Transaction, error) {
 	switch tmp := tr.(type) {
 	case *airdrop.Airdrop:
 		return AirdropLocal2Proto(tmp)
