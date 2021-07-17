@@ -16,6 +16,7 @@ var (
 	db *leveldb.DB
 )
 
+
 func OpenFile(filepath string, o *opt.Options) error {
 	dbTemp, err := leveldb.OpenFile(filepath, o)
 	if err != nil {

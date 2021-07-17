@@ -14,17 +14,18 @@ import (
 )
 
 type VotingInit struct {
-	Sender    []byte
-	VotingId  uint64
-	Parameter uint16
-	Value     string
-	Fee       float64
-	Timestamp time.Time
-	Node      []byte
-	Signature []byte
+	Sender    	 []byte
+	TransCounter uint32
+	VotingId  	 uint64
+	Parameter 	 uint16
+	Value     	 string
+	Fee       	 float64
+	Timestamp 	 time.Time
+	Node      	 []byte
+	Signature 	 []byte
 }
 
-func NewVoting(votingId uint64, parameter uint16, value string, fee float64) (*VotingInit, error) {
+func NewVotingInit(votingId uint64, parameter uint16, value string, fee float64) (*VotingInit, error) {
 	tr := VotingInit{
 		VotingId:  votingId,
 		Parameter: parameter,
@@ -46,7 +47,9 @@ func (v *VotingInit) IsEqual(tr transaction.Transaction, flags map[transaction.T
 		if !bytes.Equal(v.Sender, v2.Sender) {
 			return false
 		}
-
+		if v.TransCounter != v2.TransCounter {
+			return false
+		}
 		if v.VotingId != v2.VotingId {
 			return false
 		}
@@ -107,7 +110,7 @@ func (v *VotingInit) Bytes() ([]byte, error) {
 		return nil, errors.New("incorrect sender field size")
 	}
 	res = append(res, v.Sender...)
-
+	res = append(res, utility.UInt32Bytes(v.TransCounter)...)
 	res = append(res, utility.UInt64Bytes(v.VotingId)...)
 	res = append(res, utility.UInt16Bytes(v.Parameter)...)
 	res = append(res, utility.StringToBytes(v.Value)...)
@@ -146,7 +149,8 @@ func FromBytes(b []byte) (*VotingInit, error) {
 	idx += 1
 	v.Sender = b[idx : idx+transaction.ByteLenPubKey]
 	idx += transaction.ByteLenPubKey
-
+	v.TransCounter = utility.UInt32FromBytes(b[idx : idx+4])
+	idx += 4
 	v.VotingId = utility.UInt64FromBytes(b[idx : idx+8])
 	idx += 8
 	v.Parameter = utility.UInt16FromBytes(b[idx : idx+2])
@@ -181,6 +185,7 @@ func (v *VotingInit) Hash(flags map[transaction.TransFlag]bool) ([]byte, error) 
 	}
 	var temp []byte
 	temp = append(temp, v.Sender...)
+	temp = append(temp, strconv.FormatUint(uint64(v.TransCounter), 10)...)
 	temp = append(temp, utility.UInt64Bytes(v.VotingId)...)
 	temp = append(temp, utility.UInt16Bytes(v.Parameter)...)
 	temp = append(temp, v.Value...)
@@ -214,6 +219,7 @@ func (v *VotingInit) Verify() error {
 func Copy(v *VotingInit) *VotingInit {
 	res := new(VotingInit)
 	res.Sender = v.Sender
+	res.TransCounter = v.TransCounter
 	res.VotingId = v.VotingId
 	res.Parameter = v.Parameter
 	res.Value = v.Value
@@ -230,9 +236,10 @@ func (v *VotingInit) SetNode(nodePubKey []byte) transaction.Transaction {
 	return res
 }
 
-func (v *VotingInit) Sign(privKey *ecdsa.PrivateKey) error {
+func (v *VotingInit) Sign(privKey *ecdsa.PrivateKey, transCounter uint32) error {
 	senderPubKey := utility.PrivToPubKey(privKey)
 	v.Sender = senderPubKey
+	v.TransCounter = transCounter
 
 	hashed, err := v.Hash(map[transaction.TransFlag]bool{})
 	if err != nil {
@@ -246,4 +253,8 @@ func (v *VotingInit) Sign(privKey *ecdsa.PrivateKey) error {
 
 	v.Signature = sign
 	return nil
+}
+
+func (v *VotingInit) Counter() uint32 {
+	return v.TransCounter
 }

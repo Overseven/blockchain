@@ -18,6 +18,7 @@ const (
 	TypeTransfer        // transfer from one wallet to another
 	TypeVote            // wallet vote
 	TypeVotingInit      // voting initial transaction
+	TypeVotingFinish
 )
 
 // TransFlag default value = true
@@ -35,6 +36,6 @@ type Transaction interface {
 	Bytes() ([]byte, error)
 	Hash(map[TransFlag]bool) ([]byte, error)
 	SetNode([]byte) Transaction
-	Sign(*ecdsa.PrivateKey) error
+	Sign(*ecdsa.PrivateKey, uint32) error
 	Verify() error
 }

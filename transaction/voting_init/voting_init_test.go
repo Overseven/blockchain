@@ -25,7 +25,7 @@ func TestNewVoting(t *testing.T) {
 	value := "125.34"
 	fee := 42.2222
 
-	v, err := voting_init.NewVoting(votingId, parameter, value, fee)
+	v, err := voting_init.NewVotingInit(votingId, parameter, value, fee)
 	if err != nil {
 		t.Error(err)
 	}
@@ -35,7 +35,7 @@ func TestNewVoting(t *testing.T) {
 		t.Error(err)
 	}
 
-	err = v.Sign(senderPrivKey)
+	err = v.Sign(senderPrivKey, 0)
 	if err != nil {
 		t.Error(err)
 	}
@@ -64,7 +64,7 @@ func TestByteConversation(t *testing.T) {
 	value := "1251"
 	fee := 42.2222
 
-	v, err := voting_init.NewVoting(votingId, parameter, value, fee)
+	v, err := voting_init.NewVotingInit(votingId, parameter, value, fee)
 	if err != nil {
 		t.Error(err)
 	}
@@ -74,7 +74,7 @@ func TestByteConversation(t *testing.T) {
 		t.Error(err)
 	}
 
-	err = v.Sign(senderPrivKey)
+	err = v.Sign(senderPrivKey, 0)
 	if err != nil {
 		t.Error(err)
 	}

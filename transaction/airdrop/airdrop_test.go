@@ -38,7 +38,7 @@ func TestNewAirdrop(t *testing.T) {
 	fee := 42.2222
 	message := "test"
 
-	tr1, err := airdrop.NewAirdrop(pub2, 0, value, fee, message)
+	tr1, err := airdrop.NewAirdrop(pub2, value, fee, message)
 	if err != nil {
 		t.Error(err)
 	}
@@ -48,7 +48,7 @@ func TestNewAirdrop(t *testing.T) {
 		t.Error(err)
 	}
 
-	err = tr1.Sign(params.PrivKey)
+	err = tr1.Sign(params.PrivKey, 0)
 	if err != nil {
 		t.Error(err)
 	}
@@ -83,7 +83,7 @@ func TestNewAirdrop2(t *testing.T) {
 	fee := 421.22422
 	message := "test 2"
 
-	tr1, err := airdrop.NewAirdrop(pub2, 0, value, fee, message)
+	tr1, err := airdrop.NewAirdrop(pub2, value, fee, message)
 	if err != nil {
 		t.Error(err)
 	}
@@ -93,7 +93,7 @@ func TestNewAirdrop2(t *testing.T) {
 		t.Error(err)
 	}
 
-	err = tr1.Sign(params.PrivKey)
+	err = tr1.Sign(params.PrivKey, 0)
 	if err != nil {
 		t.Error(err)
 	}
@@ -129,7 +129,7 @@ func TestByteConversation(t *testing.T) {
 	fee := 421.22422
 	message := "test 2"
 
-	tr1, err := airdrop.NewAirdrop(pub2, 0, value, fee, message)
+	tr1, err := airdrop.NewAirdrop(pub2, value, fee, message)
 	if err != nil {
 		t.Error(err)
 	}
@@ -139,7 +139,7 @@ func TestByteConversation(t *testing.T) {
 		t.Error(err)
 	}
 
-	err = tr1.Sign(params.PrivKey)
+	err = tr1.Sign(params.PrivKey, 0)
 	if err != nil {
 		t.Error(err)
 	}

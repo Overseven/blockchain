@@ -14,13 +14,14 @@ import (
 )
 
 type Vote struct {
-	Sender    []byte
-	VotingId  uint64
-	Opinion   string
-	Fee       float64
-	Timestamp time.Time
-	Node      []byte
-	Signature []byte
+	Sender    	 []byte
+	TransCounter uint32
+	VotingId  	 uint64
+	Opinion   	 string
+	Fee       	 float64
+	Timestamp 	 time.Time
+	Node      	 []byte
+	Signature 	 []byte
 }
 
 func NewVote(votingId uint64, opinion string, fee float64) (*Vote, error) {
@@ -99,7 +100,7 @@ func (v *Vote) Bytes() ([]byte, error) {
 		return nil, errors.New("incorrect sender field size")
 	}
 	res = append(res, v.Sender...)
-
+	res = append(res, utility.UInt32Bytes(v.TransCounter)...)
 	res = append(res, utility.UInt64Bytes(v.VotingId)...)
 
 	res = append(res, utility.StringToBytes(v.Opinion)...)
@@ -138,7 +139,8 @@ func FromBytes(b []byte) (*Vote, error) {
 	idx += 1
 	v.Sender = b[idx : idx+transaction.ByteLenPubKey]
 	idx += transaction.ByteLenPubKey
-
+	v.TransCounter = utility.UInt32FromBytes(b[idx : idx+4])
+	idx += 4
 	v.VotingId = utility.UInt64FromBytes(b[idx : idx+8])
 	idx += 8
 	opinion, opinionLen, err := utility.StringFromBytes(b[idx:])
@@ -171,6 +173,7 @@ func (v *Vote) Hash(flags map[transaction.TransFlag]bool) ([]byte, error) {
 	}
 	var temp []byte
 	temp = append(temp, v.Sender...)
+	temp = append(temp, strconv.FormatUint(uint64(v.TransCounter), 10)...)
 	temp = append(temp, utility.UInt64Bytes(v.VotingId)...)
 	temp = append(temp, v.Opinion...)
 	temp = append(temp, strconv.FormatFloat(v.Fee, 'e', 8, 64)...)
@@ -203,6 +206,7 @@ func (v *Vote) Verify() error {
 func Copy(v *Vote) *Vote {
 	res := new(Vote)
 	res.Sender = v.Sender
+	res.TransCounter = v.TransCounter
 	res.VotingId = v.VotingId
 	res.Opinion = v.Opinion
 	res.Fee = v.Fee
@@ -218,10 +222,10 @@ func (v *Vote) SetNode(nodePubKey []byte) transaction.Transaction {
 	return res
 }
 
-func (v *Vote) Sign(privKey *ecdsa.PrivateKey) error {
+func (v *Vote) Sign(privKey *ecdsa.PrivateKey, transCounter uint32) error {
 	senderPubKey := utility.PrivToPubKey(privKey)
 	v.Sender = senderPubKey
-
+	v.TransCounter = transCounter
 	hashed, err := v.Hash(map[transaction.TransFlag]bool{})
 	if err != nil {
 		return err
@@ -234,4 +238,8 @@ func (v *Vote) Sign(privKey *ecdsa.PrivateKey) error {
 
 	v.Signature = sign
 	return nil
+}
+
+func (v *Vote) Counter() uint32 {
+	return v.TransCounter
 }

@@ -39,7 +39,7 @@ func TestNewTransfer(t *testing.T) {
 		t.Error(err)
 	}
 
-	err = tr1.Sign(senderPrivKey)
+	err = tr1.Sign(senderPrivKey, 0)
 	if err != nil {
 		t.Error(err)
 	}
@@ -83,7 +83,7 @@ func TestByteConversation(t *testing.T) {
 		t.Error(err)
 	}
 
-	err = tr1.Sign(senderPrivKey)
+	err = tr1.Sign(senderPrivKey, 0)
 	if err != nil {
 		t.Error(err)
 	}

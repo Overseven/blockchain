@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+option go_package = "github.com/overseven/try-network/network/protocol/proto/proto";
+
+package pcommon;
+
+import "google/protobuf/timestamp.proto";
+
+
+message TransAirDrop{
+    uint32 transactionCounter = 1;
+    bytes receiver = 2;
+    double pay = 3;
+    double fee = 4;
+    string message = 5;
+    google.protobuf.Timestamp timestamp = 6;
+    bytes node = 7;
+    bytes sign = 8;
+  }
+  
+  message TransTransfer{
+    bytes sender = 1;
+    uint32 transactionCounter = 2;
+    bytes receiver = 3;
+    double pay = 4;
+    double fee = 5;
+    string message = 6;
+    google.protobuf.Timestamp timestamp = 7;
+    bytes node = 8;
+    bytes sign = 9;
+  }
+  
+  message Transaction{
+      uint32 protocolVersion = 1;
+      oneof trans{
+        TransTransfer transfer = 3;
+        TransAirDrop drop = 4;
+      }
+  }
+  
+  message Block{
+      uint32 protocolVersion = 1;
+      uint64 blockId = 2;
+      repeated Transaction trans = 3;
+      bytes prevBlockHash = 4;
+      uint32 difficulty = 5;
+      bytes miner = 6;
+      bytes blockHash = 7;
+      bytes nonce = 8;
+  }
+  
+  

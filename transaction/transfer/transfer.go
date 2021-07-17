@@ -16,14 +16,15 @@ import (
 )
 
 type Transfer struct {
-	Sender    []byte // compressed public key
-	Receiver  []byte // compressed public key
-	Pay       float64
-	Fee       float64
-	Message   string
-	Timestamp time.Time
-	Node      []byte
-	Signature []byte
+	Sender    	 []byte // compressed public key
+	TransCounter uint32
+	Receiver  	 []byte // compressed public key
+	Pay       	 float64
+	Fee       	 float64
+	Message   	 string
+	Timestamp 	 time.Time
+	Node      	 []byte
+	Signature 	 []byte
 }
 
 func (t *Transfer) String() (string, error) {
@@ -44,6 +45,8 @@ func (t *Transfer) Bytes() ([]byte, error) {
 		return nil, errors.New("incorrect sender field size")
 	}
 	res = append(res, t.Sender...)
+
+	res = append(res, utility.UInt32Bytes(t.TransCounter)...)
 
 	if len(t.Receiver) != transaction.ByteLenPubKey {
 		return nil, errors.New("incorrect receiver field size")
@@ -89,6 +92,8 @@ func FromBytes(b []byte) (*Transfer, error) {
 	idx += 1
 	t.Sender = b[idx : idx+transaction.ByteLenPubKey]
 	idx += transaction.ByteLenPubKey
+	t.TransCounter = utility.UInt32FromBytes(b[idx : idx+4])
+	idx += 4
 	t.Receiver = b[idx : idx+transaction.ByteLenPubKey]
 	idx += transaction.ByteLenPubKey
 	t.Pay = utility.Float64FromBytes(b[idx : idx+8])
@@ -122,6 +127,7 @@ func (t *Transfer) Hash(flags map[transaction.TransFlag]bool) ([]byte, error) {
 	}
 	var temp []byte
 	temp = append(temp, t.Sender...)
+	temp = append(temp, strconv.FormatUint(uint64(t.TransCounter), 10)...)
 	temp = append(temp, t.Receiver...)
 	temp = append(temp, t.Message...)
 	temp = append(temp, strconv.FormatFloat(t.Pay, 'e', 8, 64)...)
@@ -197,6 +203,12 @@ func (t *Transfer) IsEqual(tr transaction.Transaction, flags map[transaction.Tra
 			return false
 		}
 
+		if t.TransCounter != t2.TransCounter {
+			return false
+		}
+		if !bytes.Equal(t.Receiver, t2.Receiver) {
+			return false
+		}
 		if !bytes.Equal(t.Receiver, t2.Receiver) {
 			return false
 		}
@@ -240,6 +252,7 @@ func (t *Transfer) IsEqual(tr transaction.Transaction, flags map[transaction.Tra
 func Copy(t *Transfer) *Transfer {
 	res := new(Transfer)
 	res.Sender = t.Sender
+	res.TransCounter = t.TransCounter
 	res.Receiver = t.Receiver
 	res.Pay = t.Pay
 	res.Fee = t.Fee
@@ -256,9 +269,10 @@ func (t *Transfer) SetNode(nodePubKey []byte) transaction.Transaction {
 	return res
 }
 
-func (t *Transfer) Sign(privKey *ecdsa.PrivateKey) error {
+func (t *Transfer) Sign(privKey *ecdsa.PrivateKey, transCounter uint32) error {
 	senderPubKey := utility.PrivToPubKey(privKey)
 	t.Sender = senderPubKey
+	t.TransCounter = transCounter
 
 	hashed, err := t.Hash(map[transaction.TransFlag]bool{})
 	if err != nil {
@@ -272,4 +286,8 @@ func (t *Transfer) Sign(privKey *ecdsa.PrivateKey) error {
 
 	t.Signature = sign
 	return nil
+}
+
+func (t *Transfer) Counter() uint32 {
+	return t.TransCounter
 }

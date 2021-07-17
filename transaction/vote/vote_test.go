@@ -33,7 +33,7 @@ func TestNewVote(t *testing.T) {
 		t.Error(err)
 	}
 
-	err = v.Sign(senderPrivKey)
+	err = v.Sign(senderPrivKey, 0)
 	if err != nil {
 		t.Error(err)
 	}
@@ -71,7 +71,7 @@ func TestByteConversation(t *testing.T) {
 		t.Error(err)
 	}
 
-	err = v.Sign(senderPrivKey)
+	err = v.Sign(senderPrivKey, 0)
 	if err != nil {
 		t.Error(err)
 	}

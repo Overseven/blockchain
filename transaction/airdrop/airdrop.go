@@ -208,12 +208,11 @@ func (a *Airdrop) Verify() error {
 	return nil
 }
 
-// NewAirdrop is sending value from unlimited admin wallet to user wallet
-func NewAirdrop(receiver []byte, transCounter uint32, payment, fee float64, message string) (*Airdrop, error) {
+// NewAirdrop is sending value from admin wallet to user wallet
+func NewAirdrop(receiver []byte, payment, fee float64, message string) (*Airdrop, error) {
 	// TODO: add check below
 
 	a := new(Airdrop)
-	a.TransCounter = transCounter
 	a.Receiver = receiver
 
 	a.Pay = payment
@@ -245,7 +244,8 @@ func (a *Airdrop) SetNode(nodePubKey []byte) transaction.Transaction {
 	return res
 }
 
-func (a *Airdrop) Sign(privKey *ecdsa.PrivateKey) error {
+func (a *Airdrop) Sign(privKey *ecdsa.PrivateKey, transCounter uint32) error {
+	a.TransCounter = transCounter
 	hashed, err := a.Hash(map[transaction.TransFlag]bool{})
 	if err != nil {
 		return err
