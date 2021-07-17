@@ -4,7 +4,8 @@ option go_package = "github.com/overseven/try-network/network/protocol/proto/pro
 
 package pnode;
 
-import "github.com/overseven/try-network/protocol/proto/pcommon.proto";
+import "pcommon.proto";
+
 
 service Noder { 
   rpc Connect(ConnectRequest) returns (ConnectReply){}
