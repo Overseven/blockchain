@@ -29,12 +29,48 @@ message TransAirDrop{
     bytes node = 8;
     bytes sign = 9;
   }
-  
+
+  message TransVotingInit{
+    bytes sender = 1;
+    uint32 transactionCounter = 2;
+    uint64 votingId = 3;
+    uint32 parameter = 4;
+    string value = 5;
+    double fee = 6;
+    google.protobuf.Timestamp timestamp = 7;
+    bytes node = 8;
+    bytes sign = 9;
+  }
+
+message TransVote{
+  bytes sender = 1;
+  uint32 transactionCounter = 2;
+  uint64 votingId = 3;
+  string opinion = 4;
+  double fee = 5;
+  google.protobuf.Timestamp timestamp = 6;
+  bytes node = 7;
+  bytes sign = 8;
+}
+
+message TransVotingFinish{
+  bytes sender = 1;
+  uint32 transactionCounter = 2;
+  uint64 votingId = 3;
+  double fee = 4;
+  google.protobuf.Timestamp timestamp = 5;
+  bytes node = 6;
+  bytes sign = 7;
+}
+
   message Transaction{
       uint32 protocolVersion = 1;
       oneof trans{
         TransTransfer transfer = 3;
-        TransAirDrop drop = 4;
+        TransAirDrop airdrop = 4;
+        TransVotingInit votingInit = 5;
+        TransVote vote = 6;
+        TransVotingFinish votingFinish = 7;
       }
   }
   
