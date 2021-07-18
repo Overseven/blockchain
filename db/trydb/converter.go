@@ -2,6 +2,7 @@ package trydb
 
 import (
 	"errors"
+	"github.com/overseven/try-network/block/tryblock"
 	"github.com/overseven/try-network/utility"
 
 	"github.com/overseven/try-network/transaction"
@@ -45,7 +46,32 @@ func BlockFromBytes(b []byte) (Block, error) {
 	return block, nil
 }
 
+func BlockBytes (block tryblock.TryBlock) ([]byte, error){
+	var b []byte
+	b = append(b, utility.UInt64Bytes(block.Id)...)
+	if block.Transactions != nil {
+		b = append(b, utility.UInt32Bytes(uint32(len(block.Transactions)))...)
+		for _, t := range block.Transactions {
+			tHash, err := t.Hash(map[transaction.TransFlag]bool{})
+			if err != nil {
+				return nil, err
+			}
+			b = append(b, tHash...)
+		}
+	}
+	b = append(b, block.PrevHash...)
+	b = append(b, utility.UInt64Bytes(block.Difficulty)...)
+	b = append(b, block.Miner...)
+	timeHash, err := utility.TimestampToBytes(block.Timestamp)
+	if err != nil {
+		return nil, err
+	}
+	b = append(b, timeHash...)
+	b = append(b, block.Hash...)
+	b = append(b, utility.UInt64Bytes(block.Nonce)...)
 
+	return b, nil
+}
 
 func TransactionFromBytes(b []byte) (transaction.Transaction, error) {
 	if len(b) < 4 {

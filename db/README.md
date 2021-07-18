@@ -95,10 +95,13 @@ will be removed and replaced by temporary data
 | 1 | Id | __uint64__ |
 | 2 | number of transactions | __uint8__ |
 | 3 | transactions hashes | __uint8__ \[32 * N\] |
-| 4 | difficulty | __uint64__ |
-| 5 | miner pubKey | __uint8__ \[32\] |
-| 6 | hash | __uint8__ \[32\] |
-| 7 | Nonce | __uint64__ |
+| 4 | prev block hash | __uint8__ \[32\] |
+| 5 | difficulty | __uint64__ |
+| 6 | miner pubKey | __uint8__ \[32\] |
+| 7 | timestamp len | __uint8__ |
+| 8 | timestamp | __uint8__ \[N\] |
+| 9 | hash | __uint8__ \[32\] |
+| 10 | Nonce | __uint64__ |
 
 Block keys are always takes 8 byte, the least significant bytes places at the end of the key for correct sort order:
 
@@ -284,6 +287,7 @@ transaction = get_from_db(key='ti' + trans_hash)
 | 2 | start on block | __uint64__ |
 | 3 | end on block | __uint64__ |
 | 5 | param | __uint16__ |
+| 6 | len | __uint16__ |
 | 6 | value | __uint8__[N] |
 | 7 | finished | __bool__ |
 
@@ -292,16 +296,19 @@ transaction = get_from_db(key='ti' + trans_hash)
 | №   | Field | Size |
 | --- | --- | --- |
 | 1 | amount of tokens | __float64__ |
-
+| 2 | last block | __uint64__ |
 
 ### Parameter
 | №   | Field | Size |
 | --- | ---   | ---  |
-|  1  | len   | __uint32__ |
-|  2  | value | __uint8__ \[N\] |
+|  1  | prev len   | __uint32__ |
+|  2  | prev value | __uint8__ \[N\] |
+|  3  | len   | __uint32__ |
+|  4  | value | __uint8__ \[N\] |
 
 
 ### Fee distribution ratio
 | №   | Field | Size |
 | --- | ---   | ---  |
-|  1  | ratio |  __float64__ |
+|  1  | prev ratio |  __float64__ |
+|  2  | ratio |  __float64__ |

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math"
 	"strconv"
+	"time"
 
 	"github.com/overseven/try-network/transaction"
 
@@ -21,8 +22,9 @@ type TryBlock struct {
 
 	Difficulty uint64
 	Miner      []byte
+	Timestamp  time.Time // TODO: add to calc hash
 	Hash       []byte
-	Nonce      []byte
+	Nonce      uint64
 }
 
 type WalletStats struct {
