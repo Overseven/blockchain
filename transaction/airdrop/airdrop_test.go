@@ -34,8 +34,8 @@ func TestNewAirdrop(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	value := 65.32
-	fee := 42.2222
+	value := transaction.Balance(65.32)
+	fee := transaction.Balance(42.2222)
 	message := "test"
 
 	tr1, err := airdrop.NewAirdrop(pub2, value, fee, message)
@@ -79,8 +79,8 @@ func TestNewAirdrop2(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	value := 65235.32
-	fee := 421.22422
+	value := transaction.Balance(65235.32)
+	fee := transaction.Balance(421.22422)
 	message := "test 2"
 
 	tr1, err := airdrop.NewAirdrop(pub2, value, fee, message)
@@ -125,8 +125,8 @@ func TestByteConversation(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	value := 65235.32
-	fee := 421.22422
+	value := transaction.Balance(65235.32)
+	fee := transaction.Balance(421.22422)
 	message := "test 2"
 
 	tr1, err := airdrop.NewAirdrop(pub2, value, fee, message)

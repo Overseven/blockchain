@@ -5,7 +5,6 @@ import (
 	"crypto/ecdsa"
 	"encoding/json"
 	"errors"
-	"strconv"
 	"time"
 
 	"github.com/overseven/try-network/transaction"
@@ -19,17 +18,17 @@ var (
 )
 
 type Airdrop struct {
-	TransCounter uint32
+	TransCounter transaction.TransCounter
 	Receiver     []byte // compressed public key
-	Pay          float64
-	Fee          float64
+	Pay          transaction.Balance
+	Fee          transaction.Balance
 	Message      string
 	Timestamp    time.Time
 	Node         []byte
 	Signature    []byte
 }
 
-func (a *Airdrop) Counter() uint32 {
+func (a *Airdrop) Counter() transaction.TransCounter {
 	return a.TransCounter
 }
 
@@ -96,14 +95,14 @@ func (a *Airdrop) Bytes() ([]byte, error) {
 	var res []byte
 
 	res = append(res, byte(transaction.TypeAirdrop))
-	res = append(res, utility.UInt32Bytes(a.TransCounter)...)
+	res = append(res, utility.TransCounterBytes(a.TransCounter)...)
 	if len(a.Receiver) != transaction.ByteLenPubKey {
 		return nil, errors.New("incorrect receiver field size")
 	}
 	res = append(res, a.Receiver...)
 
-	res = append(res, utility.Float64Bytes(a.Pay)...)
-	res = append(res, utility.Float64Bytes(a.Fee)...)
+	res = append(res, utility.BalanceBytes(a.Pay)...)
+	res = append(res, utility.BalanceBytes(a.Fee)...)
 	message := utility.StringToBytes(a.Message)
 	//res = append(res, uint8(len(message)))
 	res = append(res, message...)
@@ -134,15 +133,15 @@ func FromBytes(b []byte) (*Airdrop, error) {
 	if typeTr != transaction.TypeAirdrop {
 		return nil, errors.New("incorrect transaction type")
 	}
-	idx += 1
-	a.TransCounter = utility.UInt32FromBytes(b[idx : idx+4])
-	idx += 4
+	idx += transaction.ByteLenType
+	a.TransCounter = utility.TransCounterFromBytes(b[idx : idx+transaction.ByteLenTransCounter])
+	idx += transaction.ByteLenTransCounter
 	a.Receiver = b[idx : idx+transaction.ByteLenPubKey]
 	idx += transaction.ByteLenPubKey
-	a.Pay = utility.Float64FromBytes(b[idx : idx+8])
-	idx += 8
-	a.Fee = utility.Float64FromBytes(b[idx : idx+8])
-	idx += 8
+	a.Pay = utility.BalanceFromBytes(b[idx : idx+transaction.ByteLenBalance])
+	idx += transaction.ByteLenBalance
+	a.Fee = utility.BalanceFromBytes(b[idx : idx+transaction.ByteLenBalance])
+	idx += transaction.ByteLenBalance
 	message, messageLen, err := utility.StringFromBytes(b[idx:])
 	if err != nil {
 		return nil, err
@@ -169,11 +168,11 @@ func (a *Airdrop) Hash(flags map[transaction.TransFlag]bool) ([]byte, error) {
 		return nil, errors.New("empty flags")
 	}
 	temp := []byte{}
-	temp = append(temp, strconv.FormatUint(uint64(a.TransCounter), 10)...)
+	temp = append(temp, utility.TransCounterBytes(a.TransCounter)...)
 	temp = append(temp, a.Receiver...)
 	temp = append(temp, a.Message...)
-	temp = append(temp, strconv.FormatFloat(a.Pay, 'e', 8, 64)...)
-	temp = append(temp, strconv.FormatFloat(a.Fee, 'e', 8, 64)...)
+	temp = append(temp, utility.BalanceBytes(a.Pay)...)
+	temp = append(temp, utility.BalanceBytes(a.Fee)...)
 	flagTimestamp, ok := flags[transaction.FlagTimestamp]
 	if !ok || (ok && flagTimestamp) {
 		temp = append(temp, a.Timestamp.Format(utility.TimestampFormat)...)
@@ -209,7 +208,7 @@ func (a *Airdrop) Verify() error {
 }
 
 // NewAirdrop is sending value from admin wallet to user wallet
-func NewAirdrop(receiver []byte, payment, fee float64, message string) (*Airdrop, error) {
+func NewAirdrop(receiver []byte, payment, fee transaction.Balance, message string) (*Airdrop, error) {
 	// TODO: add check below
 
 	a := new(Airdrop)
@@ -244,7 +243,7 @@ func (a *Airdrop) SetNode(nodePubKey []byte) transaction.Transaction {
 	return res
 }
 
-func (a *Airdrop) Sign(privKey *ecdsa.PrivateKey, transCounter uint32) error {
+func (a *Airdrop) Sign(privKey *ecdsa.PrivateKey, transCounter transaction.TransCounter) error {
 	a.TransCounter = transCounter
 	hashed, err := a.Hash(map[transaction.TransFlag]bool{})
 	if err != nil {

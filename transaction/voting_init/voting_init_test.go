@@ -19,11 +19,11 @@ func TestNewVoting(t *testing.T) {
 		t.Error(err)
 	}
 
-	var votingId uint64 = 115
+	votingId := transaction.VotingId(115)
 
 	var parameter uint16 = 17
 	value := "125.34"
-	fee := 42.2222
+	fee := transaction.Balance(42.2222)
 
 	v, err := voting_init.NewVotingInit(votingId, parameter, value, fee)
 	if err != nil {
@@ -59,10 +59,10 @@ func TestByteConversation(t *testing.T) {
 		t.Error(err)
 	}
 
-	var votingId uint64 = 115
+	votingId := transaction.VotingId(115)
 	var parameter uint16 = 1026
 	value := "1251"
-	fee := 42.2222
+	fee := transaction.Balance(42.2222)
 
 	v, err := voting_init.NewVotingInit(votingId, parameter, value, fee)
 	if err != nil {

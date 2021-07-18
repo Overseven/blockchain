@@ -14,18 +14,18 @@ import (
 )
 
 type VotingInit struct {
-	Sender    	 []byte
-	TransCounter uint32
-	VotingId  	 uint64
-	Parameter 	 uint16
-	Value     	 string
-	Fee       	 float64
-	Timestamp 	 time.Time
-	Node      	 []byte
-	Signature 	 []byte
+	Sender       []byte
+	TransCounter transaction.TransCounter
+	VotingId     transaction.VotingId
+	Parameter    uint16
+	Value        string
+	Fee          transaction.Balance
+	Timestamp    time.Time
+	Node         []byte
+	Signature    []byte
 }
 
-func NewVotingInit(votingId uint64, parameter uint16, value string, fee float64) (*VotingInit, error) {
+func NewVotingInit(votingId transaction.VotingId, parameter uint16, value string, fee transaction.Balance) (*VotingInit, error) {
 	tr := VotingInit{
 		VotingId:  votingId,
 		Parameter: parameter,
@@ -110,11 +110,11 @@ func (v *VotingInit) Bytes() ([]byte, error) {
 		return nil, errors.New("incorrect sender field size")
 	}
 	res = append(res, v.Sender...)
-	res = append(res, utility.UInt32Bytes(v.TransCounter)...)
-	res = append(res, utility.UInt64Bytes(v.VotingId)...)
+	res = append(res, utility.TransCounterBytes(v.TransCounter)...)
+	res = append(res, utility.VotingIdBytes(v.VotingId)...)
 	res = append(res, utility.UInt16Bytes(v.Parameter)...)
 	res = append(res, utility.StringToBytes(v.Value)...)
-	res = append(res, utility.Float64Bytes(v.Fee)...)
+	res = append(res, utility.BalanceBytes(v.Fee)...)
 
 	timestamp, err := utility.TimestampToBytes(v.Timestamp)
 	if err != nil {
@@ -146,15 +146,15 @@ func FromBytes(b []byte) (*VotingInit, error) {
 	if typeTr != transaction.TypeVotingInit {
 		return nil, errors.New("incorrect transaction type")
 	}
-	idx += 1
+	idx += transaction.ByteLenType
 	v.Sender = b[idx : idx+transaction.ByteLenPubKey]
 	idx += transaction.ByteLenPubKey
-	v.TransCounter = utility.UInt32FromBytes(b[idx : idx+4])
-	idx += 4
-	v.VotingId = utility.UInt64FromBytes(b[idx : idx+8])
-	idx += 8
-	v.Parameter = utility.UInt16FromBytes(b[idx : idx+2])
-	idx += 2
+	v.TransCounter = utility.TransCounterFromBytes(b[idx : idx+transaction.ByteLenTransCounter])
+	idx += transaction.ByteLenTransCounter
+	v.VotingId = utility.VotingIdFromBytes(b[idx : idx+transaction.ByteLenVotingId])
+	idx += transaction.ByteLenVotingId
+	v.Parameter = utility.UInt16FromBytes(b[idx : idx+transaction.ByteLenParameter])
+	idx += transaction.ByteLenParameter
 	value, valueLen, err := utility.StringFromBytes(b[idx:])
 	if err != nil {
 		return nil, err
@@ -162,7 +162,7 @@ func FromBytes(b []byte) (*VotingInit, error) {
 	v.Value = value
 	idx += int64(valueLen)
 
-	v.Fee = utility.Float64FromBytes(b[idx : idx+8])
+	v.Fee = utility.BalanceFromBytes(b[idx : idx+transaction.ByteLenBalance])
 	idx += 8
 
 	timestamp, timestampLen, err := utility.TimestampFromBytes(b[idx:])
@@ -185,11 +185,11 @@ func (v *VotingInit) Hash(flags map[transaction.TransFlag]bool) ([]byte, error) 
 	}
 	var temp []byte
 	temp = append(temp, v.Sender...)
-	temp = append(temp, strconv.FormatUint(uint64(v.TransCounter), 10)...)
-	temp = append(temp, utility.UInt64Bytes(v.VotingId)...)
+	temp = append(temp, utility.TransCounterBytes(v.TransCounter)...)
+	temp = append(temp, utility.VotingIdBytes(v.VotingId)...)
 	temp = append(temp, utility.UInt16Bytes(v.Parameter)...)
 	temp = append(temp, v.Value...)
-	temp = append(temp, strconv.FormatFloat(v.Fee, 'e', 8, 64)...)
+	temp = append(temp, utility.BalanceBytes(v.Fee)...)
 	flagTimestamp, ok := flags[transaction.FlagTimestamp]
 	if !ok || (ok && flagTimestamp) {
 		temp = append(temp, v.Timestamp.Format(utility.TimestampFormat)...)
@@ -236,7 +236,7 @@ func (v *VotingInit) SetNode(nodePubKey []byte) transaction.Transaction {
 	return res
 }
 
-func (v *VotingInit) Sign(privKey *ecdsa.PrivateKey, transCounter uint32) error {
+func (v *VotingInit) Sign(privKey *ecdsa.PrivateKey, transCounter transaction.TransCounter) error {
 	senderPubKey := utility.PrivToPubKey(privKey)
 	v.Sender = senderPubKey
 	v.TransCounter = transCounter
@@ -255,6 +255,6 @@ func (v *VotingInit) Sign(privKey *ecdsa.PrivateKey, transCounter uint32) error 
 	return nil
 }
 
-func (v *VotingInit) Counter() uint32 {
+func (v *VotingInit) Counter() transaction.TransCounter {
 	return v.TransCounter
 }

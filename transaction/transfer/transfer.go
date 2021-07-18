@@ -16,15 +16,15 @@ import (
 )
 
 type Transfer struct {
-	Sender    	 []byte // compressed public key
-	TransCounter uint32
-	Receiver  	 []byte // compressed public key
-	Pay       	 float64
-	Fee       	 float64
-	Message   	 string
-	Timestamp 	 time.Time
-	Node      	 []byte
-	Signature 	 []byte
+	Sender       []byte // compressed public key
+	TransCounter transaction.TransCounter
+	Receiver     []byte // compressed public key
+	Pay          transaction.Balance
+	Fee          transaction.Balance
+	Message      string
+	Timestamp    time.Time
+	Node         []byte
+	Signature    []byte
 }
 
 func (t *Transfer) String() (string, error) {
@@ -46,15 +46,15 @@ func (t *Transfer) Bytes() ([]byte, error) {
 	}
 	res = append(res, t.Sender...)
 
-	res = append(res, utility.UInt32Bytes(t.TransCounter)...)
+	res = append(res, utility.TransCounterBytes(t.TransCounter)...)
 
 	if len(t.Receiver) != transaction.ByteLenPubKey {
 		return nil, errors.New("incorrect receiver field size")
 	}
 	res = append(res, t.Receiver...)
 
-	res = append(res, utility.Float64Bytes(t.Pay)...)
-	res = append(res, utility.Float64Bytes(t.Fee)...)
+	res = append(res, utility.BalanceBytes(t.Pay)...)
+	res = append(res, utility.BalanceBytes(t.Fee)...)
 	res = append(res, utility.StringToBytes(t.Message)...)
 
 	timestamp, err := utility.TimestampToBytes(t.Timestamp)
@@ -89,17 +89,17 @@ func FromBytes(b []byte) (*Transfer, error) {
 	if typeTr != transaction.TypeTransfer {
 		return nil, errors.New("incorrect transaction type")
 	}
-	idx += 1
+	idx += transaction.ByteLenType
 	t.Sender = b[idx : idx+transaction.ByteLenPubKey]
 	idx += transaction.ByteLenPubKey
-	t.TransCounter = utility.UInt32FromBytes(b[idx : idx+4])
-	idx += 4
+	t.TransCounter = utility.TransCounterFromBytes(b[idx : idx+transaction.ByteLenTransCounter])
+	idx += transaction.ByteLenTransCounter
 	t.Receiver = b[idx : idx+transaction.ByteLenPubKey]
 	idx += transaction.ByteLenPubKey
-	t.Pay = utility.Float64FromBytes(b[idx : idx+8])
-	idx += 8
-	t.Fee = utility.Float64FromBytes(b[idx : idx+8])
-	idx += 8
+	t.Pay = utility.BalanceFromBytes(b[idx : idx+transaction.ByteLenBalance])
+	idx += transaction.ByteLenBalance
+	t.Fee = utility.BalanceFromBytes(b[idx : idx+transaction.ByteLenBalance])
+	idx += transaction.ByteLenBalance
 	message, messageLen, err := utility.StringFromBytes(b[idx:])
 	if err != nil {
 		return nil, err
@@ -127,11 +127,11 @@ func (t *Transfer) Hash(flags map[transaction.TransFlag]bool) ([]byte, error) {
 	}
 	var temp []byte
 	temp = append(temp, t.Sender...)
-	temp = append(temp, strconv.FormatUint(uint64(t.TransCounter), 10)...)
+	temp = append(temp, utility.TransCounterBytes(t.TransCounter)...)
 	temp = append(temp, t.Receiver...)
 	temp = append(temp, t.Message...)
-	temp = append(temp, strconv.FormatFloat(t.Pay, 'e', 8, 64)...)
-	temp = append(temp, strconv.FormatFloat(t.Fee, 'e', 8, 64)...)
+	temp = append(temp, utility.BalanceBytes(t.Pay)...)
+	temp = append(temp, utility.BalanceBytes(t.Fee)...)
 	flagTimestamp, ok := flags[transaction.FlagTimestamp]
 	if !ok || (ok && flagTimestamp) {
 		temp = append(temp, t.Timestamp.Format(utility.TimestampFormat)...)
@@ -167,7 +167,7 @@ func (t *Transfer) Verify() error {
 	return nil
 }
 
-func NewTransfer(rcvrPubKey []byte, value, fee float64, message string) (*Transfer, error) {
+func NewTransfer(rcvrPubKey []byte, value, fee transaction.Balance, message string) (*Transfer, error) {
 	tr := Transfer{
 		Receiver: rcvrPubKey,
 		Pay:      value,
@@ -269,7 +269,7 @@ func (t *Transfer) SetNode(nodePubKey []byte) transaction.Transaction {
 	return res
 }
 
-func (t *Transfer) Sign(privKey *ecdsa.PrivateKey, transCounter uint32) error {
+func (t *Transfer) Sign(privKey *ecdsa.PrivateKey, transCounter transaction.TransCounter) error {
 	senderPubKey := utility.PrivToPubKey(privKey)
 	t.Sender = senderPubKey
 	t.TransCounter = transCounter
@@ -288,6 +288,6 @@ func (t *Transfer) Sign(privKey *ecdsa.PrivateKey, transCounter uint32) error {
 	return nil
 }
 
-func (t *Transfer) Counter() uint32 {
+func (t *Transfer) Counter() transaction.TransCounter {
 	return t.TransCounter
 }

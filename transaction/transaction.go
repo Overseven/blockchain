@@ -5,9 +5,14 @@ import (
 )
 
 const (
-	ByteLenPubKey     = 33
-	ByteLenSign       = 65
-	MaxByteLenMessage = 64
+	ByteLenType         = 1
+	ByteLenPubKey       = 33
+	ByteLenSign         = 65
+	ByteLenBalance      = 8
+	ByteLenVotingId     = 4
+	ByteLenTransCounter = 8
+	ByteLenParameter    = 2
+	MaxByteLenMessage   = 64
 )
 
 // Type is type of transaction
@@ -30,12 +35,21 @@ const (
 )
 
 type Transaction interface {
-	Counter() uint32
+	Counter() TransCounter
 	IsEqual(Transaction, map[TransFlag]bool) bool
 	String() (string, error)
 	Bytes() ([]byte, error)
 	Hash(map[TransFlag]bool) ([]byte, error)
 	SetNode([]byte) Transaction
-	Sign(*ecdsa.PrivateKey, uint32) error
+	Sign(*ecdsa.PrivateKey, TransCounter) error
 	Verify() error
 }
+
+// Balance - amount of tokens. Update utility functions if the type is changed
+type Balance float64
+
+// VotingId - unique id of voting. Update utility functions if the type is changed
+type VotingId uint32
+
+// TransCounter - unique value of each transaction from address. Update utility functions if the type is changed
+type TransCounter uint64

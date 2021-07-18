@@ -1,17 +1,17 @@
-package db
+package trydb
 
 import (
 	"errors"
+	"github.com/overseven/try-network/block/tryblock"
 
-	"github.com/overseven/try-network/block"
 	"github.com/overseven/try-network/transaction"
 	"github.com/overseven/try-network/transaction/airdrop"
 	"github.com/overseven/try-network/transaction/transfer"
 )
 
-func BlockFromBytes(b []byte) (block.Block, error) {
+func BlockFromBytes(b []byte) (tryblock.TryBlock, error) {
 	// TODO: finish
-	return block.Block{}, nil
+	return tryblock.TryBlock{}, nil
 }
 
 func TransactionFromBytes(b []byte) (transaction.Transaction, error) {

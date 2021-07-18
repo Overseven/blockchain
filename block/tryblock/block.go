@@ -1,4 +1,4 @@
-package block
+package tryblock
 
 import (
 	"bytes"
@@ -13,7 +13,7 @@ import (
 	blUtility "github.com/overseven/try-network/utility"
 )
 
-type Block struct {
+type TryBlock struct {
 	Id           uint64
 	Transactions map[string]transaction.Transaction
 	PrevHash     []byte
@@ -32,7 +32,7 @@ type WalletStats struct {
 	PrevTransBlockId uint64
 }
 
-func (block *Block) GetBatchHash() (hash []byte, err error) {
+func (block *TryBlock) GetBatchHash() (hash []byte, err error) {
 	var toHashBytes []byte
 	for _, tran := range block.Transactions {
 		tHash, err := tran.Hash(map[transaction.TransFlag]bool{})
@@ -45,7 +45,7 @@ func (block *Block) GetBatchHash() (hash []byte, err error) {
 	return
 }
 
-func (block *Block) GetHash() (hash []byte, err error) {
+func (block *TryBlock) GetHash() (hash []byte, err error) {
 	hash = blUtility.UInt64Bytes(block.Id)
 	bHash, err := block.GetBatchHash()
 	if err != nil {
@@ -61,7 +61,7 @@ func (block *Block) GetHash() (hash []byte, err error) {
 	return hash, nil
 }
 
-func (block *Block) IsValid() error {
+func (block *TryBlock) IsValid() error {
 	// check hash
 	blockHash, err := block.GetHash()
 	if err != nil {
@@ -75,7 +75,7 @@ func (block *Block) IsValid() error {
 	return nil
 }
 
-func (block *Block) Mining(minerPubKey []byte, stop chan bool) ([]byte, error) {
+func (block *TryBlock) Mining(minerPubKey []byte, stop chan bool) ([]byte, error) {
 	block.Miner = minerPubKey
 	mask := make([]byte, block.Difficulty)
 	for i := uint64(0); i < math.MaxUint64; i++ {
@@ -105,7 +105,7 @@ func (block *Block) Mining(minerPubKey []byte, stop chan bool) ([]byte, error) {
 	return nil, errors.New("not found")
 }
 
-func (block *Block) HasTransaction(tr transaction.Transaction) (bool, error) {
+func (block *TryBlock) HasTransaction(tr transaction.Transaction) (bool, error) {
 	tHash, err := tr.Hash(map[transaction.TransFlag]bool{})
 	if err != nil {
 		return false, err
@@ -114,7 +114,7 @@ func (block *Block) HasTransaction(tr transaction.Transaction) (bool, error) {
 	return ok, nil
 }
 
-func (block *Block) AddTransaction(tr transaction.Transaction) error {
+func (block *TryBlock) AddTransaction(tr transaction.Transaction) error {
 	tHash, err := tr.Hash(map[transaction.TransFlag]bool{})
 	if err != nil {
 		return err

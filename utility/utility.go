@@ -16,6 +16,30 @@ const (
 	TimestampFormat = "02 Jan 06 15:04 MST"
 )
 
+func BalanceFromBytes(bytes []byte) transaction.Balance {
+	return transaction.Balance(Float64FromBytes(bytes))
+}
+
+func BalanceBytes(balance transaction.Balance) []byte {
+	return Float64Bytes(float64(balance))
+}
+
+func VotingIdFromBytes(bytes []byte) transaction.VotingId {
+	return transaction.VotingId(UInt32FromBytes(bytes))
+}
+
+func VotingIdBytes(votingId transaction.VotingId) []byte {
+	return UInt32Bytes(uint32(votingId))
+}
+
+func TransCounterFromBytes(bytes []byte) transaction.TransCounter {
+	return transaction.TransCounter(UInt64FromBytes(bytes))
+}
+
+func TransCounterBytes(transCounter transaction.TransCounter) []byte {
+	return UInt64Bytes(uint64(transCounter))
+}
+
 func UInt64FromBytes(bytes []byte) uint64 {
 	return binary.LittleEndian.Uint64(bytes)
 }

@@ -25,8 +25,8 @@ func TestNewTransfer(t *testing.T) {
 		t.Error(err)
 	}
 
-	value := 65.32
-	fee := 42.2222
+	value := transaction.Balance(65.32)
+	fee := transaction.Balance(42.2222)
 	message := "test"
 
 	tr1, err := transfer.NewTransfer(receiverPubKey, value, fee, message)
@@ -69,8 +69,8 @@ func TestByteConversation(t *testing.T) {
 		t.Error(err)
 	}
 
-	value := 65.32
-	fee := 42.2222
+	value := transaction.Balance(65.32)
+	fee := transaction.Balance(42.2222)
 	message := "test"
 
 	tr1, err := transfer.NewTransfer(receiverPubKey, value, fee, message)

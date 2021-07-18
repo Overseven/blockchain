@@ -19,9 +19,9 @@ func TestNewVote(t *testing.T) {
 		t.Error(err)
 	}
 
-	var votingId uint64 = 115
+	votingId := transaction.VotingId(115)
 	opinion := "no"
-	fee := 42.2222
+	fee := transaction.Balance(42.2222)
 
 	v, err := vote.NewVote(votingId, opinion, fee)
 	if err != nil {
@@ -57,9 +57,9 @@ func TestByteConversation(t *testing.T) {
 		t.Error(err)
 	}
 
-	var votingId uint64 = 115
+	votingId := transaction.VotingId(115)
 	opinion := "yes"
-	fee := 42.2222
+	fee := transaction.Balance(42.2222)
 
 	v, err := vote.NewVote(votingId, opinion, fee)
 	if err != nil {
