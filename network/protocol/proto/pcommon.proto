@@ -8,7 +8,7 @@ import "google/protobuf/timestamp.proto";
 
 
 message TransAirDrop{
-    uint32 transactionCounter = 1;
+    uint64 transactionCounter = 1;
     bytes receiver = 2;
     double pay = 3;
     double fee = 4;
@@ -20,7 +20,7 @@ message TransAirDrop{
   
   message TransTransfer{
     bytes sender = 1;
-    uint32 transactionCounter = 2;
+    uint64 transactionCounter = 2;
     bytes receiver = 3;
     double pay = 4;
     double fee = 5;
@@ -32,8 +32,8 @@ message TransAirDrop{
 
   message TransVotingInit{
     bytes sender = 1;
-    uint32 transactionCounter = 2;
-    uint64 votingId = 3;
+    uint64 transactionCounter = 2;
+    uint32 votingId = 3;
     uint32 parameter = 4;
     string value = 5;
     double fee = 6;
@@ -44,8 +44,8 @@ message TransAirDrop{
 
 message TransVote{
   bytes sender = 1;
-  uint32 transactionCounter = 2;
-  uint64 votingId = 3;
+  uint64 transactionCounter = 2;
+  uint32 votingId = 3;
   string opinion = 4;
   double fee = 5;
   google.protobuf.Timestamp timestamp = 6;
@@ -55,8 +55,8 @@ message TransVote{
 
 message TransVotingFinish{
   bytes sender = 1;
-  uint32 transactionCounter = 2;
-  uint64 votingId = 3;
+  uint64 transactionCounter = 2;
+  uint32 votingId = 3;
   double fee = 4;
   google.protobuf.Timestamp timestamp = 5;
   bytes node = 6;

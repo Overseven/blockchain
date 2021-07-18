@@ -2,13 +2,13 @@ package converter
 
 import (
 	"errors"
+	"github.com/overseven/try-network/block/tryblock"
 	"github.com/overseven/try-network/transaction/vote"
 	vf "github.com/overseven/try-network/transaction/voting_finish"
 	"strconv"
 
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"github.com/overseven/try-network/block"
 	"github.com/overseven/try-network/network/protocol/proto"
 	"github.com/overseven/try-network/transaction"
 	"github.com/overseven/try-network/transaction/airdrop"
@@ -20,8 +20,8 @@ const (
 	protocolVersion = 1
 )
 
-func BlockProto2Local(b *proto.Block) (*block.Block, error) {
-	bl := new(block.Block)
+func BlockProto2Local(b *proto.Block) (*tryblock.TryBlock, error) {
+	bl := new(tryblock.TryBlock)
 
 	bl.Id = b.GetBlockId()
 
@@ -54,7 +54,7 @@ func BlockProto2Local(b *proto.Block) (*block.Block, error) {
 	return bl, nil
 }
 
-func BlockLocal2Proto(b block.Block) (*proto.Block, error) {
+func BlockLocal2Proto(b tryblock.TryBlock) (*proto.Block, error) {
 	bl := proto.Block{}
 	bl.BlockId = b.Id
 
@@ -82,11 +82,11 @@ func BlockLocal2Proto(b block.Block) (*proto.Block, error) {
 
 func AirdropProto2Local(a *proto.TransAirDrop) (*airdrop.Airdrop, error) {
 	localA := new(airdrop.Airdrop)
-	localA.TransCounter = a.TransactionCounter
+	localA.TransCounter = transaction.TransCounter(a.TransactionCounter)
 	localA.Receiver = a.Receiver
 	localA.Timestamp = a.GetTimestamp().AsTime()
-	localA.Pay = a.Pay
-	localA.Fee = a.Fee
+	localA.Pay = transaction.Balance(a.Pay)
+	localA.Fee = transaction.Balance(a.Fee)
 	localA.Message = a.Message
 	localA.Node = a.Node
 	localA.Signature = a.Sign
@@ -96,12 +96,12 @@ func AirdropProto2Local(a *proto.TransAirDrop) (*airdrop.Airdrop, error) {
 func TransferProto2Local(t *proto.TransTransfer) (*transfer.Transfer, error) {
 	localTr := new(transfer.Transfer)
 	localTr.Sender = t.Sender
-	localTr.TransCounter = t.TransactionCounter
+	localTr.TransCounter = transaction.TransCounter(t.TransactionCounter)
 	localTr.Receiver = t.Receiver
 	localTr.Message = t.Message
 	localTr.Timestamp = t.GetTimestamp().AsTime()
-	localTr.Pay = t.Pay
-	localTr.Fee = t.Fee
+	localTr.Pay = transaction.Balance(t.Pay)
+	localTr.Fee = transaction.Balance(t.Fee)
 	localTr.Node = t.Node
 	localTr.Signature = t.Sign
 	return localTr, nil
@@ -110,12 +110,12 @@ func TransferProto2Local(t *proto.TransTransfer) (*transfer.Transfer, error) {
 func VotingInitProto2Local(t *proto.TransVotingInit) (*vi.VotingInit, error) {
 	localVi := new(vi.VotingInit)
 	localVi.Sender = t.Sender
-	localVi.TransCounter = t.TransactionCounter
-	localVi.VotingId = t.VotingId
+	localVi.TransCounter = transaction.TransCounter(t.TransactionCounter)
+	localVi.VotingId = transaction.VotingId(t.VotingId)
 	localVi.Parameter = uint16(t.Parameter)
 	localVi.Value = t.Value
 	localVi.Timestamp = t.GetTimestamp().AsTime()
-	localVi.Fee = t.Fee
+	localVi.Fee = transaction.Balance(t.Fee)
 	localVi.Node = t.Node
 	localVi.Signature = t.Sign
 	return localVi, nil
@@ -124,11 +124,11 @@ func VotingInitProto2Local(t *proto.TransVotingInit) (*vi.VotingInit, error) {
 func VoteProto2Local(t *proto.TransVote) (*vote.Vote, error) {
 	localV := new(vote.Vote)
 	localV.Sender = t.Sender
-	localV.TransCounter = t.TransactionCounter
-	localV.VotingId = t.VotingId
+	localV.TransCounter = transaction.TransCounter(t.TransactionCounter)
+	localV.VotingId = transaction.VotingId(t.VotingId)
 	localV.Opinion = t.Opinion
 	localV.Timestamp = t.GetTimestamp().AsTime()
-	localV.Fee = t.Fee
+	localV.Fee = transaction.Balance(t.Fee)
 	localV.Node = t.Node
 	localV.Signature = t.Sign
 	return localV, nil
@@ -137,10 +137,10 @@ func VoteProto2Local(t *proto.TransVote) (*vote.Vote, error) {
 func VotingFinishProto2Local(t *proto.TransVotingFinish) (*vf.VotingFinish, error) {
 	localVf := new(vf.VotingFinish)
 	localVf.Sender = t.Sender
-	localVf.TransCounter = t.TransactionCounter
-	localVf.VotingId = t.VotingId
+	localVf.TransCounter = transaction.TransCounter(t.TransactionCounter)
+	localVf.VotingId = transaction.VotingId(t.VotingId)
 	localVf.Timestamp = t.GetTimestamp().AsTime()
-	localVf.Fee = t.Fee
+	localVf.Fee = transaction.Balance(t.Fee)
 	localVf.Node = t.Node
 	localVf.Signature = t.Sign
 	return localVf, nil
@@ -166,10 +166,10 @@ func TransactionProto2Local(t *proto.Transaction) (transaction.Transaction, erro
 func TransferLocal2Proto(tr *transfer.Transfer) (*proto.Transaction, error) {
 	t := new(proto.TransTransfer)
 	t.Sender = tr.Sender
-	t.TransactionCounter = tr.TransCounter
+	t.TransactionCounter = uint64(tr.TransCounter)
 	t.Receiver = tr.Receiver
-	t.Pay = tr.Pay
-	t.Fee = tr.Fee
+	t.Pay = float64(tr.Pay)
+	t.Fee = float64(tr.Fee)
 	t.Message = tr.Message
 	t.Timestamp = timestamppb.New(tr.Timestamp)
 	t.Node = tr.Node
@@ -179,10 +179,10 @@ func TransferLocal2Proto(tr *transfer.Transfer) (*proto.Transaction, error) {
 
 func AirdropLocal2Proto(tr *airdrop.Airdrop) (*proto.Transaction, error) {
 	t := new(proto.TransAirDrop)
-	t.TransactionCounter = tr.TransCounter
+	t.TransactionCounter = uint64(tr.TransCounter)
 	t.Receiver = tr.Receiver
-	t.Pay = tr.Pay
-	t.Fee = tr.Fee
+	t.Pay = float64(tr.Pay)
+	t.Fee = float64(tr.Fee)
 	t.Message = tr.Message
 	t.Timestamp = timestamppb.New(tr.Timestamp)
 	t.Node = tr.Node
@@ -193,11 +193,11 @@ func AirdropLocal2Proto(tr *airdrop.Airdrop) (*proto.Transaction, error) {
 func VotingInitLocal2Proto(tr *vi.VotingInit) (*proto.Transaction, error) {
 	t := new(proto.TransVotingInit)
 	t.Sender = tr.Sender
-	t.TransactionCounter = tr.TransCounter
-	t.VotingId = tr.VotingId
+	t.TransactionCounter = uint64(tr.TransCounter)
+	t.VotingId = uint32(tr.VotingId)
 	t.Parameter = uint32(tr.Parameter)
 	t.Value = tr.Value
-	t.Fee = tr.Fee
+	t.Fee = float64(tr.Fee)
 	t.Timestamp = timestamppb.New(tr.Timestamp)
 	t.Node = tr.Node
 	t.Sign = tr.Signature
@@ -207,10 +207,10 @@ func VotingInitLocal2Proto(tr *vi.VotingInit) (*proto.Transaction, error) {
 func VoteLocal2Proto(tr *vote.Vote) (*proto.Transaction, error) {
 	t := new(proto.TransVote)
 	t.Sender = tr.Sender
-	t.TransactionCounter = tr.TransCounter
-	t.VotingId = tr.VotingId
+	t.TransactionCounter = uint64(tr.TransCounter)
+	t.VotingId = uint32(tr.VotingId)
 	t.Opinion = tr.Opinion
-	t.Fee = tr.Fee
+	t.Fee = float64(tr.Fee)
 	t.Timestamp = timestamppb.New(tr.Timestamp)
 	t.Node = tr.Node
 	t.Sign = tr.Signature
@@ -220,9 +220,9 @@ func VoteLocal2Proto(tr *vote.Vote) (*proto.Transaction, error) {
 func VotingFinishLocal2Proto(tr *vf.VotingFinish) (*proto.Transaction, error) {
 	t := new(proto.TransVotingFinish)
 	t.Sender = tr.Sender
-	t.TransactionCounter = tr.TransCounter
-	t.VotingId = tr.VotingId
-	t.Fee = tr.Fee
+	t.TransactionCounter = uint64(tr.TransCounter)
+	t.VotingId = uint32(tr.VotingId)
+	t.Fee = float64(tr.Fee)
 	t.Timestamp = timestamppb.New(tr.Timestamp)
 	t.Node = tr.Node
 	t.Sign = tr.Signature
