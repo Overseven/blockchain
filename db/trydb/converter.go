@@ -2,17 +2,50 @@ package trydb
 
 import (
 	"errors"
-	"github.com/overseven/try-network/block/tryblock"
+	"github.com/overseven/try-network/utility"
 
 	"github.com/overseven/try-network/transaction"
 	"github.com/overseven/try-network/transaction/airdrop"
 	"github.com/overseven/try-network/transaction/transfer"
 )
 
-func BlockFromBytes(b []byte) (tryblock.TryBlock, error) {
-	// TODO: finish
-	return tryblock.TryBlock{}, nil
+func BlockFromBytes(b []byte) (Block, error) {
+	if len(b) < 9 {
+		return Block{}, errors.New("incorrect input data len")
+	}
+
+	block :=  Block{}
+	idx := int64(0)
+	block.Id = utility.UInt64FromBytes(b[idx:idx+8])
+	idx += 8
+	block.NumOfTrans = utility.UInt8FromBytes(b[idx:idx+1])
+	idx += 1
+	if len(b) < int(32 * block.NumOfTrans + 8 + 32 + 32 + 8) {
+		return Block{}, errors.New("incorrect input data len! ")
+	}
+	block.TransHashes = make([][]byte, block.NumOfTrans)
+	var i uint8
+	for ; i < block.NumOfTrans; i++ {
+		copy(block.TransHashes[i], b[idx:idx+32])
+		idx += 32
+	}
+
+	block.Difficulty = utility.UInt64FromBytes(b[idx:idx+8])
+	idx += 8
+
+	copy(block.MinerPubKey, b[idx:idx+32])
+	idx += 32
+
+	copy(block.Hash, b[idx:idx+32])
+	idx += 32
+
+	block.Nonce = utility.UInt64FromBytes(b[idx:idx+8])
+	idx += 8
+
+	return block, nil
 }
+
+
 
 func TransactionFromBytes(b []byte) (transaction.Transaction, error) {
 	if len(b) < 4 {

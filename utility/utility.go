@@ -44,6 +44,14 @@ func UInt64FromBytes(bytes []byte) uint64 {
 	return binary.LittleEndian.Uint64(bytes)
 }
 
+func UInt8FromBytes(bytes []byte) uint8 {
+	return bytes[0]
+}
+
+func UInt8Bytes(value uint8) []byte {
+	return []byte{value}
+}
+
 func UInt64Bytes(value uint64) []byte {
 	bytes := make([]byte, 8)
 	binary.LittleEndian.PutUint64(bytes, value)

@@ -95,10 +95,6 @@ func GetBlock(id uint64) (*tryblock.TryBlock, error) {
 	return &b, nil
 }
 
-func CreateSnapshot(id uint8) {
-
-}
-
 func GetLastBlock() tryblock.TryBlock {
 
 	return tryblock.TryBlock{}
